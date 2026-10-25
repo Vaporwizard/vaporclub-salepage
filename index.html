@@ -5119,7 +5119,66 @@
         }
     }
 
+    
+    function isWithinExpressHours() {
+        if (!storeConfig) return true;
+        if (storeConfig.expressDeliveryEnabled === false) return false;
+        
+        const start = storeConfig.expressStartHour !== undefined ? Number(storeConfig.expressStartHour) : 9;
+        const end = storeConfig.expressEndHour !== undefined ? Number(storeConfig.expressEndHour) : 23;
+
+        const now = new Date();
+        // Thai Time UTC+7
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const thaiTime = new Date(utc + (3600000 * 7));
+        const currentHour = thaiTime.getHours() + (thaiTime.getMinutes() / 60);
+
+        if (start < end) {
+            return currentHour >= start && currentHour < end;
+        } else {
+            // Over midnight (e.g. 10:00 to 02:00 next day)
+            return currentHour >= start || currentHour < end;
+        }
+    }
+
+    function checkExpressOperatingHours() {
+        const expressAllowed = isWithinExpressHours();
+        const expressOption = document.querySelector('input[value="express"]');
+        const expressLabel = document.getElementById('express-delivery-label-box');
+        const closedNotice = document.getElementById('express-closed-notice');
+
+        const closedMsg = storeConfig.expressClosedMessage || 'พร้อมให้บริการ 09:00 น. ในวันพรุ่งนี้';
+
+        if (!expressAllowed) {
+            if (shippingMethod === 'express') {
+                shippingMethod = 'postal';
+                const postalRadio = document.querySelector('input[value="postal"]');
+                if (postalRadio) postalRadio.checked = true;
+                setShippingMethod('postal');
+            }
+            if (expressOption) {
+                expressOption.disabled = true;
+            }
+            if (expressLabel) {
+                expressLabel.style.opacity = '0.45';
+                expressLabel.style.cursor = 'not-allowed';
+            }
+            if (closedNotice) {
+                closedNotice.textContent = closedMsg;
+                closedNotice.style.display = 'block';
+            }
+        } else {
+            if (expressOption) expressOption.disabled = false;
+            if (expressLabel) {
+                expressLabel.style.opacity = '1';
+                expressLabel.style.cursor = 'pointer';
+            }
+            if (closedNotice) closedNotice.style.display = 'none';
+        }
+    }
+
     function applyStoreConfigToUI() {
+        checkExpressOperatingHours();
         if (!storeConfig) return;
         if (storeConfig.storeName) {
             document.title = `${storeConfig.storeName} - Official Store`;
@@ -6646,6 +6705,7 @@
        CART MANAGEMENT (HUB AI PROMOTIONS & FLOATING BAR)
        ======================================================== */
     function updateCartUI() {
+        try { localStorage.setItem("vapor_customer_cart_items", JSON.stringify(cart)); } catch(e){}
         if (selectedVoucher && !VOUCHER_MASTER[selectedVoucher]) {
             if (window.__promotionsLoaded) {
                 setSelectedVoucher(null);
