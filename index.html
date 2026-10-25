@@ -6543,7 +6543,7 @@
                         <span>${grp.groupName}</span>
                     </span>
                     <span class="flavor-group-badge ${grp.badgeClass || 'badge-nic3'}">
-                        ${grp.badgeText || (grp.badgeClass === 'badge-nic5' ? 'นิค 5%' : 'นิค 3%')} (${grp.flavors.length})
+                        ${(grp.groupName && grp.groupName.includes('5%')) || grp.badgeClass === 'badge-nic5' ? 'นิค 5%' : 'นิค 3%'} (${grp.flavors.length})
                     </span>
                 </div>
                 <div class="flavor-button-grid">
@@ -6759,20 +6759,28 @@
             if (cart.length === 0) {
                 listEl.innerHTML = '<div style="text-align:center; padding:24px; color:#64748b; font-size:12px;">ไม่มีสินค้าในตะกร้า</div>';
             } else {
-                listEl.innerHTML = cart.map((item, idx) => `
-                    <div style="background:var(--bg-surface-subtle); border:1px solid var(--border-main); border-radius:12px; padding:10px 12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-size:12.5px; font-weight:800; color:var(--text-main);">${item.name}</div>
-                            <div style="font-size:11px; color:var(--text-muted);">กลิ่น: ${item.flavor}</div>
-                            <div style="font-size:13px; font-weight:900; color:var(--primary-green-dark); margin-top:2px; font-family:var(--font-num);">฿${item.price}</div>
+                listEl.innerHTML = cart.map((item, idx) => {
+                const prodImg = item.image || (PRODUCTS.find(p => p.name === item.name) || {}).image || '/assets/products/moood_3ml.png';
+                return `
+                    <div style="background:rgba(22, 25, 35, 0.7); border:1px solid rgba(255, 255, 255, 0.08); border-radius:14px; padding:10px 12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                        <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+                            <div style="width:48px; height:48px; border-radius:10px; background:#12141c; border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">
+                                <img src="${prodImg}" alt="${item.name}" style="width:100%; height:100%; object-fit:contain;" onerror="this.src='/assets/logo_vapor_official.png'">
+                            </div>
+                            <div style="min-width:0;">
+                                <div style="font-size:13px; font-weight:800; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
+                                <div style="font-size:11px; color:#94a3b8; margin-top:1px;">กลิ่น: ${item.flavor}</div>
+                                <div style="font-size:13.5px; font-weight:900; color:#ff6b00; margin-top:2px; font-family:var(--font-num);">฿${item.price}</div>
+                            </div>
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <button onclick="changeCartQty(${idx}, -1)" style="width:26px; height:26px; border-radius:50%; background:var(--primary-green); color:#ffffff; border:none; font-weight:900; cursor:pointer;">-</button>
-                            <span style="font-size:13px; font-weight:900; color:var(--text-main); min-width:16px; text-align:center; font-family:var(--font-num);">${item.qty}</span>
-                            <button onclick="changeCartQty(${idx}, 1)" style="width:26px; height:26px; border-radius:50%; background:var(--primary-green); color:#ffffff; border:none; font-weight:900; cursor:pointer;">+</button>
+                        <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                            <button onclick="changeCartQty(${idx}, -1)" style="width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#ffffff; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center;">-</button>
+                            <span style="font-size:13.5px; font-weight:900; color:#ffffff; min-width:18px; text-align:center; font-family:var(--font-num);">${item.qty}</span>
+                            <button onclick="changeCartQty(${idx}, 1)" style="width:28px; height:28px; border-radius:50%; background:#ff6b00; border:none; color:#ffffff; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(255,107,0,0.4);">+</button>
                         </div>
                     </div>
-                `).join('');
+                `;
+            }).join('');
             }
         }
 
