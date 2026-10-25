@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bill & Payment - Vapor Flagship Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: #000000; color: #111827; display: flex; justify-content: center; min-height: 100vh; padding: 16px 12px; }
+        
+        .bill-card {
+            width: 100%;
+            max-width: 420px;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 28px 22px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            margin: auto;
+            border: 1px solid #1f2937;
+            position: relative;
+        }
+
+        .logo-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .store-logo {
+            max-height: 75px;
+            width: auto;
+            display: block;
+            margin: 0 auto 10px;
+        }
+        .bill-badge {
+            display: inline-block;
+            background: #f1f5f9;
+            color: #0f172a;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            text-transform: uppercase;
+        }
+
+        .amount-section {
+            text-align: center;
+            padding: 18px 12px;
+            background: #fafafa;
+            border-radius: 16px;
+            border: 1px solid #f1f5f9;
+            margin-bottom: 20px;
+        }
+        .amount-label {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .amount-value {
+            font-size: 34px;
+            font-weight: 700;
+            color: #000000;
+            letter-spacing: -0.5px;
+        }
+        .amount-instruction {
+            font-size: 12px;
+            color: #475569;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .countdown-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            color: #475569;
+            margin-top: 10px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .countdown-box.urgent {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10b981;
+            display: inline-block;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-green 1.5s infinite;
+        }
+        .countdown-box.urgent .pulse-dot {
+            background: #ef4444;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            animation: pulse-red 1.5s infinite;
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .qr-card {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1.5px solid #000000;
+            padding: 18px;
+            text-align: center;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .payment-badges {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .payment-badges img {
+            height: 22px;
+            width: auto;
+            display: inline-block;
+            object-fit: contain;
+        }
+
+        .qr-image-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 230px;
+            margin: 0 auto;
+        }
+        .qr-image-wrap img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 6px;
+            -webkit-touch-callout: default !important;
+            user-select: auto !important;
+            -webkit-user-select: auto !important;
+            pointer-events: auto !important;
+        }
+
+        .merchant-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #000000;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+        .merchant-type {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 13px 16px;
+            border-radius: 12px;
+            font-size: 13.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+        }
+        .btn-outline {
+            background: #ffffff;
+            color: #000000;
+            border: 1.5px solid #e2e8f0;
+            margin-bottom: 18px;
+        }
+        .btn-outline:hover {
+            border-color: #000000;
+            background: #f8fafc;
+        }
+        .btn-black {
+            background: #000000;
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+        }
+        .btn-black:hover {
+            background: #1e293b;
+        }
+
+        .order-summary {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            border: 1px solid #f1f5f9;
+            font-size: 13px;
+        }
+        .summary-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            color: #1e293b;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+        .address-box {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .success-box {
+            display: none;
+            text-align: center;
+            padding: 40px 10px;
+        }
+        .success-check {
+            width: 64px;
+            height: 64px;
+            background: #000000;
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 16px;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 14px;
+        }
+
+        /* Toast Popup Alert */
+        .toast-popup {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #0f172a;
+            color: #ffffff;
+            padding: 13px 22px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 99999;
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            white-space: nowrap;
+            border: 1px solid #334155;
+        }
+        .toast-popup.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="bill-card">
+        <div id="checkout-view">
+            <div class="logo-header">
+                <img src="/assets/logo.png" alt="vapor.club" class="store-logo">
+                <div class="bill-badge" id="order-id-badge">BILL: LOADING...</div>
+            </div>
+
+            <div class="amount-section">
+                <div class="amount-label">Total Amount Due</div>
+                <div class="amount-value" id="total-amount">฿0.00</div>
+                <div class="amount-instruction">Open your banking app and scan to pay the exact amount.</div>
+                <div class="countdown-box" id="countdown-box">
+                    <span class="pulse-dot"></span> Pay within <strong id="timer-val" style="font-family:monospace; margin-left:4px; margin-right:2px;">15:00</strong> mins
+                </div>
+            </div>
+
+            <div class="qr-card">
+                <div class="payment-badges">
+                    <img src="/assets/promptpay.png" alt="PromptPay">
+                    <img src="/assets/wechatpay.png" alt="WeChat Pay">
+                </div>
+
+                <div class="qr-image-wrap">
+                    <img id="qr-image" src="" alt="Payment QR Code">
+                </div>
+                <div class="merchant-name" id="merchant-name" style="font-size:15px; font-weight:700; color:#0f172a; margin-top:10px;">วีพีช็อป</div>
+            </div>
+
+            <button id="btn-download-qr" type="button" class="btn btn-outline" onclick="saveQrToGallery()">
+                 Save QR Code to Photos
+            </button>
+            <div style="font-size:11.5px; color:#64748b; margin-top:-10px; margin-bottom:18px; text-align:center;">
+                 Tap button above, or <strong>press & hold</strong> the QR code to save to Photos
+            </div>
+
+            <div class="order-summary">
+                <div class="summary-title">Order Summary</div>
+                <div id="items-list"></div>
+                
+                <div class="address-box">
+                     <strong>Delivery Address:</strong> <span id="delivery-address">As confirmed in chat</span>
+                    <div id="rider-note-box" style="display:none; margin-top:8px; padding:8px 12px; background:#fffbeb; border:1px solid #fde68a; border-radius:10px; color:#92400e; font-size:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                            <div> <strong>หมายเหตุไรเดอร์:</strong> <span id="rider-note-text"></span></div>
+                            <button type="button" onclick="copyRiderNote()" style="background:#fef3c7; border:1px solid #f59e0b; color:#b45309; border-radius:8px; padding:3px 10px; font-size:11.5px; font-weight:700; cursor:pointer; flex-shrink:0;">[List] ก็อปปี้</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Promo Code / Coupon Section -->
+            <div id="promo-code-card" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:12px 14px; margin-bottom:18px;">
+                <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>️ โค้ดส่วนลด (Promo Code)</span>
+                    <span id="promo-tag" style="display:none; background:#dcfce7; color:#16a34a; font-size:10.5px; padding:2px 8px; border-radius:12px; font-weight:700;">APPLIED</span>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="coupon-input" placeholder="ใส่โค้ดส่วนลดที่นี่..." style="flex:1; padding:9px 12px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:600; text-transform:uppercase; outline:none; background:#ffffff; color:#0f172a;" onkeypress="if(event.key==='Enter') applyCoupon()">
+                    <button type="button" id="btn-apply-coupon" onclick="applyCoupon()" class="btn btn-black" style="width:auto; padding:9px 16px; font-size:12.5px; border-radius:10px; margin-bottom:0;">
+                        ใช้โค้ด
+                    </button>
+                </div>
+                <div id="coupon-alert" style="font-size:11.5px; margin-top:6px; display:none;"></div>
+            </div>
+
+            <!-- Payment Confirmation & Slip Upload Box -->
+            <div id="live-check-box" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:18px 16px; text-align:center; margin-bottom:16px;">
+                <div style="display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600; font-size:13.5px; color:#0f172a;">
+                    <span class="pulse-dot" style="background:#0284c7; width:9px; height:9px;"></span>
+                    <span>Awaiting Bank Transfer...</span>
+                </div>
+                <p style="font-size:12px; color:#64748b; margin-top:6px; line-height:1.5;">
+                    Scan and transfer the exact amount above, then upload your transfer slip below.<br>
+                    Our system will verify and confirm your order automatically 
+                </p>
+
+                <!-- Hidden file input for slip upload -->
+                <input type="file" id="slip-file-input" accept="image/*" style="display:none;" onchange="handleSlipSelected(event)">
+
+                <!-- Initial Upload Slip Button -->
+                <button type="button" id="btn-trigger-upload" class="btn btn-black" onclick="triggerSlipUpload()" style="margin-top:12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                     Upload Transfer Slip
+                </button>
+
+                <!-- Slip Preview & Verification Area (Hidden until file selected) -->
+                <div id="slip-preview-box" style="display:none; margin-top:14px; padding:12px; background:#ffffff; border:1.5px dashed #0284c7; border-radius:14px; text-align:center;">
+                    <img id="slip-preview-img" src="" alt="Slip Preview" style="max-height:190px; max-width:100%; border-radius:8px; margin:0 auto 10px; display:block; object-fit:contain; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <div id="slip-upload-status" style="font-size:12.5px; color:#334155; margin-bottom:10px; font-weight:500;">Ready to verify transfer slip</div>
+                    <div style="display:flex; gap:8px;">
+                        <button type="button" id="btn-confirm-slip" class="btn btn-black" onclick="submitUploadedSlip()" style="flex:1; padding:10px; font-size:13px;">
+                            [Launch] Confirm & Submit Slip
+                        </button>
+                        <button type="button" class="btn btn-outline" onclick="cancelSlipUpload()" style="width:auto; padding:10px 14px; font-size:12.5px; margin-bottom:0;">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-note">
+                Vapor Flagship Store • 100% Verified Secure Payment
+            </div>
+        </div>
+
+        <div id="expired-view" class="success-box" style="display:none; padding:40px 16px; text-align:center;">
+            <div style="width:72px; height:72px; border-radius:50%; background:#fee2e2; color:#dc2626; display:flex; align-items:center; justify-content:center; font-size:32px; margin:0 auto 18px; box-shadow:0 4px 14px rgba(220,38,38,0.15);">⏰</div>
+            <h2 style="font-size:22px; font-weight:700; color:#000000; margin-bottom:12px;">Payment Link Expired</h2>
+            <p style="color:#475569; font-size:14.5px; line-height:1.6; margin-bottom:24px;">
+                This payment link has expired (15-minute window). Please contact admin to request a new link. 
+            </p>
+            <div class="bill-badge" id="expired-order-id" style="margin-bottom:24px; font-size:12px; padding:6px 16px;">BILL: EXPIRED</div>
+            <a href="https://line.me/R/ti/p/@361zkkun" class="btn btn-black" style="display:flex; text-decoration:none; text-align:center; padding:14px; font-size:14px; font-weight:600; border-radius:12px; justify-content:center;">
+                 Contact Admin on LINE for New Link
+            </a>
+        </div>
+
+        <div id="success-view" class="success-box">
+            <div class="success-check"></div>
+            <h2 style="font-size:22px; font-weight:700; color:#0f172a; margin-bottom:6px;">ชำระเงินเรียบร้อยแล้ว</h2>
+            <div style="font-size:13px; font-weight:600; color:#10b981; letter-spacing:0.5px; text-transform:uppercase; margin-bottom:14px;">Payment Completed Successfully</div>
+            <p style="color:#475569; font-size:14px; line-height:1.6; margin-bottom:20px;">
+                ระบบตรวจสอบยอดเงินและยืนยันออเดอร์เข้าคลังสินค้าแล้วนะคะ <br>
+                แอดมินกำลังจัดเตรียมพัสดุและจะแจ้งรูปสินค้าพร้อมจัดส่งทางแชท LINE ค่า 
+            </p>
+            <div class="bill-badge" id="success-order-id">ORD-SUCCESS</div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Popup -->
+    <div id="save-toast" class="toast-popup">
+        <span>[OK]</span>
+        <span id="toast-text">QR Code saved to gallery!</span>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const pathSegments = window.location.pathname.split('/');
+        const orderIdFromPath = pathSegments[pathSegments.length - 1];
+        const currentOrderId = (orderIdFromPath && orderIdFromPath.startsWith('ORD-')) ? orderIdFromPath : (urlParams.get('orderId') || 'ORD-10061');
+
+        let countdownTimer = null;
+        let expireTimestamp = Date.now() + 15 * 60 * 1000;
+
+        function showToast(message) {
+            const toast = document.getElementById('save-toast');
+            const toastText = document.getElementById('toast-text');
+            if (toastText) toastText.textContent = message;
+            if (toast) {
+                toast.classList.add('show');
+                clearTimeout(toast._timer);
+                toast._timer = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3500);
+            }
+        }
+
+        async function saveQrToGallery() {
+            const qrImg = document.getElementById('qr-image');
+            if (!qrImg || !qrImg.src) {
+                showToast('[Warning] QR Code is still loading...');
+                return;
+            }
+
+            const downloadEndpoint = `/api/pay/download-qr/${currentOrderId}.png`;
+
+            // 1. Try Native Mobile Share Sheet (iOS & Android) -> Opens native "Save Image to Photos"
+            try {
+                if (navigator.share && navigator.canShare) {
+                    const res = await fetch(qrImg.src);
+                    const blob = await res.blob();
+                    const file = new File([blob], `Vapor_Payment_QR_${currentOrderId}.png`, { type: 'image/png' });
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Vapor Payment QR'
+                        });
+                        showToast('[OK] Saved to Photos! Open banking app to scan.');
+                        return;
+                    }
+                }
+            } catch (shareErr) {
+                if (shareErr.name === 'AbortError') {
+                    return; // User dismissed share sheet
+                }
+                console.warn('Share API not supported or failed, using download fallback:', shareErr.message);
+            }
+
+            // 2. Direct Download Fallback using real PNG attachment endpoint
+            try {
+                const a = document.createElement('a');
+                a.href = downloadEndpoint;
+                a.download = `Vapor_Payment_QR_${currentOrderId}.png`;
+                a.target = '_blank';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast('[OK] QR Code downloaded! Open banking app to scan.');
+            } catch (err) {
+                console.error('Download error:', err);
+                window.open(downloadEndpoint, '_blank');
+                showToast(' Please press & hold the QR image to save to Photos.');
+            }
+        }
+
+        function startTimer(expiresAt) {
+            if (expiresAt) expireTimestamp = new Date(expiresAt).getTime();
+            else expireTimestamp = Date.now() + 15 * 60 * 1000;
+
+            if (countdownTimer) clearInterval(countdownTimer);
+
+            function tick() {
+                const now = Date.now();
+                const remainingSec = Math.max(0, Math.floor((expireTimestamp - now) / 1000));
+                
+                const min = Math.floor(remainingSec / 60);
+                const sec = remainingSec % 60;
+                const formatted = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+                
+                const timerEl = document.getElementById('timer-val');
+                const boxEl = document.getElementById('countdown-box');
+                if (timerEl) timerEl.textContent = formatted;
+
+                if (remainingSec <= 180 && boxEl) {
+                    boxEl.classList.add('urgent');
+                }
+
+                if (remainingSec <= 0) {
+                    clearInterval(countdownTimer);
+                    showExpiredView();
+                }
+            }
+
+            tick();
+            countdownTimer = setInterval(tick, 1000);
+        }
+
+        function showExpiredView() {
+            if (countdownTimer) clearInterval(countdownTimer);
+            document.getElementById('checkout-view').style.display = 'none';
+            document.getElementById('expired-view').style.display = 'block';
+            document.getElementById('expired-order-id').textContent = 'BILL: ' + currentOrderId;
+        }
+
+        let loadRetryCount = 0;
+        const MAX_LOAD_RETRIES = 2;
+
+        async function loadOrder() {
+            try {
+                let res = await fetch('/api/pay/order-info/' + currentOrderId);
+                let data = null;
+                try {
+                    data = await res.json();
+                } catch(e) {}
+
+                // Direct fallback to main backend if vpstore-payment instance doesn't have the order
+                if ((!data || !data.success) && !window.location.hostname.includes('vapro-ai-admin')) {
+                    try {
+                        const fallbackRes = await fetch('https://vapro-ai-admin.onrender.com/api/pay/order-info/' + currentOrderId);
+                        const fallbackData = await fallbackRes.json();
+                        if (fallbackData && fallbackData.success) {
+                            data = fallbackData;
+                        } else if (fallbackData && fallbackData.expired) {
+                            data = fallbackData;
+                        }
+                    } catch (fbErr) {}
+                }
+
+                if (data && data.expired) {
+                    showExpiredView();
+                    return;
+                }
+
+                if (data && data.success && data.order) {
+                    if (data.order.isPaid || ['PENDING_PACK', 'PACKED', 'READY_DISPATCH', 'DELIVERED', 'PAID', 'COMPLETED'].includes(data.order.status)) {
+                        showSuccessView();
+                        return;
+                    }
+                    renderOrder(data.order, data.qrDataUrl);
+                    startTimer(data.expiresAt);
+                } else {
+                    loadRetryCount++;
+                    if (loadRetryCount <= MAX_LOAD_RETRIES) {
+                        setTimeout(loadOrder, 1500);
+                    } else {
+                        showExpiredView();
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+                loadRetryCount++;
+                if (loadRetryCount <= MAX_LOAD_RETRIES) {
+                    setTimeout(loadOrder, 1500);
+                } else {
+                    showExpiredView();
+                }
+            }
+        }
+
+        let currentLoadedTotal = null;
+
+        function renderOrder(order, qrDataUrl) {
+            currentLoadedTotal = order.total;
+            document.getElementById('order-id-badge').textContent = 'BILL: ' + (order.id || currentOrderId);
+            document.getElementById('total-amount').textContent = '฿' + (order.total || 0).toLocaleString() + '.00';
+            if (qrDataUrl) {
+                document.getElementById('qr-image').src = qrDataUrl;
+            }
+
+            const itemsContainer = document.getElementById('items-list');
+            let itemsHtml = (order.items || []).map(it => `
+                <div class="summary-row">
+                    <span>${it.name} (x${it.qty || 1})</span>
+                    <span style="font-weight:600;">฿${((it.price || 0) * (it.qty || 1)).toLocaleString()}</span>
+                </div>
+            `).join('') + `
+                <div class="summary-row" style="color:#64748b;">
+                    <span>Delivery Fee</span>
+                    <span style="font-weight:600;">฿${(order.deliveryFee || 0).toLocaleString()}</span>
+                </div>
+            `;
+
+            if (Array.isArray(order.promoBreakdown) && order.promoBreakdown.length > 0) {
+                order.promoBreakdown.forEach(promo => {
+                    let label = '';
+                    const isDelivery = promo.target === 'DELIVERY' || promo.targetCategory === 'DELIVERY';
+                    if (isDelivery) {
+                        label = promo.code
+                            ? ` ส่วนลดค่าจัดส่ง ${promo.code}${promo.discountPercent ? ` (-${promo.discountPercent}%)` : ''} (${promo.name || 'ลดค่าส่ง'})`
+                            : ` ส่วนลดค่าจัดส่งพิเศษ: ${promo.name || promo.description || 'ส่วนลดค่าส่ง'}`;
+                    } else if (promo.type === 'AUTO_BUNDLE') {
+                        label = `[Gift] โปรโมชั่น: ${promo.name || promo.description || 'เซ็ตราคาพิเศษ'}`;
+                    } else if (promo.code) {
+                        label = `️ โค้ดส่วนลด ${promo.code}${promo.discountPercent ? ` (-${promo.discountPercent}%)` : ''} (${promo.name || 'ส่วนลด'})`;
+                    } else {
+                        label = `[Gift] โปรโมชั่น: ${promo.name || promo.description || 'ส่วนลดพิเศษ'}`;
+                    }
+                    const discAmt = promo.discountAmount || 0;
+                    itemsHtml += `
+                        <div class="summary-row" style="color:#16a34a; font-weight:700; background:#f0fdf4; padding:6px 10px; border-radius:8px; margin:6px 0;">
+                            <span>${label}</span>
+                            <span>${discAmt > 0 ? `-฿${discAmt.toLocaleString()}` : 'รับสิทธิ์แล้ว'}</span>
+                        </div>
+                    `;
+                });
+                const promoTag = document.getElementById('promo-tag');
+                if (promoTag) {
+                    promoTag.style.display = 'inline-block';
+                    promoTag.textContent = order.discountCode ? `CODE: ${order.discountCode}` : 'PROMO APPLIED ';
+                }
+                const couponInput = document.getElementById('coupon-input');
+                const btnCoupon = document.getElementById('btn-apply-coupon');
+                if (couponInput && order.discountCode) {
+                    couponInput.value = order.discountCode;
+                    couponInput.disabled = true;
+                }
+                if (btnCoupon && order.discountCode) {
+                    btnCoupon.disabled = true;
+                    btnCoupon.textContent = 'ใช้แล้ว';
+                }
+            } else if (order.discountAmount && order.discountAmount > 0) {
+                const isDelivery = order.discountTarget === 'DELIVERY';
+                const prefix = isDelivery ? ' ส่วนลดค่าจัดส่ง' : '️ โค้ดส่วนลด';
+                const promoLabel = order.discountCode
+                    ? `${prefix} ${order.discountCode}${order.discountPercent ? ` (-${order.discountPercent}%)` : ''}`
+                    : `[Gift] โปรโมชั่นพิเศษ ${order.promoName || 'ส่วนลดพิเศษ'}`;
+                itemsHtml += `
+                    <div class="summary-row" style="color:#16a34a; font-weight:700; background:#f0fdf4; padding:6px 10px; border-radius:8px; margin:6px 0;">
+                        <span>${promoLabel}</span>
+                        <span>-฿${(order.discountAmount).toLocaleString()}</span>
+                    </div>
+                `;
+                const promoTag = document.getElementById('promo-tag');
+                const couponInput = document.getElementById('coupon-input');
+                const btnCoupon = document.getElementById('btn-apply-coupon');
+                if (promoTag) {
+                    promoTag.style.display = 'inline-block';
+                    if (!order.discountCode) promoTag.textContent = 'PROMO APPLIED ';
+                }
+                if (couponInput && order.discountCode) {
+                    couponInput.value = order.discountCode;
+                    couponInput.disabled = true;
+                }
+                if (btnCoupon && order.discountCode) {
+                    btnCoupon.disabled = true;
+                    btnCoupon.textContent = 'ใช้แล้ว';
+                }
+            }
+
+            // Show customer info if available
+            if (order.customerName && order.customerName !== 'คุณลูกค้า' && order.customerName !== 'Customer') {
+                let customerLine = ' ' + order.customerName;
+                if (order.phone) customerLine += ' (' + order.phone + ')';
+                itemsHtml += `<div class="summary-row" style="margin-top:8px; color:#0f172a; font-size:13px;"><span>${customerLine}</span></div>`;
+            }
+
+            itemsContainer.innerHTML = itemsHtml;
+
+            document.getElementById('delivery-address').textContent = order.address || 'As confirmed in LINE chat';
+
+            const riderNoteBox = document.getElementById('rider-note-box');
+            const riderNoteText = document.getElementById('rider-note-text');
+            if (riderNoteBox && riderNoteText) {
+                if (order.riderNote) {
+                    riderNoteText.textContent = order.riderNote;
+                    riderNoteBox.style.display = 'block';
+                } else {
+                    riderNoteBox.style.display = 'none';
+                }
+            }
+        }
+
+        function copyRiderNote() {
+            const text = document.getElementById('rider-note-text')?.textContent || '';
+            if (!text) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('[List] คัดลอกหมายเหตุไรเดอร์แล้ว');
+                }).catch(() => {
+                    fallbackCopyText(text);
+                });
+            } else {
+                fallbackCopyText(text);
+            }
+        }
+
+        function fallbackCopyText(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('[List] คัดลอกหมายเหตุไรเดอร์แล้ว');
+            } catch (e) {
+                showToast('หมายเหตุ: ' + text);
+            }
+            document.body.removeChild(ta);
+        }
+
+        async function applyCoupon() {
+            const input = document.getElementById('coupon-input');
+            const btn = document.getElementById('btn-apply-coupon');
+            const alertEl = document.getElementById('coupon-alert');
+            const tagEl = document.getElementById('promo-tag');
+            if (!input) return;
+            const code = input.value.trim().toUpperCase();
+            if (!code) {
+                if (alertEl) {
+                    alertEl.style.display = 'block';
+                    alertEl.style.color = '#dc2626';
+                    alertEl.textContent = 'กรุณาใส่โค้ดส่วนลด';
+                }
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'กำลังตรวจ...';
+            if (alertEl) alertEl.style.display = 'none';
+
+            try {
+                let data = null;
+                try {
+                    const res = await fetch('/api/pay/apply-discount', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderId: currentOrderId, code })
+                    });
+                    if (res) data = await res.json();
+                } catch (e) {}
+
+                // Cross-domain fallback to Render backend if needed
+                if ((!data || !data.success) && !window.location.hostname.includes('vapro-ai-admin')) {
+                    try {
+                        const fallbackRes = await fetch('https://vapro-ai-admin.onrender.com/api/pay/apply-discount', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ orderId: currentOrderId, code })
+                        });
+                        const fbData = await fallbackRes.json();
+                        if (fbData) data = fbData;
+                    } catch (fbErr) {}
+                }
+
+                if (data && data.success) {
+                    if (alertEl) {
+                        alertEl.style.display = 'block';
+                        alertEl.style.color = '#16a34a';
+                        alertEl.textContent = data.message || 'ใช้โค้ดส่วนลดสำเร็จ!';
+                    }
+                    if (tagEl) tagEl.style.display = 'inline-block';
+                    input.disabled = true;
+                    btn.disabled = true;
+                    btn.textContent = 'ใช้แล้ว';
+                    
+                    if (data.newTotal) {
+                        document.getElementById('total-amount').textContent = '฿' + data.newTotal.toLocaleString() + '.00';
+                    }
+                    if (data.qrDataUrl) {
+                        document.getElementById('qr-image').src = data.qrDataUrl;
+                    }
+                    loadOrder();
+                    showToast(' ใช้โค้ดส่วนลดสำเร็จ! ยอดรวมปรับลดแล้ว');
+                } else {
+                    if (alertEl) {
+                        alertEl.style.display = 'block';
+                        alertEl.style.color = '#dc2626';
+                        alertEl.textContent = (data && data.message) ? data.message : 'โค้ดไม่ถูกต้องหรือหมดอายุแล้ว';
+                    }
+                    btn.disabled = false;
+                    btn.textContent = 'ใช้โค้ด';
+                }
+            } catch (err) {
+                if (alertEl) {
+                    alertEl.style.display = 'block';
+                    alertEl.style.color = '#dc2626';
+                    alertEl.textContent = 'เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+                }
+                btn.disabled = false;
+                btn.textContent = 'ใช้โค้ด';
+            }
+        }
+
+        let selectedSlipBase64 = null;
+
+        function triggerSlipUpload() {
+            const fileInput = document.getElementById('slip-file-input');
+            if (fileInput) fileInput.click();
+        }
+
+        function compressImage(file, maxDimension = 1200, quality = 0.82) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > maxDimension || height > maxDimension) {
+                            if (width > height) {
+                                height = Math.round((height * maxDimension) / width);
+                                width = maxDimension;
+                            } else {
+                                width = Math.round((width * maxDimension) / height);
+                                height = maxDimension;
+                            }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const compressed = canvas.toDataURL('image/jpeg', quality);
+                        resolve(compressed);
+                    };
+                    img.onerror = function() {
+                        resolve(e.target.result);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.onerror = function() {
+                    resolve(null);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function handleSlipSelected(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            // Client-side file size limit (15MB)
+            if (file.size > 15 * 1024 * 1024) {
+                alert('ไฟล์รูปภาพมีขนาดใหญ่เกินไป กรุณาเลือกรูปใหม่อีกครั้ง');
+                event.target.value = '';
+                return;
+            }
+
+            const previewBox = document.getElementById('slip-preview-box');
+            const previewImg = document.getElementById('slip-preview-img');
+            const statusEl = document.getElementById('slip-upload-status');
+            const triggerBtn = document.getElementById('btn-trigger-upload');
+
+            if (statusEl) {
+                statusEl.style.color = '#0284c7';
+                statusEl.textContent = '[Fast] กำลังเตรียมสลิปและตรวจสอบกับธนาคาร...';
+            }
+
+            // Compress image in browser before sending to save bandwidth and speed up verification
+            const compressed = await compressImage(file);
+            if (!compressed) {
+                alert('ไม่สามารถอ่านไฟล์ภาพได้ กรุณาลองใหม่อีกครั้ง');
+                return;
+            }
+
+            selectedSlipBase64 = compressed;
+            if (previewImg) previewImg.src = selectedSlipBase64;
+            if (previewBox) previewBox.style.display = 'block';
+            if (triggerBtn) triggerBtn.style.display = 'none';
+
+            // Automatically submit and verify slip immediately upon selection
+            submitUploadedSlip();
+        }
+
+        function cancelSlipUpload() {
+            selectedSlipBase64 = null;
+            const fileInput = document.getElementById('slip-file-input');
+            if (fileInput) fileInput.value = '';
+            const previewBox = document.getElementById('slip-preview-box');
+            const triggerBtn = document.getElementById('btn-trigger-upload');
+            if (previewBox) previewBox.style.display = 'none';
+            if (triggerBtn) triggerBtn.style.display = 'block';
+        }
+
+        async function submitUploadedSlip() {
+            if (!selectedSlipBase64) {
+                alert('Please select a transfer slip image first.');
+                return;
+            }
+
+            const confirmBtn = document.getElementById('btn-confirm-slip');
+            const statusEl = document.getElementById('slip-upload-status');
+            
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = '⏳ Verifying slip with bank...';
+            }
+            if (statusEl) {
+                statusEl.style.color = '#0284c7';
+                statusEl.textContent = ' Checking transaction with bank, please wait...';
+            }
+
+            try {
+                let res = await fetch('/api/pay/upload-slip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderId: currentOrderId, slipBase64: selectedSlipBase64 })
+                });
+                let data = await res.json();
+
+                // Cross-instance fallback to vapro-ai-admin if needed
+                if ((!data || !data.success) && !window.location.hostname.includes('vapro-ai-admin')) {
+                    try {
+                        const fallbackRes = await fetch('https://vapro-ai-admin.onrender.com/api/pay/upload-slip', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ orderId: currentOrderId, slipBase64: selectedSlipBase64 })
+                        });
+                        const fallbackData = await fallbackRes.json();
+                        if (fallbackData && fallbackData.success) {
+                            data = fallbackData;
+                        }
+                    } catch (fbErr) {}
+                }
+
+                if (data && data.success) {
+                    if (statusEl) {
+                        statusEl.style.color = '#16a34a';
+                        statusEl.textContent = '[OK] Transfer verified! Payment completed.';
+                    }
+                    setTimeout(showSuccessView, 600);
+                } else {
+                    if (confirmBtn) {
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = '[Launch] Try Submitting Slip Again';
+                    }
+                    if (statusEl) {
+                        statusEl.style.color = '#dc2626';
+                        statusEl.textContent = ' ' + (data?.error || 'Invalid slip or payment amount does not match bill.');
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = '[Launch] Confirm & Submit Slip';
+                }
+                if (statusEl) {
+                    statusEl.style.color = '#dc2626';
+                    statusEl.textContent = ' Connection error. Please try again.';
+                }
+            }
+        }
+
+        let statusPollInterval = null;
+
+        function showSuccessView() {
+            if (statusPollInterval) clearInterval(statusPollInterval);
+            if (countdownTimer) clearInterval(countdownTimer);
+            document.getElementById('checkout-view').style.display = 'none';
+            document.getElementById('expired-view').style.display = 'none';
+            document.getElementById('success-view').style.display = 'block';
+            document.getElementById('success-order-id').textContent = 'BILL: ' + currentOrderId;
+        }
+
+        async function checkStatus() {
+            try {
+                let res = await fetch('/api/pay/check-status/' + currentOrderId);
+                let data = await res.json();
+                if ((!data || !data.success || !data.isPaid) && !window.location.hostname.includes('vapro-ai-admin')) {
+                    try {
+                        const fallbackRes = await fetch('https://vapro-ai-admin.onrender.com/api/pay/check-status/' + currentOrderId);
+                        const fallbackData = await fallbackRes.json();
+                        if (fallbackData && fallbackData.isPaid) {
+                            data = fallbackData;
+                        }
+                    } catch (fbErr) {}
+                }
+                if (data && data.isPaid) {
+                    showSuccessView();
+                } else if (data && typeof data.total === 'number' && currentLoadedTotal !== null && data.total !== currentLoadedTotal) {
+                    console.log(`[Bill] Order total changed from ฿${currentLoadedTotal} to ฿${data.total}. Reloading bill...`);
+                    loadOrder();
+                }
+            } catch (e) {
+                // non-blocking
+            }
+        }
+
+        function startStatusPolling() {
+            if (statusPollInterval) clearInterval(statusPollInterval);
+            statusPollInterval = setInterval(checkStatus, 2000);
+        }
+
+        // Initialize Order and Start Live Status Polling
+        loadOrder().then(() => {
+            startStatusPolling();
+        });
+    </script>
+</body>
+</html>
