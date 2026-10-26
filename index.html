@@ -9706,12 +9706,24 @@
             }
         };
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const host = (window.location.hostname || '').toLowerCase();
+        const path = (window.location.pathname || '').toLowerCase();
+        const isStagingTestMode = (
+            urlParams.has('token') ||
+            urlParams.get('admin') === '1' ||
+            urlParams.get('bypass') === '1' ||
+            host.includes('onrender.com') ||
+            path.includes('selfservice') ||
+            host === 'localhost' ||
+            host === '127.0.0.1'
+        );
+
         try {
             if (typeof liff === 'undefined') {
-                setTimeout(hideLoadingOverlay, 600);
+                setTimeout(hideLoadingOverlay, 300);
                 return;
             }
-            const urlParams = new URLSearchParams(window.location.search);
             const liffId = urlParams.get('liffId') || OFFICIAL_LIFF_ID;
             await liff.init({ liffId });
 
@@ -9728,7 +9740,7 @@
 
                 // Fetch real member data and orders from backend database
                 try {
-                    const res = await fetch(`${window.API_BASE}/api/selfservice/profile?userId=${encodeURIComponent(profile.userId)}`);
+                    const res = await fetch(`/api/selfservice/profile?userId=${encodeURIComponent(profile.userId)}`);
                     const data = await res.json();
                     if (data && data.success && data.profile) {
                         if (data.profile.phone) currentUser.phone = data.profile.phone;
@@ -9754,11 +9766,32 @@
             } else if (liff.isInClient()) {
                 liff.login();
             } else {
-                setTimeout(hideLoadingOverlay, 600);
+                // Not in LINE app
+                if (isStagingTestMode) {
+                    const guardEl = document.getElementById('outside-line-guard-overlay');
+                    if (guardEl) guardEl.style.display = 'none';
+                    const appShell = document.querySelector('.app-shell');
+                    if (appShell) appShell.style.display = 'flex';
+                    if (!currentUser.name || currentUser.name === 'ลูกค้า LINE') {
+                        currentUser.name = 'ผู้ทดสอบระบบ (Tester)';
+                    }
+                    updateMemberUI();
+                    renderPostalSection();
+                    renderOrders();
+                }
+                setTimeout(hideLoadingOverlay, 300);
             }
         } catch (e) {
             console.log('[LIFF] Init warning:', e.message);
-            setTimeout(hideLoadingOverlay, 600);
+            if (isStagingTestMode) {
+                const guardEl = document.getElementById('outside-line-guard-overlay');
+                if (guardEl) guardEl.style.display = 'none';
+                const appShell = document.querySelector('.app-shell');
+                if (appShell) appShell.style.display = 'flex';
+                currentUser.name = 'ผู้ทดสอบระบบ (Tester)';
+                updateMemberUI();
+            }
+            setTimeout(hideLoadingOverlay, 300);
         }
     }
 
@@ -9813,10 +9846,63 @@
     function checkLineAccessGuard() {
         try {
             const urlParams = new URLSearchParams(window.location.search);
-            // Allow admin preview or dev bypass: ?admin=1 or ?bypass=1
-            if (urlParams.get('admin') === '1' || urlParams.get('bypass') === '1') {
+            const host = (window.location.hostname || '').toLowerCase();
+            const path = (window.location.pathname || '').toLowerCase();
+
+            // Staging Sandbox / Admin Token Test Mode:
+            // Allows testing directly on vapro-ai-admin.onrender.com, selfservice.html, or with ?token=...
+            // On production website (e.g. vaporclub-th.shop), this is FALSE unless admin token is passed!
+            const isStagingTestMode = (
+                urlParams.has('token') ||
+                urlParams.get('admin') === '1' ||
+                urlParams.get('bypass') === '1' ||
+                host.includes('onrender.com') ||
+                path.includes('selfservice') ||
+                host === 'localhost' ||
+                host === '127.0.0.1'
+            );
+
+            if (isStagingTestMode) {
+                // In test mode: allow direct testing outside LINE
+                const guardEl = document.getElementById('outside-line-guard-overlay');
+                if (guardEl) guardEl.style.display = 'none';
+                const appShell = document.querySelector('.app-shell');
+                if (appShell) appShell.style.display = 'flex';
+                const liffOverlay = document.getElementById('liff-connect-overlay');
+                if (liffOverlay) liffOverlay.style.display = 'none';
                 return true;
             }
+
+            // Production Mode (vaporclub-th.shop): Strictly require LINE app!
+            const ua = navigator.userAgent || navigator.vendor || window.opera || '';
+            const isLineUserAgent = /Line\//i.test(ua) || /LIFF/i.test(ua);
+            const isLiffInClient = (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient());
+
+            if (!isLineUserAgent && !isLiffInClient) {
+                // Not in LINE app -> show Image 4 guard overlay
+                const guardEl = document.getElementById('outside-line-guard-overlay');
+                if (guardEl) {
+                    guardEl.style.display = 'flex';
+                }
+                const appShell = document.querySelector('.app-shell');
+                if (appShell) {
+                    appShell.style.display = 'none';
+                }
+                const liffOverlay = document.getElementById('liff-connect-overlay');
+                if (liffOverlay) {
+                    liffOverlay.style.display = 'none';
+                }
+                const ageGate = document.getElementById('age-gate-modal');
+                if (ageGate) {
+                    ageGate.style.display = 'none';
+                }
+                return false;
+            }
+        } catch(e) {
+            console.log('[Guard] Access check warning:', e.message);
+        }
+        return true;
+    }
 
             const ua = navigator.userAgent || navigator.vendor || window.opera || '';
             const isLineUserAgent = /Line\//i.test(ua) || /LIFF/i.test(ua);
