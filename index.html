@@ -9200,8 +9200,19 @@
     async function submitOrderToBackend(orderObj) {
         try {
             const isPostal = orderObj.deliveryMethod === 'postal';
+            const urlParams = new URLSearchParams(window.location.search);
+            const host = (window.location.hostname || '').toLowerCase();
+            const isCloudflareProd = (host === 'vaporclub-th.shop' || host === 'www.vaporclub-th.shop' || host.endsWith('.pages.dev')) &&
+                                     !urlParams.has('token') &&
+                                     urlParams.get('admin') !== '1' &&
+                                     urlParams.get('bypass') !== '1' &&
+                                     urlParams.get('test') !== '1';
+            const isTest = !isCloudflareProd;
+
             const payload = {
-                channelId: 'vapro',
+                channelId: isTest ? 'test' : 'vapro',
+                isTest: isTest,
+                isRealOrder: !isTest,
                 orderId: orderObj.id,
                 userId: currentUser.userId || null,
                 customerName: orderObj.customerName,
