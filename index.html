@@ -1378,9 +1378,9 @@
             width: 100%;
             padding: 13px 16px;
             border-radius: 12px;
-            background: linear-gradient(135deg, rgba(15,23,42,0.04) 0%, rgba(51,65,85,0.08) 50%, rgba(100,116,139,0.06) 100%);
-            border: 1.5px dashed #334155;
-            color: #0f172a;
+            background: rgba(255, 255, 255, 0.06) !important;
+            border: 1.5px dashed rgba(255, 255, 255, 0.3) !important;
+            color: #ffffff !important;
             font-size: 13px;
             font-weight: 800;
             display: flex;
@@ -1388,12 +1388,19 @@
             justify-content: center;
             gap: 8px;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(15,23,42,0.06);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
             transition: all 0.2s ease;
+        }
+        .btn-holo-address svg {
+            color: #ffffff !important;
+            stroke: #ffffff !important;
+        }
+        .btn-holo-address span {
+            color: #ffffff !important;
         }
         .btn-holo-address:active {
             transform: scale(0.98);
-            background: linear-gradient(135deg, rgba(15,23,42,0.1) 0%, rgba(51,65,85,0.15) 100%);
+            background: rgba(255, 255, 255, 0.12) !important;
         }
 
         /* Member Address Cards */
@@ -1932,8 +1939,8 @@
         }
         .btn-green-action {
             width: 100%;
-            background: linear-gradient(135deg, #ff6b00 0%, #ea580c 100%);
-            color: #ffffff;
+            background: linear-gradient(135deg, #ff6b00 0%, #ea580c 100%) !important;
+            color: #ffffff !important;
             border: none;
             border-radius: 14px;
             padding: 14px;
@@ -1944,12 +1951,12 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 4px 16px rgba(255, 107, 0, 0.35);
+            box-shadow: 0 4px 16px rgba(255, 107, 0, 0.4) !important;
             transition: all 0.15s ease;
         }
         .btn-green-action:active {
             transform: scale(0.98);
-            background: var(--primary-green-dark);
+            background: #ea580c !important;
         }
         .btn-green-action.disabled-btn {
             background: #e2e8f0;
@@ -3857,28 +3864,28 @@
 
     <!-- Postal Shipping Address Section (Postal only) -->
     <div id="cart-postal-section" style="display:none; margin-bottom:12px;">
-        <div id="postal-carrier-picker-container" style="margin-bottom:12px;"></div>
+        <div id="postal-carrier-picker-container" style="display:none;"></div>
         <!-- Saved Address Card -->
-        <div id="postal-saved-card" style="display:none; background:var(--bg-surface-subtle); border:1.5px solid var(--primary-green); border-radius:12px; padding:12px;">
+        <div id="postal-saved-card" style="display:none; background:var(--bg-surface-subtle); border:1.5px solid #ff6b00; border-radius:12px; padding:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <span style="font-size:12px; font-weight:800; color:var(--text-main); display:flex; align-items:center; gap:6px;">
-                    <svg class="svg-icon-sm" viewBox="0 0 24 24" style="color:var(--primary-green-dark);"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span style="font-size:12px; font-weight:800; color:#ffffff; display:flex; align-items:center; gap:6px;">
+                    <svg class="svg-icon-sm" viewBox="0 0 24 24" style="color:#ff6b00;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                     ที่อยู่จัดส่งพัสดุที่บันทึกไว้
                 </span>
-                <span style="background:rgba(16,185,129,0.15); color:var(--primary-green-dark); font-size:10px; font-weight:800; padding:2px 8px; border-radius:12px;">พร้อมส่ง</span>
+                <span style="background:rgba(255,107,0,0.15); color:#ff6b00; font-size:10px; font-weight:800; padding:2px 8px; border-radius:12px;">พร้อมส่ง</span>
             </div>
-            <div id="postal-saved-name-phone" style="font-size:12.5px; font-weight:800; color:var(--text-main); margin-bottom:2px;"></div>
-            <div id="postal-saved-address-text" style="font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-bottom:8px;"></div>
-            <button type="button" onclick="showPostalForm(true)" style="background:none; border:none; color:var(--primary-green-dark); font-size:11.5px; font-weight:800; cursor:pointer; padding:0; display:flex; align-items:center; gap:4px;">
+            <div id="postal-saved-name-phone" style="font-size:12.5px; font-weight:800; color:#ffffff; margin-bottom:2px;"></div>
+            <div id="postal-saved-address-text" style="font-size:11.5px; color:#cbd5e1; line-height:1.4; margin-bottom:8px;"></div>
+            <button type="button" onclick="showPostalForm(true)" style="background:none; border:none; color:#ff6b00; font-size:11.5px; font-weight:800; cursor:pointer; padding:0; display:flex; align-items:center; gap:4px;">
                 แก้ไข / กรอกที่อยู่ใหม่
             </button>
         </div>
 
         <!-- Holo UI Button when no postal address is saved -->
         <div id="postal-empty-holo-box" style="display:none; margin-bottom:8px;">
-            <button type="button" class="btn-holo-address" onclick="showPostalForm(false)">
-                <svg class="svg-icon-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                <span>กรอกที่อยู่ใหม่ (Flash / EMS)</span>
+            <button type="button" class="btn-holo-address" onclick="showPostalForm(false)" style="color:#ffffff !important; background:rgba(255,255,255,0.06) !important; border:1.5px dashed rgba(255,255,255,0.3) !important;">
+                <svg class="svg-icon-sm" viewBox="0 0 24 24" style="color:#ffffff !important; stroke:#ffffff !important;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span style="color:#ffffff !important; font-weight:800;">กรอกที่อยู่ใหม่ (จัดส่งพัสดุ)</span>
             </button>
         </div>
 
@@ -3991,11 +3998,11 @@
         </div>
         <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:900; color:var(--text-main); margin-top:6px; border-top:1px dashed var(--border-main); padding-top:6px;">
             <span>ยอดชำระสุทธิ</span>
-            <span id="cart-total" style="color:var(--primary-green-dark); font-family:var(--font-num);">฿0</span>
+            <span id="cart-total" style="color:#ff6b00; font-family:var(--font-num);">฿0</span>
         </div>
     </div>
 
-    <button class="btn-green-action" onclick="proceedToReview()">
+    <button class="btn-green-action" id="btn-cart-checkout" onclick="proceedToReview()" style="background:linear-gradient(135deg, #ff6b00 0%, #ea580c 100%) !important; color:#ffffff !important; box-shadow:0 4px 16px rgba(255,107,0,0.4) !important;">
         สั่งซื้อและเลือกชำระเงิน &gt;
     </button>
 </div>
@@ -5417,11 +5424,7 @@
         shippingFeeRider: 50,
         shippingFeeParcel: 40,
         freeShippingMin: 0,
-        parcelRates: [
-            { carrier: 'Flash Express', cost: 35 },
-            { carrier: 'Kerry Express', cost: 40 },
-            { carrier: 'ไปรษณีย์ไทย EMS', cost: 45 }
-        ],
+        parcelRates: [],
         expressDeliveryEnabled: true,
         expressStartHour: 9,
         expressEndHour: 23,
@@ -5439,9 +5442,9 @@
                 storeConfig = {
                     storeName: data.storeName || storeConfig.storeName,
                     shippingFeeRider: Number(data.shippingFeeRider ?? storeConfig.shippingFeeRider),
-                    shippingFeeParcel: Number(data.shippingFeeParcel ?? storeConfig.shippingFeeParcel),
+                    shippingFeeParcel: 40,
                     freeShippingMin: Number(data.freeShippingMin ?? 0),
-                    parcelRates: Array.isArray(data.parcelRates) && data.parcelRates.length > 0 ? data.parcelRates : storeConfig.parcelRates,
+                    parcelRates: [],
                     expressDeliveryEnabled: data.expressDeliveryEnabled !== undefined ? Boolean(data.expressDeliveryEnabled) : true,
                     expressStartHour: Number(data.expressStartHour ?? 9),
                     expressEndHour: Number(data.expressEndHour ?? 23),
@@ -5450,10 +5453,7 @@
                 if (!currentPinnedCoords || (currentPinnedCoords.lat === 18.7877 && currentPinnedCoords.lng === 98.9933)) {
                     expressFee = storeConfig.shippingFeeRider;
                 }
-                if (!selectedCarrier && storeConfig.parcelRates.length > 0) {
-                    selectedCarrier = storeConfig.parcelRates[0];
-                }
-                postalFee = selectedCarrier ? selectedCarrier.cost : storeConfig.shippingFeeParcel;
+                postalFee = 40;
                 applyStoreConfigToUI();
                 updateCartUI();
             }
@@ -5541,45 +5541,15 @@
 
     function renderCarrierPicker() {
         const container = document.getElementById('postal-carrier-picker-container');
-        if (!container) return;
-        const rates = storeConfig.parcelRates || [];
-        if (rates.length === 0) {
+        if (container) {
             container.innerHTML = '';
-            return;
+            container.style.display = 'none';
         }
-
-        if (!selectedCarrier && rates.length > 0) {
-            const matched = rates.find(r => r.cost === postalFee) || rates[0];
-            selectedCarrier = matched;
-            postalFee = matched.cost;
-        }
-
-        container.innerHTML = `
-            <div style="margin-bottom:10px;">
-                <label style="font-size:11px; font-weight:800; color:var(--text-main); display:block; margin-bottom:6px;">เลือกบริษัทขนส่งพัสดุ</label>
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:6px;">
-                    ${rates.map((r, idx) => {
-                        const isSel = selectedCarrier && selectedCarrier.carrier === r.carrier;
-                        return `
-                            <button type="button" onclick="selectParcelCarrier(${idx})" style="padding:8px 6px; border-radius:10px; border:1.5px solid ${isSel ? 'var(--primary-green)' : 'var(--border-main)'}; background:${isSel ? 'rgba(16,185,129,0.1)' : 'var(--bg-surface)'}; cursor:pointer; text-align:center; transition:all 0.15s ease;">
-                                <div style="font-size:11px; font-weight:800; color:${isSel ? 'var(--primary-green-dark)' : 'var(--text-main)'};">${r.carrier}</div>
-                                <div style="font-size:12px; font-weight:900; color:${isSel ? 'var(--primary-green-dark)' : 'var(--text-muted)'}; font-family:var(--font-num); margin-top:2px;">฿${r.cost}</div>
-                            </button>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-        `;
     }
 
     function selectParcelCarrier(idx) {
-        const rates = storeConfig.parcelRates || [];
-        if (rates[idx]) {
-            selectedCarrier = rates[idx];
-            postalFee = selectedCarrier.cost;
-            renderCarrierPicker();
-            updateCartUI();
-        }
+        postalFee = 40;
+        updateCartUI();
     }
     let activeProduct = null;
     let activeFlavorObj = null;
@@ -7316,6 +7286,7 @@
         const postalSec = document.getElementById('cart-postal-section');
 
         if (type === 'postal') {
+            postalFee = 40;
             if (btnPostal) btnPostal.classList.add('active');
             if (btnExpress) btnExpress.classList.remove('active');
             if (expressSec) expressSec.style.display = 'none';
@@ -9190,9 +9161,9 @@
             createdAt: new Date().toISOString(),
             timeStr: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.',
             storeName: isPostal
-                ? `${storeConfig?.storeName || 'VAPOR OFFICIAL STORE'} (พัสดุ ${selectedCarrier ? selectedCarrier.carrier : 'Flash/EMS'})`
+                ? `${storeConfig?.storeName || 'VAPOR OFFICIAL STORE'} (จัดส่งพัสดุ)`
                 : `${storeConfig?.storeName || 'VAPOR OFFICIAL STORE'} (ส่งด่วนไรเดอร์)`,
-            carrierName: isPostal ? (selectedCarrier ? selectedCarrier.carrier : 'Flash Express') : 'Rider Express',
+            carrierName: isPostal ? 'จัดส่งพัสดุ' : 'Rider Express',
             customerName: finalName,
             phone: finalPhone,
             address: finalAddress,
@@ -10302,8 +10273,8 @@
     function applyActiveThemeStyles(theme) {
         if (!theme || typeof theme !== 'object') return;
         const root = document.documentElement;
-        const primary = (theme.primary_color && typeof theme.primary_color === 'string') ? theme.primary_color.trim() : '#ff6b00';
-        const accent = (theme.accent_color && typeof theme.accent_color === 'string') ? theme.accent_color.trim() : '#f59e0b';
+        const primary = (theme.primary_color && typeof theme.primary_color === 'string' && theme.primary_color !== '#059669' && theme.primary_color !== '#f59e0b') ? theme.primary_color.trim() : '#ff6b00';
+        const accent = (theme.accent_color && typeof theme.accent_color === 'string') ? theme.accent_color.trim() : '#ea580c';
         const bg = theme.background_color;
 
         const hexToRgba = (hex, alpha) => {
@@ -10365,12 +10336,18 @@
                 --primary-lime: ${accent};
                 --accent-color: ${accent};
             }
-            .btn-green-action {
+            .btn-green-action, #btn-cart-checkout {
                 background: linear-gradient(135deg, ${primary} 0%, ${dark} 100%) !important;
                 box-shadow: 0 4px 16px ${glow} !important;
+                color: #ffffff !important;
             }
-            .btn-green-action:active {
+            .btn-green-action:active, #btn-cart-checkout:active {
                 background: ${dark} !important;
+            }
+            .lineman-del-tab-btn.active {
+                background: linear-gradient(135deg, ${primary} 0%, ${dark} 100%) !important;
+                box-shadow: 0 4px 12px ${glow} !important;
+                color: #ffffff !important;
             }
             .lineman-order-action-btn.btn-primary {
                 background: linear-gradient(135deg, ${primary} 0%, ${dark} 100%) !important;
