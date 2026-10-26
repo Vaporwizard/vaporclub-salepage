@@ -3309,12 +3309,12 @@
             <div class="filter-row-layout">
                 <div class="category-select-wrapper">
                     <select id="category-filter-select" class="category-dropdown-select" onchange="onFilterChange(this.value)">
+                        <option value="all" selected>สินค้าทั้งหมดในร้าน</option>
                         <option value="in_stock">สินค้าพร้อมส่งทั้งหมด</option>
                         <option value="closed_system">หัวพอต (Closed System Pod)</option>
                         <option value="switch_pod">หัวสวิตช์ (Switch Pod)</option>
                         <option value="disposable">พอตใช้แล้วทิ้ง (Disposable Pod)</option>
                         <option value="pod_device">ตัวเครื่องพอต (Pod Device)</option>
-                        <option value="all">สินค้าทั้งหมดในร้าน</option>
                     </select>
                     <svg class="svg-icon-sm select-arrow-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
@@ -5244,7 +5244,7 @@
     let activeFlavorObj = null;
     let activeGroupName = '';
     let modalQty = 1;
-    let currentFilterValue = 'in_stock';
+    let currentFilterValue = 'all';
     let searchQuery = '';
     let mapInstance = null;
     let currentPinnedCoords = { lat: 18.7877, lng: 98.9933 };
@@ -6542,8 +6542,11 @@
         activeFlavorObj = null;
         activeGroupName = '';
 
-        if (p.inStock && p.groups.length > 0) {
-            for (const grp of p.groups) {
+        
+        const groups = normalizeProductGroups(p);
+
+        if (p.inStock && groups.length > 0) {
+            for (const grp of groups) {
                 const first = grp.flavors.find(f => f.inStock);
                 if (first) {
                     activeFlavorObj = first;
@@ -6552,8 +6555,6 @@
                 }
             }
         }
-
-        const groups = normalizeProductGroups(p);
         groupsContainer.innerHTML = groups.map(grp => `
             <div class="flavor-group-box">
                 <div class="flavor-group-header">
