@@ -3680,6 +3680,14 @@
         </button>
     </div>
 
+    <!-- Closed Express Notice Banner -->
+    <div id="cart-express-closed-notice" style="display:none; margin: 10px 0 14px 0; padding: 12px 14px; border-radius: 12px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; font-size: 13px; font-weight: 600; line-height: 1.4;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <svg style="width: 18px; height: 18px; flex-shrink: 0; stroke: currentColor;" fill="none" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="cart-express-closed-msg-text">พร้อมให้บริการ 9:00 น ในวันพรุ่งนี้</span>
+        </div>
+    </div>
+
     <!-- Express Delivery Address Section (LINE MAN Style - NO EMBEDDED MAP) -->
     <div id="cart-express-address-section">
         <div class="lineman-address-card-checkout">
@@ -5096,7 +5104,11 @@
             { carrier: 'Flash Express', cost: 35 },
             { carrier: 'Kerry Express', cost: 40 },
             { carrier: 'ไปรษณีย์ไทย EMS', cost: 45 }
-        ]
+        ],
+        expressDeliveryEnabled: true,
+        expressStartHour: 9,
+        expressEndHour: 23,
+        expressClosedMessage: 'พร้อมให้บริการ 9:00 น ในวันพรุ่งนี้'
     };
     let selectedCarrier = null;
 
@@ -5110,7 +5122,11 @@
                     shippingFeeRider: Number(data.shippingFeeRider ?? storeConfig.shippingFeeRider),
                     shippingFeeParcel: Number(data.shippingFeeParcel ?? storeConfig.shippingFeeParcel),
                     freeShippingMin: Number(data.freeShippingMin ?? 0),
-                    parcelRates: Array.isArray(data.parcelRates) && data.parcelRates.length > 0 ? data.parcelRates : storeConfig.parcelRates
+                    parcelRates: Array.isArray(data.parcelRates) && data.parcelRates.length > 0 ? data.parcelRates : storeConfig.parcelRates,
+                    expressDeliveryEnabled: data.expressDeliveryEnabled !== undefined ? Boolean(data.expressDeliveryEnabled) : true,
+                    expressStartHour: Number(data.expressStartHour ?? 9),
+                    expressEndHour: Number(data.expressEndHour ?? 23),
+                    expressClosedMessage: String(data.expressClosedMessage ?? 'พร้อมให้บริการ 9:00 น ในวันพรุ่งนี้')
                 };
                 if (!currentPinnedCoords || (currentPinnedCoords.lat === 18.7877 && currentPinnedCoords.lng === 98.9933)) {
                     expressFee = storeConfig.shippingFeeRider;
@@ -5151,37 +5167,43 @@
 
     function checkExpressOperatingHours() {
         const expressAllowed = isWithinExpressHours();
-        const expressOption = document.querySelector('input[value="express"]');
-        const expressLabel = document.getElementById('express-delivery-label-box');
-        const closedNotice = document.getElementById('express-closed-notice');
-
-        const closedMsg = storeConfig.expressClosedMessage || 'พร้อมให้บริการ 09:00 น. ในวันพรุ่งนี้';
+        const btnExpress = document.getElementById('cart-del-tab-express');
+        const closedNotice = document.getElementById('cart-express-closed-notice');
+        const closedText = document.getElementById('cart-express-closed-msg-text');
+        const closedMsg = storeConfig?.expressClosedMessage || 'พร้อมให้บริการ 9:00 น ในวันพรุ่งนี้';
 
         if (!expressAllowed) {
             if (shippingMethod === 'express') {
                 shippingMethod = 'postal';
-                const postalRadio = document.querySelector('input[value="postal"]');
-                if (postalRadio) postalRadio.checked = true;
-                setShippingMethod('postal');
+                const btnPostal = document.getElementById('cart-del-tab-postal');
+                const expressSec = document.getElementById('cart-express-address-section');
+                const postalSec = document.getElementById('cart-postal-section');
+                if (btnPostal) btnPostal.classList.add('active');
+                if (btnExpress) btnExpress.classList.remove('active');
+                if (expressSec) expressSec.style.display = 'none';
+                if (postalSec) postalSec.style.display = 'block';
+                if (typeof renderPostalSection === 'function') renderPostalSection();
             }
-            if (expressOption) {
-                expressOption.disabled = true;
-            }
-            if (expressLabel) {
-                expressLabel.style.opacity = '0.45';
-                expressLabel.style.cursor = 'not-allowed';
+            if (btnExpress) {
+                btnExpress.classList.add('disabled-delivery-btn');
+                btnExpress.style.opacity = '0.45';
+                btnExpress.style.filter = 'grayscale(1)';
+                btnExpress.style.cursor = 'not-allowed';
             }
             if (closedNotice) {
-                closedNotice.textContent = closedMsg;
                 closedNotice.style.display = 'block';
+                if (closedText) closedText.textContent = closedMsg;
             }
         } else {
-            if (expressOption) expressOption.disabled = false;
-            if (expressLabel) {
-                expressLabel.style.opacity = '1';
-                expressLabel.style.cursor = 'pointer';
+            if (btnExpress) {
+                btnExpress.classList.remove('disabled-delivery-btn');
+                btnExpress.style.opacity = '1';
+                btnExpress.style.filter = 'none';
+                btnExpress.style.cursor = 'pointer';
             }
-            if (closedNotice) closedNotice.style.display = 'none';
+            if (closedNotice) {
+                closedNotice.style.display = 'none';
+            }
         }
     }
 
@@ -6916,6 +6938,11 @@
     let miniMapMarker = null;
 
     function selectShipping(type) {
+        if (type === 'express' && !isWithinExpressHours()) {
+            const closedMsg = storeConfig?.expressClosedMessage || 'พร้อมให้บริการ 9:00 น ในวันพรุ่งนี้';
+            showToast(closedMsg);
+            return;
+        }
         shippingMethod = type;
         const btnPostal = document.getElementById('cart-del-tab-postal');
         const btnExpress = document.getElementById('cart-del-tab-express');
