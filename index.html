@@ -1888,6 +1888,8 @@
         }
         .badge-nic3 { background: #dcfce7; color: #166534; }
         .badge-nic5 { background: #fee2e2; color: #991b1b; }
+        .badge-color-opt { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .badge-default-opt { background: #f1f5f9; color: #475569; }
         .flavor-button-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -4975,8 +4977,7 @@
             tagline: 'ตัวเครื่อง Next Beyond ดีไซน์พรีเมียม ปรับไฟได้ รองรับหัวทุกแบรนด์',
             groups: [
                 {
-                    groupName: 'เลือกสีตัวเครื่อง',
-                    badgeClass: 'badge-nic3',
+                    groupName: 'ตัวเลือกสี', badgeClass: 'badge-color-opt',
                     flavors: [
                         { name: 'Midnight Black', inStock: false }, { name: 'Emerald Green', inStock: false }, { name: 'Silver Titanium', inStock: false }, { name: 'Sunset Gold', inStock: false }
                     ]
@@ -4997,8 +4998,7 @@
             tagline: 'เครื่องแท้ Relx Infinity 2 Plus ปรับโหมดสูบได้ 3 ระดับ',
             groups: [
                 {
-                    groupName: 'เลือกสีตัวเครื่อง',
-                    badgeClass: 'badge-nic3',
+                    groupName: 'ตัวเลือกสี', badgeClass: 'badge-color-opt',
                     flavors: [
                         { name: 'Obsidian Black', inStock: false }, { name: 'Royal Blue', inStock: false }, { name: 'Forest Green', inStock: false }, { name: 'Pearl White', inStock: false }
                     ]
@@ -6354,8 +6354,29 @@
             .trim();
     }
 
+    function isDeviceProduct(p) {
+        if (!p) return false;
+        const cat = (p.category || p.categoryName || '').toLowerCase();
+        const name = (p.name || '').toLowerCase();
+        return cat === 'pod_device' || cat.includes('เครื่อง') || /เครื่อง|NEXT BEYOND|INFINITY 2/i.test(name);
+    }
+
     function normalizeProductGroups(product) {
         if (!product || !Array.isArray(product.groups)) return [];
+
+        const isDevice = isDeviceProduct(product);
+        if (isDevice) {
+            return product.groups.map(g => ({
+                ...g,
+                groupName: 'ตัวเลือกสี',
+                badgeClass: 'badge-color-opt',
+                badgeText: 'ตัวเลือกสี',
+                flavors: Array.isArray(g.flavors) ? g.flavors.map(f => ({
+                    ...f,
+                    name: (f.name || '').replace(/\s*\(นิค\s*[35]%\)/gi, '').replace(/\s*\(Nicotine\s*[35]%\)/gi, '').trim()
+                })) : []
+            }));
+        }
 
         let allFlavors = [];
         product.groups.forEach(g => {
@@ -6577,14 +6598,35 @@
                 }
             }
         }
-        groupsContainer.innerHTML = groups.map(grp => `
+        const isDevice = isDeviceProduct(p);
+        groupsContainer.innerHTML = groups.map(grp => {
+            const isNic5 = (grp.groupName && grp.groupName.includes('5%')) || grp.badgeClass === 'badge-nic5';
+            const isNic3 = (grp.groupName && grp.groupName.includes('3%')) || grp.badgeClass === 'badge-nic3';
+            const isColor = isDevice || grp.groupName === 'ตัวเลือกสี' || grp.badgeClass === 'badge-color-opt';
+
+            let groupTitle = isColor ? 'ตัวเลือกสี' : grp.groupName;
+            let badgeClass = 'badge-default-opt';
+            let badgeLabel = `(${grp.flavors.length})`;
+
+            if (isColor) {
+                badgeClass = 'badge-color-opt';
+                badgeLabel = `ตัวเลือกสี (${grp.flavors.length})`;
+            } else if (isNic5) {
+                badgeClass = 'badge-nic5';
+                badgeLabel = `นิค 5% (${grp.flavors.length})`;
+            } else if (isNic3) {
+                badgeClass = 'badge-nic3';
+                badgeLabel = `นิค 3% (${grp.flavors.length})`;
+            }
+
+            return `
             <div class="flavor-group-box">
                 <div class="flavor-group-header">
                     <span class="flavor-group-title">
-                        <span>${grp.groupName}</span>
+                        <span>${groupTitle}</span>
                     </span>
-                    <span class="flavor-group-badge ${grp.badgeClass || ((grp.groupName && grp.groupName.includes('5%')) ? 'badge-nic5' : 'badge-nic3')}">
-                        ${(grp.groupName && grp.groupName.includes('5%')) || grp.badgeClass === 'badge-nic5' ? 'นิค 5%' : 'นิค 3%'} (${grp.flavors.length})
+                    <span class="flavor-group-badge ${badgeClass}">
+                        ${badgeLabel}
                     </span>
                 </div>
                 <div class="flavor-button-grid">
@@ -6602,7 +6644,8 @@
                     }).join('')}
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
 
         updateDetailButtonState();
 
@@ -6700,7 +6743,7 @@
     function handleDetailAction() {
         if (!activeProduct || !activeProduct.inStock) return;
         if (!activeFlavorObj) {
-            alert('กรุณาเลือกกลิ่นที่ต้องการก่อนนะคะ');
+            alert(isDeviceProduct(activeProduct) ? 'กรุณาเลือกสีที่ต้องการก่อนนะคะ' : 'กรุณาเลือกกลิ่นที่ต้องการก่อนนะคะ');
             return;
         }
 
@@ -6810,7 +6853,7 @@
                             </div>
                             <div style="min-width:0;">
                                 <div style="font-size:13px; font-weight:800; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
-                                <div style="font-size:11px; color:#94a3b8; margin-top:1px;">กลิ่น: ${item.flavor}</div>
+                                <div style="font-size:11px; color:#94a3b8; margin-top:1px;">${isDeviceProduct(item) ? 'ตัวเลือกสี' : 'กลิ่น'}: ${item.flavor}</div>
                                 <div style="font-size:13.5px; font-weight:900; color:#ff6b00; margin-top:2px; font-family:var(--font-num);">฿${item.price}</div>
                             </div>
                         </div>
@@ -6915,7 +6958,7 @@
         const maxStock = (typeof item.maxStock === 'number') ? item.maxStock : 99;
 
         if (d > 0 && item.qty >= maxStock) {
-            showToast(`กลิ่น ${item.flavor} เหลือในสต๊อกเพียง ${maxStock} ชิ้น`);
+            showToast(`${isDeviceProduct(item) ? 'สี' : 'กลิ่น'} ${item.flavor} เหลือในสต๊อกเพียง ${maxStock} ชิ้น`);
             return;
         }
 
