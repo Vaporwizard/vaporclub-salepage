@@ -1857,17 +1857,20 @@
             display: block;
         }
         .flavor-group-box {
-            margin-bottom: 14px;
-            background: var(--bg-surface-subtle);
-            border: 1px solid var(--border-main);
-            border-radius: 14px;
-            padding: 12px;
+            margin-bottom: 16px;
+            background: #141722;
+            border: 1.5px solid rgba(255, 255, 255, 0.18);
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
         .flavor-group-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.09);
         }
         .flavor-group-title {
             font-size: 12.5px;
@@ -1878,43 +1881,62 @@
             gap: 6px;
         }
         .flavor-group-badge {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 800;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 9999px;
+            letter-spacing: 0.2px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
-        .badge-nic3 { background: #dcfce7; color: #166534; }
-        .badge-nic5 { background: #fee2e2; color: #991b1b; }
+        .badge-nic3 {
+            background: rgba(34, 197, 94, 0.14);
+            color: #4ade80;
+            border: 1.5px solid rgba(34, 197, 94, 0.5);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.12);
+        }
+        .badge-nic5 {
+            background: rgba(255, 107, 0, 0.16);
+            color: #ff944d;
+            border: 1.5px solid rgba(255, 107, 0, 0.55);
+            box-shadow: 0 0 10px rgba(255, 107, 0, 0.2);
+        }
         .flavor-button-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
         }
         .flavor-option-btn {
-            padding: 9px 6px;
-            border-radius: 10px;
+            padding: 10px 6px;
+            border-radius: 12px;
             font-size: 12px;
             font-weight: 700;
             text-align: center;
-            background: var(--bg-surface);
-            border: 1.5px solid var(--border-main);
-            color: #ffffff;
+            background: #1c202e;
+            border: 1.5px solid rgba(255, 255, 255, 0.22);
+            color: #f1f5f9;
             cursor: pointer;
-            transition: all 0.12s ease;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         .flavor-option-btn.selected {
-            background: linear-gradient(135deg, #ff6b00 0%, #ea580c 100%);
-            color: #ffffff;
-            border-color: #ff6b00;
-            box-shadow: 0 4px 14px rgba(255, 107, 0, 0.4);
+            background: linear-gradient(135deg, #ff6b00 0%, #ea580c 100%) !important;
+            color: #ffffff !important;
+            border: 1.5px solid #ffaa66 !important;
+            box-shadow: 0 4px 16px rgba(255, 107, 0, 0.5) !important;
+            font-weight: 800;
         }
         .flavor-option-btn.out-of-stock {
-            background: #181920;
-            border-color: #262933;
+            background: rgba(20, 24, 34, 0.55);
+            border: 1.5px dashed rgba(255, 255, 255, 0.14);
             color: #64748b;
             text-decoration: line-through;
             cursor: not-allowed;
-            opacity: 0.6;
+            opacity: 0.5;
+            box-shadow: none;
         }
         .btn-green-action {
             width: 100%;
@@ -3624,7 +3646,7 @@
     <div id="detail-groups-container"></div>
 
     <div style="margin-top:16px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; background:var(--bg-surface-subtle); padding:10px 14px; border-radius:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; background:#141722; border:1.5px solid rgba(255, 255, 255, 0.14); padding:10px 14px; border-radius:14px;">
             <span style="font-size:13px; font-weight:800; color:var(--text-main);">จำนวนชิ้น (Quantity)</span>
             <div style="display:flex; align-items:center; gap:12px;">
                 <button type="button" onclick="changeModalQty(-1)" style="width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#ffffff; font-size:18px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s ease;" onmousedown="this.style.transform='scale(0.92)'" onmouseup="this.style.transform='scale(1)';" title="ลดจำนวน">-</button>
@@ -6542,7 +6564,7 @@
                     <span class="flavor-group-title">
                         <span>${grp.groupName}</span>
                     </span>
-                    <span class="flavor-group-badge ${grp.badgeClass || 'badge-nic3'}">
+                    <span class="flavor-group-badge ${grp.badgeClass || ((grp.groupName && grp.groupName.includes('5%')) ? 'badge-nic5' : 'badge-nic3')}">
                         ${(grp.groupName && grp.groupName.includes('5%')) || grp.badgeClass === 'badge-nic5' ? 'นิค 5%' : 'นิค 3%'} (${grp.flavors.length})
                     </span>
                 </div>
