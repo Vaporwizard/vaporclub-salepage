@@ -3551,7 +3551,7 @@
                     </div>
                 </div>
                 <button onclick="openProfileEditModal()" style="background:var(--bg-surface-subtle); border:1px solid var(--border-main); border-radius:9999px; padding:6px 14px; font-size:11.5px; font-weight:700; color:#ffffff; cursor:pointer;">
-                    แก้ไข
+                    แก้ไขข้อมูลส่วนตัว
                 </button>
             </div>
 
@@ -4189,6 +4189,26 @@
         <div style="font-size:11px; color:#94a3b8; margin-top:4px;">ใช้สำหรับให้ไรเดอร์และแอดมินติดต่อเรื่องคำสั่งซื้อ</div>
     </div>
 
+    <!-- Birthday Field (Optional, 1-Time Entry Only) -->
+    <div class="form-group-wrap" style="margin-bottom:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label class="form-label-title" style="margin-bottom:0;">วันเดือนปีเกิด (วัน/เดือน/ปี ค.ศ.) <span style="font-size:11px; font-weight:normal; color:#94a3b8;">(ไม่บังคับ)</span></label>
+            <span id="profile-edit-birthdate-lock-badge" style="display:none; align-items:center; gap:4px; font-size:11px; font-weight:700; color:#f59e0b; background:rgba(245, 158, 11, 0.12); border:1px solid rgba(245, 158, 11, 0.3); padding:2px 8px; border-radius:9999px;">
+                <svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                ล็อกข้อมูลแล้ว
+            </span>
+        </div>
+        <div style="position:relative;">
+            <input type="date" id="profile-edit-birthdate-input" class="form-text-input" style="color-scheme:dark; width:100%;">
+            <div id="profile-edit-birthdate-lock-icon" style="display:none; position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none; color:#f59e0b;">
+                <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
+        </div>
+        <div id="profile-edit-birthdate-hint" style="font-size:11px; color:#f59e0b; margin-top:5px; line-height:1.4;">
+            ระบุได้เพียง 1 ครั้งเท่านั้นเพื่อรับสิทธิพิเศษวันเกิด (ไม่สามารถแก้ไขได้ในภายหลัง)
+        </div>
+    </div>
+
     <button type="button" class="btn-green-action" onclick="savePersonalProfile()" style="height:48px; font-size:15px; font-weight:900;">
         บันทึกข้อมูล
     </button>
@@ -4775,6 +4795,7 @@
         userId: '',
         avatar: '',
         phone: '',
+        birthdate: '',
         address: '',
         monthlySpent: 0,
         orderCount: 0,
@@ -4789,7 +4810,12 @@
             const parsed = JSON.parse(savedAddr);
             if (parsed.name) currentUser.name = parsed.name;
             if (parsed.phone) currentUser.phone = parsed.phone;
+            if (parsed.birthdate) currentUser.birthdate = parsed.birthdate;
             if (parsed.address) currentUser.address = parsed.address;
+        }
+        const savedBirthdate = localStorage.getItem('vapor_customer_birthdate');
+        if (savedBirthdate) {
+            currentUser.birthdate = savedBirthdate;
         }
         const savedPostal = localStorage.getItem('vapor_customer_saved_postal_address');
         if (savedPostal) {
@@ -5907,6 +5933,7 @@
         localStorage.setItem('vapor_saved_address', JSON.stringify({
             name: nameVal,
             phone: phoneVal,
+            birthdate: currentUser.birthdate || null,
             address: fullAddr,
             coordinates: currentPinnedCoords
         }));
@@ -5920,6 +5947,7 @@
                     userId: currentUser.userId || null,
                     name: nameVal,
                     phone: phoneVal,
+                    birthdate: currentUser.birthdate || null,
                     address: fullAddr,
                     coordinates: currentPinnedCoords
                 })
@@ -7871,6 +7899,43 @@
             phoneInput.value = currentUser.phone || '';
         }
 
+        const birthdateInput = document.getElementById('profile-edit-birthdate-input');
+        const birthdateBadge = document.getElementById('profile-edit-birthdate-lock-badge');
+        const birthdateLockIcon = document.getElementById('profile-edit-birthdate-lock-icon');
+        const birthdateHint = document.getElementById('profile-edit-birthdate-hint');
+
+        if (birthdateInput) {
+            if (currentUser.birthdate && currentUser.birthdate.trim()) {
+                birthdateInput.value = currentUser.birthdate.trim();
+                birthdateInput.disabled = true;
+                birthdateInput.readOnly = true;
+                birthdateInput.style.opacity = '0.75';
+                birthdateInput.style.cursor = 'not-allowed';
+                birthdateInput.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+                birthdateInput.style.background = 'rgba(15, 23, 42, 0.6)';
+                if (birthdateBadge) birthdateBadge.style.display = 'inline-flex';
+                if (birthdateLockIcon) birthdateLockIcon.style.display = 'block';
+                if (birthdateHint) {
+                    birthdateHint.textContent = 'บันทึกวันเกิดเรียบร้อยแล้ว (ไม่สามารถแก้ไขได้)';
+                    birthdateHint.style.color = '#94a3b8';
+                }
+            } else {
+                birthdateInput.value = '';
+                birthdateInput.disabled = false;
+                birthdateInput.readOnly = false;
+                birthdateInput.style.opacity = '1';
+                birthdateInput.style.cursor = 'auto';
+                birthdateInput.style.borderColor = '';
+                birthdateInput.style.background = '';
+                if (birthdateBadge) birthdateBadge.style.display = 'none';
+                if (birthdateLockIcon) birthdateLockIcon.style.display = 'none';
+                if (birthdateHint) {
+                    birthdateHint.textContent = 'ระบุได้เพียง 1 ครั้งเท่านั้นเพื่อรับสิทธิพิเศษวันเกิด (ไม่สามารถแก้ไขได้ในภายหลัง)';
+                    birthdateHint.style.color = '#f59e0b';
+                }
+            }
+        }
+
         tempSelectedFrameColor = currentUser.avatarFrameColor || localStorage.getItem('vapor_customer_avatar_frame_color') || '#ff6b00';
         const found = AVATAR_FRAME_COLORS.find(c => c.hex.toLowerCase() === tempSelectedFrameColor.toLowerCase()) || AVATAR_FRAME_COLORS[0];
         tempSelectedFrameGlow = found.glow;
@@ -7882,8 +7947,10 @@
     function savePersonalProfile() {
         const nameInput = document.getElementById('profile-edit-name-input');
         const phoneInput = document.getElementById('profile-edit-phone-input');
+        const birthdateInput = document.getElementById('profile-edit-birthdate-input');
         const newName = nameInput ? nameInput.value.trim() : '';
         const newPhone = phoneInput ? phoneInput.value.trim() : '';
+        const newBirthdate = birthdateInput ? birthdateInput.value.trim() : '';
 
         if (!newName) {
             alert('กรุณาระบุชื่อของคุณ');
@@ -7896,6 +7963,15 @@
 
         currentUser.name = newName;
         currentUser.phone = newPhone;
+
+        // If birthdate was not previously saved and user selected one, save and lock
+        if (!currentUser.birthdate && newBirthdate) {
+            currentUser.birthdate = newBirthdate;
+            try {
+                localStorage.setItem('vapor_customer_birthdate', newBirthdate);
+            } catch(e) {}
+        }
+
         currentUser.avatarFrameColor = tempSelectedFrameColor || '#ff6b00';
         currentUser.avatarFrameGlow = tempSelectedFrameGlow || 'rgba(255, 107, 0, 0.45)';
 
@@ -7915,6 +7991,7 @@
                     userId: currentUser.userId,
                     name: currentUser.name,
                     phone: currentUser.phone,
+                    birthdate: currentUser.birthdate || null,
                     address: currentUser.address || '',
                     coordinates: currentPinnedCoords
                 })
@@ -10063,6 +10140,7 @@
                     const data = await res.json();
                     if (data && data.success && data.profile) {
                         if (data.profile.phone) currentUser.phone = data.profile.phone;
+                        if (data.profile.birthdate) currentUser.birthdate = data.profile.birthdate;
                         if (data.profile.address) currentUser.address = data.profile.address;
                         if (data.profile.postalAddress) currentUser.savedPostalAddress = data.profile.postalAddress;
                         if (data.profile.coordinates) currentPinnedCoords = data.profile.coordinates;
