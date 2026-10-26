@@ -2918,7 +2918,119 @@
             color: #64748b;
             letter-spacing: 0.2px;
         }
-    </style>
+    
+        /* ========================================================
+           STOREFRONT POP-UP BANNER MODAL
+           ======================================================== */
+        .popup-banner-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        .popup-banner-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .popup-banner-dialog {
+            position: relative;
+            width: 100%;
+            max-width: 380px;
+            background: #18181b;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.92);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .popup-banner-overlay.show .popup-banner-dialog {
+            transform: scale(1);
+        }
+        .popup-banner-close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 20;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+        .popup-banner-close-btn:active {
+            transform: scale(0.9);
+            background: rgba(0, 0, 0, 0.85);
+        }
+        .popup-banner-media {
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            background: #0f172a;
+        }
+        .popup-banner-body {
+            padding: 16px 18px 18px;
+            display: flex;
+            flex-direction: column;
+            background: #18181b;
+        }
+        .popup-banner-cta {
+            width: 100%;
+            padding: 13px 16px;
+            background: linear-gradient(135deg, #ff6b00 0%, #ea580c 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(255, 107, 0, 0.38);
+            text-align: center;
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+        .popup-banner-cta:active {
+            transform: scale(0.98);
+            filter: brightness(0.92);
+        }
+        .popup-banner-hide-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 14px;
+            cursor: pointer;
+            user-select: none;
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .popup-banner-hide-checkbox {
+            width: 16px;
+            height: 16px;
+            accent-color: #ff6b00;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+</style>
 </head>
 <body>
 
@@ -4583,6 +4695,46 @@
     </button>
 </div>
 
+
+<!-- ==========================================
+     STOREFRONT POP-UP BANNER MODAL
+     ========================================== -->
+<div id="storefront-popup-banner-modal" class="popup-banner-overlay" style="display:none;" onclick="handlePopupBannerBackdropClick(event)">
+    <div class="popup-banner-dialog" onclick="event.stopPropagation()">
+        <!-- Close Button (X) Top Right -->
+        <button type="button" class="popup-banner-close-btn" onclick="closePopupBanner()" aria-label="ปิด">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+
+        <!-- Banner Media Container -->
+        <div id="popup-banner-media" class="popup-banner-media" onclick="handlePopupBannerCta()">
+            <img id="popup-banner-img" src="" alt="Promotion Banner" style="display:none; width:100%; height:auto; max-height:400px; object-fit:cover; border-radius:18px 18px 0 0; cursor:pointer;">
+            <div id="popup-banner-placeholder" style="display:none; padding:32px 20px; text-align:center; cursor:pointer;">
+                <span id="popup-banner-tag" style="font-size:11px; font-weight:800; background:rgba(255,255,255,0.25); padding:3px 10px; border-radius:6px; text-transform:uppercase; color:#ffffff;">PROMO</span>
+                <div id="popup-banner-title" style="font-size:20px; font-weight:900; margin-top:8px; color:#ffffff;"></div>
+                <div id="popup-banner-subtitle" style="font-size:13px; opacity:0.9; margin-top:4px; color:#f1f5f9;"></div>
+            </div>
+        </div>
+
+        <!-- Modal Content & Action Area -->
+        <div class="popup-banner-body">
+            <!-- CTA Button -->
+            <button type="button" id="popup-banner-cta-btn" class="popup-banner-cta" onclick="handlePopupBannerCta()">
+                <span id="popup-banner-cta-text">ดูรายละเอียดโปรโมชั่น</span>
+            </button>
+
+            <!-- Do Not Show Again Checkbox -->
+            <label class="popup-banner-hide-label">
+                <input type="checkbox" id="popup-banner-dont-show-cb" class="popup-banner-hide-checkbox">
+                <span>ไม่ต้องแสดงเนื้อหานี้อีก</span>
+            </label>
+        </div>
+    </div>
+</div>
+
 <script>
     const OFFICIAL_LIFF_ID = '2012053274-5NYAioNp';
 
@@ -5102,6 +5254,157 @@
 
     // State Variables
     let cart = [];
+
+    // Cart Persistence (LocalStorage key 'vapor_store_cart')
+    function saveCartToStorage() {
+        try {
+            localStorage.setItem('vapor_store_cart', JSON.stringify(cart || []));
+        } catch (e) {
+            console.error('[CartStorage] Failed to save cart:', e);
+        }
+    }
+
+    function loadCartFromStorage() {
+        try {
+            const raw = localStorage.getItem('vapor_store_cart');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    cart = parsed;
+                }
+            }
+        } catch (e) {
+            console.error('[CartStorage] Failed to load cart:', e);
+        }
+    }
+
+    function clearCartFromStorage() {
+        try {
+            localStorage.removeItem('vapor_store_cart');
+        } catch (e) {
+            console.error('[CartStorage] Failed to clear cart:', e);
+        }
+    }
+
+    /* ========================================================
+       POP-UP BANNER CONTROLLER
+       ======================================================== */
+    let currentPopupBanner = null;
+
+    function isPopupBannerHidden(bannerId) {
+        if (!bannerId) return false;
+        try {
+            const hideTimestamp = localStorage.getItem('vapor_hide_popup_' + bannerId);
+            if (!hideTimestamp) return false;
+            const hideTime = parseInt(hideTimestamp, 10);
+            if (isNaN(hideTime)) return false;
+            const now = Date.now();
+            return (now - hideTime) < (24 * 60 * 60 * 1000);
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function showPopupBanner(banner) {
+        if (!banner || !banner.id) return;
+        if (isPopupBannerHidden(banner.id)) return;
+
+        currentPopupBanner = banner;
+        const modal = document.getElementById('storefront-popup-banner-modal');
+        if (!modal) return;
+
+        const imgEl = document.getElementById('popup-banner-img');
+        const placeholderEl = document.getElementById('popup-banner-placeholder');
+        const tagEl = document.getElementById('popup-banner-tag');
+        const titleEl = document.getElementById('popup-banner-title');
+        const subtitleEl = document.getElementById('popup-banner-subtitle');
+        const ctaTextEl = document.getElementById('popup-banner-cta-text');
+        const cbEl = document.getElementById('popup-banner-dont-show-cb');
+
+        if (cbEl) cbEl.checked = false;
+
+        if (banner.imageUrl) {
+            if (imgEl) {
+                imgEl.src = banner.imageUrl;
+                imgEl.style.display = 'block';
+            }
+            if (placeholderEl) placeholderEl.style.display = 'none';
+        } else {
+            if (imgEl) imgEl.style.display = 'none';
+            if (placeholderEl) {
+                placeholderEl.style.display = 'block';
+                placeholderEl.style.background = banner.bgGradient || 'linear-gradient(135deg, #ea580c 0%, #ff6b00 100%)';
+            }
+            if (tagEl) tagEl.textContent = banner.tag || 'HOT PROMO';
+            if (titleEl) titleEl.textContent = banner.title || '';
+            if (subtitleEl) subtitleEl.textContent = banner.subtitle || '';
+        }
+
+        const ctaLabel = banner.cta_text || banner.ctaText || (banner.title ? banner.title : 'ดูรายละเอียดโปรโมชั่น');
+        if (ctaTextEl) ctaTextEl.textContent = ctaLabel;
+
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => {
+            modal.classList.add('show');
+        });
+    }
+
+    function closePopupBanner() {
+        const modal = document.getElementById('storefront-popup-banner-modal');
+        const cbEl = document.getElementById('popup-banner-dont-show-cb');
+
+        if (currentPopupBanner && currentPopupBanner.id && cbEl && cbEl.checked) {
+            try {
+                localStorage.setItem('vapor_hide_popup_' + currentPopupBanner.id, String(Date.now()));
+            } catch (e) {}
+        }
+
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 250);
+        }
+    }
+
+    function handlePopupBannerBackdropClick(event) {
+        if (event.target && event.target.id === 'storefront-popup-banner-modal') {
+            closePopupBanner();
+        }
+    }
+
+    function handlePopupBannerCta() {
+        if (!currentPopupBanner) return;
+        const banner = currentPopupBanner;
+        const target = banner.cta_link || banner.linkUrl || banner.linkValue || banner.linkCategory || banner.link || 'all';
+
+        closePopupBanner();
+
+        if (typeof handleBannerClick === 'function') {
+            handleBannerClick(target);
+        } else if (/^https?:\/\//i.test(target)) {
+            window.open(target, '_blank');
+        } else if (typeof goToCategory === 'function') {
+            goToCategory(target);
+        }
+    }
+
+    function checkAndShowPopupBanners(banners) {
+        if (!Array.isArray(banners) || banners.length === 0) return;
+        const banner = banners.find(b => (b.placement === 'popup' || b.is_popup === true) && b.active !== false && !isPopupBannerHidden(b.id));
+        if (banner) {
+            setTimeout(() => {
+                showPopupBanner(banner);
+            }, 600);
+        }
+    }
+    window.showPopupBanner = showPopupBanner;
+    window.closePopupBanner = closePopupBanner;
+    window.checkAndShowPopupBanners = checkAndShowPopupBanners;
+    window.saveCartToStorage = saveCartToStorage;
+    window.loadCartFromStorage = loadCartFromStorage;
+    window.clearCartFromStorage = clearCartFromStorage;
+
     let shippingMethod = 'express';
     let expressFee = 50;
     let postalFee = 40;
@@ -5127,6 +5430,8 @@
             const res = await fetch(window.API_BASE + '/api/selfservice/store-config');
             const data = await res.json();
             if (data && data.success) {
+                if (Array.isArray(data.banners)) checkAndShowPopupBanners(data.banners);
+                if (data.popupBanner || data.popup_banner) showPopupBanner(data.popupBanner || data.popup_banner);
                 storeConfig = {
                     storeName: data.storeName || storeConfig.storeName,
                     shippingFeeRider: Number(data.shippingFeeRider ?? storeConfig.shippingFeeRider),
@@ -6791,6 +7096,7 @@
         }
 
         closeAllSheets();
+        saveCartToStorage();
         updateCartUI();
         showToast('เพิ่ม ' + (fullFlavorName || activeProduct.name) + ' x' + modalQty + ' ลงในตะกร้าแล้ว');
     }
@@ -6799,7 +7105,7 @@
        CART MANAGEMENT (HUB AI PROMOTIONS & FLOATING BAR)
        ======================================================== */
     function updateCartUI() {
-        try { localStorage.setItem("vapor_customer_cart_items", JSON.stringify(cart)); } catch(e){}
+        saveCartToStorage();
         if (selectedVoucher && !VOUCHER_MASTER[selectedVoucher]) {
             if (window.__promotionsLoaded) {
                 setSelectedVoucher(null);
@@ -6974,11 +7280,14 @@
 
         item.qty += d;
         if (item.qty <= 0) cart.splice(idx, 1);
+        saveCartToStorage();
         updateCartUI();
     }
 
     function clearCart() {
         cart = [];
+        clearCartFromStorage();
+        saveCartToStorage();
         updateCartUI();
     }
 
@@ -8904,6 +9213,7 @@
 
         // Clear active cart now that order is generated
         cart = [];
+        clearCartFromStorage();
         setSelectedVoucher(null);
         updateCartUI();
         renderOrders();
@@ -9089,6 +9399,7 @@
                 showToast('ได้รับยอดชำระแล้ว คลังสินค้ากำลังเตรียมของ');
                 closeAllSheets();
                 cart = [];
+                clearCartFromStorage();
                 updateCartUI();
                 renderOrders();
                 openOrderTrackingModal(targetOrderId);
@@ -9333,6 +9644,7 @@
                     cart.push({ ...it });
                 }
             });
+            saveCartToStorage();
             updateCartUI();
             showToast('เพิ่มสินค้าจากออเดอร์เดิมลงในตะกร้าแล้ว');
             openCartSheet();
@@ -9642,6 +9954,7 @@
 
                 // 2. Render dynamic banners from Hub
                 if (Array.isArray(data.banners) && data.banners.length > 0) {
+                    checkAndShowPopupBanners(data.banners);
                     const track = document.getElementById('campaign-carousel-track');
                     const dotsBar = document.getElementById('campaign-dots-bar');
                     if (track && dotsBar) {
@@ -10136,6 +10449,7 @@
 
     // Startup Execution
     applyActiveTheme();
+    loadCartFromStorage();
     const isLineAllowed = checkLineAccessGuard();
     if (isLineAllowed) {
         checkAgeGate();
@@ -10146,6 +10460,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+        loadCartFromStorage();
         fetchStoreConfig();
         applyActiveTheme();
         if (!checkLineAccessGuard()) return;
