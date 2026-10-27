@@ -802,6 +802,7 @@
         }
         .in-stock-tag { background: #000000; color: #ffffff; }
         .out-tag { background: #ef4444; color: #ffffff; }
+        .flash-sale-tag { background: linear-gradient(135deg, #ef4444 0%, #f97316 100%); color: #ffffff; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4); }
         .prod-mockup-wrapper {
             width: 100%;
             aspect-ratio: 1 / 1;
@@ -7615,17 +7616,21 @@
             const imgSrc = p.image || cfg.fallbackImg;
             const fallback = cfg.fallbackImg;
 
+            const origPrice = p.originalPrice || p.original_price;
+            const hasDiscount = origPrice && Number(origPrice) > Number(price);
+            const isFlashSale = !!(p.is_flash_sale || p.isFlashSale || p.tag === 'FLASH SALE');
+
             return `
                 <div class="recommended-card" onclick="openProductDetail(${cfg.id})">
                     <div class="rec-thumb-box">
-                        <span class="rec-badge-tag">TOP ${idx + 1}</span>
+                        <span class="rec-badge-tag">${isFlashSale ? 'FLASH SALE' : `TOP ${idx + 1}`}</span>
                         <img src="${imgSrc}" class="rec-thumb-img" alt="${title}" onerror="this.onerror=null; this.src='${fallback}';">
                     </div>
                     <div class="rec-info-col">
                         <div class="rec-title">${title}</div>
                         <div class="rec-tagline">${tagline}</div>
                         <div class="rec-price-row">
-                            <span class="rec-price-text">฿${price}</span>
+                            <span class="rec-price-text">฿${price}${hasDiscount ? ` <span style="font-size:11px; color:#94a3b8; text-decoration:line-through; margin-left:4px; font-weight:normal;">฿${origPrice}</span>` : ''}</span>
                             <button class="rec-pick-btn" onclick="event.stopPropagation(); openProductDetail(${cfg.id})">เลือกสินค้า</button>
                         </div>
                     </div>
@@ -7658,9 +7663,16 @@
 
         const html = filtered.length === 0
             ? '<div style="grid-column: 1 / -1; text-align:center; padding:36px; color:#64748b; font-size:12px;">ไม่พบสินค้าในหมวดหมู่นี้</div>'
-            : filtered.map(p => `
+            : filtered.map(p => {
+                const origPrice = p.originalPrice || p.original_price;
+                const hasDiscount = origPrice && Number(origPrice) > Number(p.price);
+                const isFlashSale = !!(p.is_flash_sale || p.isFlashSale || p.tag === 'FLASH SALE');
+                const tagClass = isFlashSale ? 'prod-tag-pill flash-sale-tag' : 'prod-tag-pill in-stock-tag';
+                const tagText = isFlashSale ? (p.tag || 'FLASH SALE') : p.tag;
+
+                return `
                 <div class="product-card" onclick="openProductDetail(${p.id})">
-                    ${p.inStock && p.tag ? `<span class="prod-tag-pill in-stock-tag">${p.tag}</span>` : ''}
+                    ${p.inStock && (tagText || isFlashSale) ? `<span class="${tagClass}">${tagText || 'FLASH SALE'}</span>` : ''}
                     <div class="prod-mockup-wrapper">
                         <img src="${p.image}" class="prod-mockup-img" alt="${p.name}">
                         ${!p.inStock ? '<div class="prod-out-overlay"><span class="prod-out-badge-pill">สินค้าหมด</span></div>' : ''}
@@ -7669,14 +7681,17 @@
                     <div>
                         <div class="prod-info-title">${p.name}</div>
                         <div class="prod-price-add-row">
-                            <div class="prod-price-text">฿${p.price}</div>
+                            <div class="prod-price-text">
+                                ฿${p.price}${hasDiscount ? ` <span style="font-size:11px; color:#94a3b8; text-decoration:line-through; margin-left:4px; font-weight:normal;">฿${origPrice}</span>` : ''}
+                            </div>
                             <button class="prod-add-circle-btn ${!p.inStock ? 'disabled' : ''}" onclick="event.stopPropagation(); ${p.inStock ? `openProductDetail(${p.id})` : ''}">
                                 +
                             </button>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
         grid.innerHTML = html;
     }
@@ -7910,14 +7925,21 @@
         modalQty = 1;
         document.getElementById('modal-qty-display').textContent = '1';
 
+        const origPrice = p.originalPrice || p.original_price;
+        const hasDiscount = origPrice && Number(origPrice) > Number(p.price);
+        const isFlashSale = !!(p.is_flash_sale || p.isFlashSale || p.tag === 'FLASH SALE');
+
         document.getElementById('detail-prod-name').textContent = p.name;
-        document.getElementById('detail-prod-price').textContent = `฿${p.price}`;
+        document.getElementById('detail-prod-price').innerHTML = `฿${p.price}${hasDiscount ? ` <span style="font-size:13px; color:#94a3b8; text-decoration:line-through; margin-left:6px; font-weight:normal;">฿${origPrice}</span>` : ''}`;
         document.getElementById('detail-prod-image').src = p.image;
         const detailOutOverlay = document.getElementById('detail-out-overlay');
         if (detailOutOverlay) {
             detailOutOverlay.style.display = !p.inStock ? 'flex' : 'none';
         }
-        document.getElementById('detail-category-badge').textContent = p.categoryName || 'VAPOR STORE';
+        const catBadge = document.getElementById('detail-category-badge');
+        if (catBadge) {
+            catBadge.innerHTML = `${p.categoryName || 'VAPOR STORE'}${isFlashSale ? ` <span style="background:linear-gradient(135deg, #ef4444 0%, #f97316 100%); color:#ffffff; font-size:10px; font-weight:800; padding:2px 8px; border-radius:9999px; margin-left:6px; vertical-align:middle; display:inline-block;">⚡ FLASH SALE</span>` : ''}`;
+        }
         if (document.getElementById('detail-prod-tagline')) {
             document.getElementById('detail-prod-tagline').textContent = p.tagline || 'สินค้าแท้ 100% เคลมได้ตามเงื่อนไข';
         }
