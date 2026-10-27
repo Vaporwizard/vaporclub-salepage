@@ -5495,7 +5495,6 @@
             category: 'closed_system',
             categoryName: 'หัวพอต (Closed System)',
             price: 140,
-            originalPrice: 150,
             inStock: true,
             sales: 1240,
             tag: 'ขายดี',
@@ -5526,7 +5525,6 @@
             category: 'closed_system',
             categoryName: 'หัวพอต (Closed System)',
             price: 150,
-            originalPrice: 160,
             inStock: false,
             sales: 890,
             tag: 'ยอดนิยม',
@@ -5564,7 +5562,6 @@
             category: 'closed_system',
             categoryName: 'หัวพอต (Closed System)',
             price: 150,
-            originalPrice: 160,
             inStock: false,
             sales: 450,
             tag: 'จุใจ',
@@ -5593,7 +5590,6 @@
             category: 'closed_system',
             categoryName: 'หัวพอต (Closed System)',
             price: 150,
-            originalPrice: 160,
             inStock: false,
             sales: 520,
             tag: 'เข้มข้น',
@@ -5624,7 +5620,6 @@
             category: 'closed_system',
             categoryName: 'หัวพอต (Closed System)',
             price: 140,
-            originalPrice: 150,
             inStock: true,
             sales: 1580,
             tag: 'มีไฟ',
@@ -5652,7 +5647,6 @@
             category: 'switch_pod',
             categoryName: 'หัวสลับ (Switch Pod)',
             price: 360,
-            originalPrice: 390,
             inStock: true,
             sales: 640,
             tag: 'หัวสลับ',
@@ -5678,7 +5672,6 @@
             category: 'switch_pod',
             categoryName: 'หัวสลับ (Switch Pod)',
             price: 350,
-            originalPrice: 380,
             inStock: false,
             sales: 410,
             tag: '20K คำ',
@@ -5704,7 +5697,6 @@
             category: 'disposable',
             categoryName: 'พอตใช้แล้วทิ้ง (Disposable)',
             price: 360,
-            originalPrice: 390,
             inStock: false,
             sales: 780,
             tag: '9K คำ',
@@ -5731,7 +5723,6 @@
             category: 'disposable',
             categoryName: 'พอตใช้แล้วทิ้ง (Disposable)',
             price: 390,
-            originalPrice: 420,
             inStock: true,
             sales: 1120,
             tag: 'ยอดนิยม',
@@ -5756,7 +5747,6 @@
             category: 'disposable',
             categoryName: 'พอตใช้แล้วทิ้ง (Disposable)',
             price: 380,
-            originalPrice: 400,
             inStock: true,
             sales: 950,
             tag: 'ขายดี',
@@ -5781,7 +5771,6 @@
             category: 'closed_system',
             categoryName: 'หัวพอต (Closed System)',
             price: 140,
-            originalPrice: 150,
             inStock: false,
             sales: 870,
             tag: 'คลาสสิก',
@@ -5816,7 +5805,6 @@
             category: 'pod_device',
             categoryName: 'เครื่องพอต (Pod Device)',
             price: 750,
-            originalPrice: 790,
             inStock: false,
             sales: 320,
             tag: 'รุ่นใหม่',
@@ -5837,7 +5825,6 @@
             category: 'pod_device',
             categoryName: 'เครื่องพอต (Pod Device)',
             price: 850,
-            originalPrice: 890,
             inStock: false,
             sales: 460,
             tag: 'ท็อปฮิต',
@@ -5858,7 +5845,6 @@
             category: 'disposable',
             categoryName: 'พอตใช้แล้วทิ้ง (Disposable)',
             price: 390,
-            originalPrice: 420,
             inStock: false,
             sales: 380,
             tag: '15K คำ',
@@ -5883,7 +5869,6 @@
             category: 'disposable',
             categoryName: 'พอตใช้แล้วทิ้ง (Disposable)',
             price: 390,
-            originalPrice: 420,
             inStock: false,
             sales: 510,
             tag: '14K คำ',
@@ -5909,7 +5894,6 @@
             category: 'disposable',
             categoryName: 'พอตใช้แล้วทิ้ง (Disposable)',
             price: 370,
-            originalPrice: 390,
             inStock: false,
             sales: 430,
             tag: '12K คำ',
@@ -7616,9 +7600,9 @@
             const imgSrc = p.image || cfg.fallbackImg;
             const fallback = cfg.fallbackImg;
 
-            const origPrice = p.originalPrice || p.original_price;
-            const hasDiscount = origPrice && Number(origPrice) > Number(price);
             const isFlashSale = !!(p.is_flash_sale || p.isFlashSale || p.tag === 'FLASH SALE');
+            const origPrice = p.originalPrice || p.original_price;
+            const hasDiscount = isFlashSale && origPrice && Number(origPrice) > Number(price);
 
             return `
                 <div class="recommended-card" onclick="openProductDetail(${cfg.id})">
@@ -7664,9 +7648,9 @@
         const html = filtered.length === 0
             ? '<div style="grid-column: 1 / -1; text-align:center; padding:36px; color:#64748b; font-size:12px;">ไม่พบสินค้าในหมวดหมู่นี้</div>'
             : filtered.map(p => {
-                const origPrice = p.originalPrice || p.original_price;
-                const hasDiscount = origPrice && Number(origPrice) > Number(p.price);
                 const isFlashSale = !!(p.is_flash_sale || p.isFlashSale || p.tag === 'FLASH SALE');
+                const origPrice = p.originalPrice || p.original_price;
+                const hasDiscount = isFlashSale && origPrice && Number(origPrice) > Number(p.price);
                 const tagClass = isFlashSale ? 'prod-tag-pill flash-sale-tag' : 'prod-tag-pill in-stock-tag';
                 const tagText = isFlashSale ? (p.tag || 'FLASH SALE') : p.tag;
 
@@ -7925,9 +7909,9 @@
         modalQty = 1;
         document.getElementById('modal-qty-display').textContent = '1';
 
-        const origPrice = p.originalPrice || p.original_price;
-        const hasDiscount = origPrice && Number(origPrice) > Number(p.price);
         const isFlashSale = !!(p.is_flash_sale || p.isFlashSale || p.tag === 'FLASH SALE');
+        const origPrice = p.originalPrice || p.original_price;
+        const hasDiscount = isFlashSale && origPrice && Number(origPrice) > Number(p.price);
 
         document.getElementById('detail-prod-name').textContent = p.name;
         document.getElementById('detail-prod-price').innerHTML = `฿${p.price}${hasDiscount ? ` <span style="font-size:13px; color:#94a3b8; text-decoration:line-through; margin-left:6px; font-weight:normal;">฿${origPrice}</span>` : ''}`;
