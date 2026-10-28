@@ -6622,9 +6622,12 @@
     function isDeliveryVoucher(v) {
         if (!v) return false;
         if (v.type === 'shipping_express' || v.type === 'shipping_express_fixed' || v.type === 'shipping_express_percent') return true;
-        if (v.targetCategory === 'DELIVERY' || v.target === 'DELIVERY') return true;
+        if (v.type === 'shipping_postal' || v.type === 'shipping_postal_fixed' || v.type === 'shipping_postal_percent') return true;
+        if (v.type === 'shipping_delivery_fixed' || v.type === 'shipping_delivery_percent') return true;
+        const cat = String(v.targetCategory || v.target || '').toUpperCase();
+        if (['DELIVERY', 'POSTAL', 'ALL_DELIVERY'].includes(cat)) return true;
         const text = `${v.code || ''} ${v.title || ''} ${v.desc || ''} ${v.name || ''}`.toLowerCase();
-        return /ค่าส่ง|จัดส่ง|delivery|shipping/i.test(text) || ['CBP50', 'MP7Y20', 'NEW10'].includes(String(v.code || '').toUpperCase());
+        return /ค่าส่ง|จัดส่ง|delivery|shipping|พัสดุ/i.test(text) || ['CBP50', 'MP7Y20', 'NEW10'].includes(String(v.code || '').toUpperCase());
     }
 
     function calculateVoucherDiscount(v, subtotal, shipping, shippingMethod) {
@@ -6635,17 +6638,48 @@
 
         if (isDelivery) {
             // Delivery discount ONLY applies to shipping fee, NEVER subtotal!
-            if (shippingMethod === 'express' && shipping > 0) {
-                if (v.discountPercent > 0 || v.type === 'shipping_express_percent') {
-                    const pct = v.discountPercent || v.discount || 0;
-                    discount = Math.round(shipping * (pct / 100));
-                    discountDesc = `ส่วนลดค่าส่ง ${pct}% (${v.code})`;
-                } else {
-                    discount = Math.min(shipping, v.discount);
-                    discountDesc = `ส่วนลดค่าส่ง (${v.code})`;
+            const cat = String(v.targetCategory || v.target || '').toUpperCase();
+            const isPostalOnly = cat === 'POSTAL' || v.type === 'shipping_postal_fixed' || v.type === 'shipping_postal_percent' || (/พัสดุ/i.test(v.title || '') && !/ด่วน|ไรเดอร์/i.test(v.title || ''));
+            const isExpressOnly = cat === 'DELIVERY' || v.type === 'shipping_express_fixed' || v.type === 'shipping_express_percent' || (/ด่วน|ไรเดอร์/i.test(v.title || '') && !/พัสดุ/i.test(v.title || ''));
+
+            if (isPostalOnly) {
+                if (shippingMethod === 'postal' && shipping > 0) {
+                    if (v.discountPercent > 0 || v.type === 'shipping_postal_percent') {
+                        const pct = v.discountPercent || v.discount || 0;
+                        discount = Math.round(shipping * (pct / 100));
+                        discountDesc = `ส่วนลดส่งพัสดุ ${pct}% (${v.code})`;
+                    } else {
+                        discount = Math.min(shipping, v.discount);
+                        discountDesc = `ส่วนลดส่งพัสดุ (${v.code})`;
+                    }
+                } else if (shippingMethod !== 'postal') {
+                    discountDesc = `โค้ดใช้ได้เฉพาะส่งพัสดุ (${v.code})`;
                 }
-            } else if (shippingMethod !== 'express') {
-                discountDesc = `โค้ดใช้ได้เฉพาะส่งด่วน (${v.code})`;
+            } else if (isExpressOnly) {
+                if (shippingMethod === 'express' && shipping > 0) {
+                    if (v.discountPercent > 0 || v.type === 'shipping_express_percent') {
+                        const pct = v.discountPercent || v.discount || 0;
+                        discount = Math.round(shipping * (pct / 100));
+                        discountDesc = `ส่วนลดค่าส่งด่วน ${pct}% (${v.code})`;
+                    } else {
+                        discount = Math.min(shipping, v.discount);
+                        discountDesc = `ส่วนลดค่าส่งด่วน (${v.code})`;
+                    }
+                } else if (shippingMethod !== 'express') {
+                    discountDesc = `โค้ดใช้ได้เฉพาะส่งด่วน (${v.code})`;
+                }
+            } else {
+                // ALL_DELIVERY: applies to whatever shipping method is selected!
+                if (shipping > 0) {
+                    if (v.discountPercent > 0) {
+                        const pct = v.discountPercent || v.discount || 0;
+                        discount = Math.round(shipping * (pct / 100));
+                        discountDesc = `ส่วนลดค่าส่ง ${pct}% (${v.code})`;
+                    } else {
+                        discount = Math.min(shipping, v.discount);
+                        discountDesc = `ส่วนลดค่าส่ง (${v.code})`;
+                    }
+                }
             }
         } else {
             // Product discount ONLY applies to subtotal!
@@ -7815,7 +7849,10 @@
             const code = (p.code || '').trim().toUpperCase();
             if (!code) return;
 
-            const isDelivery = p.targetCategory === 'DELIVERY' ||
+            const rawCat = String(p.targetCategory || p.target_category || '').toUpperCase();
+            const isPostal = rawCat === 'POSTAL' || (/พัสดุ/i.test(p.name || '') && !/ด่วน|ไรเดอร์/i.test(p.name || ''));
+            const isAllDelivery = rawCat === 'ALL_DELIVERY';
+            const isDelivery = isPostal || isAllDelivery || rawCat === 'DELIVERY' ||
                                /ค่าส่ง|จัดส่ง|delivery|shipping/i.test(p.name || '') ||
                                /ค่าส่ง|จัดส่ง|delivery|shipping/i.test(p.description || '') ||
                                ['CBP50', 'MP7Y20', 'NEW10'].includes(code);
@@ -7824,10 +7861,23 @@
             const discountVal = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
 
             let vType = 'discount_fixed';
-            if (isDelivery) {
+            let leftLbl = 'ลดทันที';
+            let finalTarget = 'ALL';
+            if (isPostal) {
+                vType = isPercent ? 'shipping_postal_percent' : 'shipping_postal_fixed';
+                leftLbl = 'ลดส่งพัสดุ';
+                finalTarget = 'POSTAL';
+            } else if (isAllDelivery) {
+                vType = isPercent ? 'shipping_delivery_percent' : 'shipping_delivery_fixed';
+                leftLbl = 'ลดค่าส่ง';
+                finalTarget = 'ALL_DELIVERY';
+            } else if (isDelivery) {
                 vType = isPercent ? 'shipping_express_percent' : 'shipping_express_fixed';
+                leftLbl = 'ลดค่าส่งด่วน';
+                finalTarget = 'DELIVERY';
             } else if (isPercent) {
                 vType = 'discount_percent';
+                leftLbl = 'ส่วนลด';
             }
 
             const existing = VOUCHER_MASTER[code] || {};
@@ -7839,9 +7889,9 @@
                 discountPercent: isPercent ? discountVal : 0,
                 minSpend: Number(p.minSubtotal || 0),
                 type: vType,
-                targetCategory: isDelivery ? 'DELIVERY' : 'ALL',
-                title: p.name || (isDelivery ? `โค้ดลดค่าส่ง ${code}` : `ส่วนลด ${code}`),
-                leftLabel: isDelivery ? 'ลดค่าส่ง' : (isPercent ? 'ส่วนลด' : 'ลดทันที'),
+                targetCategory: finalTarget,
+                title: p.name || (isPostal ? `โค้ดลดส่งพัสดุ ${code}` : (isDelivery ? `โค้ดลดค่าส่ง ${code}` : `ส่วนลด ${code}`)),
+                leftLabel: leftLbl,
                 leftAmount: isPercent ? `${discountVal}%` : `฿${discountVal}`,
                 desc: p.description || (p.minSubtotal ? `เมื่อช้อปครบ ฿${p.minSubtotal}` : 'ใช้ได้ทุกยอดคำสั่งซื้อ'),
                 condition: p.minSubtotal ? `ขั้นต่ำ ฿${p.minSubtotal}` : 'ไม่มีขั้นต่ำ',
