@@ -17,8 +17,12 @@
     <meta property="og:title" content="Vapor Club">
     <meta property="og:description" content="Vapor Club - สั่งซื้อง่าย ส่งด่วนทันที บริการตลอดวัน">
     <meta property="og:site_name" content="Vapor Club">
-    <meta property="og:image" content="https://vaporclub-th.shop/assets/logo_flagship_official.png">
-    <meta name="twitter:card" content="summary">
+    <meta property="og:image" content="https://vaporclub-th.shop/assets/og_preview.png?v=2">
+    <meta property="og:image:width" content="800">
+    <meta property="og:image:height" content="800">
+    <meta property="og:image:type" content="image/png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://vaporclub-th.shop/assets/og_preview.png?v=2">
     <meta name="twitter:title" content="Vapor Club">
     <meta name="twitter:description" content="Vapor Club - สั่งซื้อง่าย ส่งด่วนทันที บริการตลอดวัน">
     
@@ -6227,6 +6231,14 @@
         syncVoucherButtonStates();
         if (typeof updateCartUI === 'function') updateCartUI();
 
+        // Sync claim to backend
+        if (currentUser.userId) {
+            fetch((window.API_BASE || '') + '/api/selfservice/claim-coupon', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: currentUser.userId, couponCode: code })
+            }).catch(() => {});
+        }
         // Mark seen so it won't popup again this year
         markBirthdayPopupAsSeen();
 
@@ -8928,7 +8940,8 @@
         if (parts.length !== 3) {
             return { valid: false, message: 'กรุณาระบุวันเดือนปีเกิดให้ถูกต้อง' };
         }
-        const y = parseInt(parts[0], 10);
+        let y = parseInt(parts[0], 10);
+        if (y > 2400) y -= 543;
         const m = parseInt(parts[1], 10);
         const d = parseInt(parts[2], 10);
 
@@ -9065,7 +9078,11 @@
                 if (birthdateInput) birthdateInput.focus();
                 return;
             }
-            currentUser.birthdate = newBirthdate;
+            const bParts = newBirthdate.split('-');
+            let by = parseInt(bParts[0], 10);
+            if (by > 2400) by -= 543;
+            const normBirthdate = `${by}-${bParts[1].padStart(2, '0')}-${bParts[2].padStart(2, '0')}`;
+            currentUser.birthdate = normBirthdate;
             try {
                 localStorage.setItem('vapor_customer_birthdate', newBirthdate);
             } catch(e) {}
@@ -10389,8 +10406,16 @@
         cart = [];
         clearCartFromStorage();
         if (selectedVoucher && (selectedVoucher === 'HBD100' || selectedVoucher.startsWith('HBD'))) {
+            const usedCode = selectedVoucher;
             userClaimedVouchers = userClaimedVouchers.filter(c => c !== selectedVoucher);
             try { localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers)); } catch(e) {}
+            if (currentUser.userId && usedCode) {
+                fetch((window.API_BASE || '') + '/api/selfservice/use-coupon', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUser.userId, couponCode: usedCode })
+                }).catch(() => {});
+            }
         }
         setSelectedVoucher(null);
         updateCartUI();
@@ -11275,7 +11300,18 @@
                             currentUser.phone = data.profile.phone;
                             try { localStorage.setItem('vapor_customer_phone', data.profile.phone); } catch(e) {}
                         }
-                        if (data.profile.birthdate) currentUser.birthdate = data.profile.birthdate;
+                        if (data.profile.birthdate !== undefined) {
+                            currentUser.birthdate = data.profile.birthdate || '';
+                            if (data.profile.birthdate) {
+                                try { localStorage.setItem('vapor_customer_birthdate', data.profile.birthdate); } catch(e) {}
+                            } else {
+                                try { localStorage.removeItem('vapor_customer_birthdate'); } catch(e) {}
+                            }
+                        }
+                        if (Array.isArray(data.profile.coupons)) {
+                            userClaimedVouchers = data.profile.coupons;
+                            try { localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers)); } catch(e) {}
+                        }
                         if (data.profile.address) currentUser.address = data.profile.address;
                         if (data.profile.postalAddress) currentUser.savedPostalAddress = data.profile.postalAddress;
                         if (data.profile.coordinates) currentPinnedCoords = data.profile.coordinates;
