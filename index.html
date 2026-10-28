@@ -7154,6 +7154,13 @@
         if (!userClaimedVouchers.includes(code)) {
             userClaimedVouchers.push(code);
             try { localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers)); } catch(e) {}
+            if (currentUser && currentUser.userId) {
+                fetch((window.API_BASE || '') + '/api/selfservice/claim-coupon', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUser.userId, couponCode: code })
+                }).catch(() => {});
+            }
         }
 
         inputEl.value = '';
@@ -7173,6 +7180,15 @@
             try {
                 localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers));
             } catch(e) {}
+        }
+
+        // Real-time sync coupon claim to backend customer wallet
+        if (currentUser && currentUser.userId) {
+            fetch((window.API_BASE || '') + '/api/selfservice/claim-coupon', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: currentUser.userId, couponCode: code })
+            }).catch(() => {});
         }
 
         syncVoucherButtonStates();
@@ -11300,10 +11316,42 @@
                                 try { localStorage.removeItem('vapor_customer_birthdate'); } catch(e) {}
                             }
                         }
-                        if (Array.isArray(data.profile.coupons)) {
-                            userClaimedVouchers = data.profile.coupons;
-                            try { localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers)); } catch(e) {}
+
+                        // Two-way Coupon Synchronization
+                        let localVouchers = [];
+                        try {
+                            const rawStored = localStorage.getItem('vapor_claimed_vouchers');
+                            if (rawStored) localVouchers = JSON.parse(rawStored);
+                        } catch(e) {}
+                        if (!Array.isArray(localVouchers)) localVouchers = [];
+
+                        const serverCoupons = Array.isArray(data.profile.coupons) ? data.profile.coupons : [];
+                        const alreadySynced = localStorage.getItem('vapor_vouchers_synced_v2') === 'true';
+
+                        if (!alreadySynced && localVouchers.length > 0) {
+                            const mergedCoupons = Array.from(new Set([...serverCoupons, ...localVouchers]));
+                            userClaimedVouchers = mergedCoupons;
+                            try {
+                                localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(mergedCoupons));
+                                localStorage.setItem('vapor_vouchers_synced_v2', 'true');
+                            } catch(e) {}
+                            if (currentUser.userId) {
+                                fetch((window.API_BASE || '') + '/api/selfservice/sync-coupons', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ userId: currentUser.userId, coupons: mergedCoupons })
+                                }).catch(() => {});
+                            }
+                        } else {
+                            // Server is the authority (e.g. if admin deleted a coupon in backoffice)
+                            userClaimedVouchers = serverCoupons;
+                            try {
+                                localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers));
+                                localStorage.setItem('vapor_vouchers_synced_v2', 'true');
+                            } catch(e) {}
                         }
+                        if (typeof populateCartVoucherSelect === 'function') populateCartVoucherSelect();
+                        if (typeof syncVoucherButtonStates === 'function') syncVoucherButtonStates();
                         if (data.profile.address) currentUser.address = data.profile.address;
                         if (data.profile.postalAddress) currentUser.savedPostalAddress = data.profile.postalAddress;
                         if (data.profile.coordinates) currentPinnedCoords = data.profile.coordinates;
