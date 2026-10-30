@@ -7576,19 +7576,44 @@
                 });
 
                 if (matchedKeyword) {
-                    if (rule.id === 'grape' && (itClean.includes('aloe') || itClean.includes('kyoho') || itClean.includes('gummy') || itClean.includes('jelly') || itClean.includes('หมากฝรั่ง'))) {
+                    if (rule.id === 'grape' && (
+                        itClean.includes('aloe') || itClean.includes('kyoho') || itClean.includes('gummy') || itClean.includes('jelly') || itClean.includes('bubble') ||
+                        itClean.includes('lychee') || itClean.includes('apple') || itClean.includes('berry') || itClean.includes('sakura') ||
+                        itClean.includes('อโล') || itClean.includes('เคียวโฮ') || itClean.includes('กัมมี่') || itClean.includes('กัมมีี') || itClean.includes('เจลลี่') ||
+                        itClean.includes('หมากฝรั่ง') || itClean.includes('ลิ้นจี่') || itClean.includes('แอปเปิ้ล') || itClean.includes('ว่านหาง') || itClean.includes('ซากุระ') || itClean.includes('โยเกิร์ต')
+                    )) {
                         return -1;
                     }
-                    if (rule.id === 'apple' && (itClean.includes('aloe') || itClean.includes('balagu') || itClean.includes('ชิชา'))) {
+                    if (rule.id === 'apple' && (
+                        itClean.includes('aloe') || itClean.includes('balagu') || itClean.includes('ชิชา') || itClean.includes('อโล') ||
+                        itClean.includes('แดง') || itClean.includes('เขียว') || itClean.includes('red') || itClean.includes('green')
+                    )) {
                         return -1;
                     }
-                    if (rule.id === 'watermelon' && (itClean.includes('strawberry') || itClean.includes('สตอ') || itClean.includes('หมากฝรั่ง') || itClean.includes('bubble') || itClean.includes('mint'))) {
+                    if (rule.id === 'watermelon' && (
+                        itClean.includes('strawberry') || itClean.includes('สตอ') || itClean.includes('สตรอ') ||
+                        itClean.includes('หมากฝรั่ง') || itClean.includes('bubble') || itClean.includes('mint') || itClean.includes('มิ้น') ||
+                        itClean.includes('raspberry') || itClean.includes('ราสเบอร์รี่') || itClean.includes('lychee') || itClean.includes('ลิ้นจี่')
+                    )) {
                         return -1;
                     }
-                    if (rule.id === 'strawberry' && (itClean.includes('icecream') || itClean.includes('ไอติม') || itClean.includes('สตอราส') || itClean.includes('peach') || itClean.includes('พีช') || itClean.includes('watermelon') || itClean.includes('แตงโม'))) {
+                    if (rule.id === 'strawberry' && (
+                        itClean.includes('icecream') || itClean.includes('ไอติม') || itClean.includes('สตอราส') ||
+                        itClean.includes('peach') || itClean.includes('พีช') || itClean.includes('watermelon') || itClean.includes('แตงโม') ||
+                        itClean.includes('raspberry') || itClean.includes('ราสเบอร์รี่') || itClean.includes('เชอร์รี่') || itClean.includes('cherry')
+                    )) {
                         return -1;
                     }
-                    if (rule.id === 'mint' && (itClean.includes('double') || itClean.includes('spear') || itClean.includes('yellow') || itClean.includes('bubble'))) {
+                    if (rule.id === 'peach' && (
+                        itClean.includes('strawberry') || itClean.includes('สตอ') || itClean.includes('สตรอ') ||
+                        itClean.includes('mango') || itClean.includes('มะม่วง')
+                    )) {
+                        return -1;
+                    }
+                    if (rule.id === 'mint' && (
+                        itClean.includes('double') || itClean.includes('spear') || itClean.includes('yellow') || itClean.includes('bubble') ||
+                        itClean.includes('ดับเบิ้ล') || itClean.includes('สเปียร์') || itClean.includes('เลม่อน') || itClean.includes('หมากฝรั่ง')
+                    )) {
                         return -1;
                     }
 
@@ -7610,9 +7635,15 @@
                 PRODUCTS.forEach(p => {
                     let productHasStock = false;
                     const pNameNorm = p.name.toLowerCase().replace(/[\s\-_]+/g, '');
+                    const claimedItemIds = new Set();
+                    const matchesToAssign = [];
 
+                    // Reset all flavors first
                     p.groups.forEach(grp => {
                         grp.flavors.forEach(f => {
+                            f.stock = 0;
+                            f.inStock = false;
+
                             let bestMatch = null;
                             let highestScore = -1;
 
@@ -7630,14 +7661,21 @@
                             });
 
                             if (bestMatch && Number(bestMatch.stock) > 0) {
-                                f.stock = Number(bestMatch.stock);
-                                f.inStock = true;
-                                productHasStock = true;
-                            } else {
-                                f.stock = 0;
-                                f.inStock = false;
+                                matchesToAssign.push({ flavor: f, bestMatch, score: highestScore });
                             }
                         });
+                    });
+
+                    // Sort descending by score so exact/specific flavor matches claim stock first
+                    matchesToAssign.sort((a, b) => b.score - a.score);
+
+                    matchesToAssign.forEach(m => {
+                        if (!claimedItemIds.has(m.bestMatch.id)) {
+                            claimedItemIds.add(m.bestMatch.id);
+                            m.flavor.stock = Number(m.bestMatch.stock);
+                            m.flavor.inStock = true;
+                            productHasStock = true;
+                        }
                     });
 
                     // Update product-level inStock status
