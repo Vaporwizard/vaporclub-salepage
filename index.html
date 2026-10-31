@@ -2211,6 +2211,36 @@
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
         }
 
+        /* Google Maps Style Real-Time Location Blue Dot (Static, Solid, No Blinking) */
+        .gmap-live-loc-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            pointer-events: none;
+            position: relative;
+        }
+        .gmap-live-loc-halo {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(66, 133, 244, 0.22);
+            border: 1px solid rgba(66, 133, 244, 0.40);
+        }
+        .gmap-live-loc-dot {
+            position: relative;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #1a73e8;
+            border: 2.5px solid #ffffff;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+            box-sizing: border-box;
+            z-index: 2;
+        }
+
         /* Address Selector Items (Image 4) */
         .address-select-item {
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -4589,10 +4619,16 @@
         <div style="font-size:12.5px; color:#e2e8f0; font-weight:700; line-height:1.4; margin:6px 0 4px;" id="map-pin-address">
             กำลังดึงที่อยู่จากพิกัด...
         </div>
+        <!-- House Number Reminder Banner for Express Delivery -->
+        <div style="background:rgba(255, 107, 0, 0.12); border:1.5px solid rgba(255, 107, 0, 0.45); border-radius:12px; padding:9px 12px; margin:8px 0 10px; display:flex; align-items:flex-start; gap:8px;">
+            <svg class="svg-icon-sm" viewBox="0 0 24 24" style="color:#ff6b00; flex-shrink:0; margin-top:2px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <div style="font-size:11.5px; color:#ffffff; line-height:1.45;">
+                <strong style="color:#ff6b00;">สำหรับลูกค้าบ้านพัก / หมู่บ้าน:</strong> หากทราบ <strong>บ้านเลขที่</strong> และซอย กรุณาระบุในช่องด้านล่าง เพื่อให้ไรเดอร์ส่งตรงถึงหน้าบ้านทันที
+            </div>
+        </div>
         <div style="margin-bottom:12px;">
-            <span onclick="togglePinDetailEdit()" style="font-size:11.5px; color:#0f172a; font-weight:800; cursor:pointer;">แก้ไขรายละเอียดที่อยู่</span>
-            <div id="pin-address-detail-input-wrap" style="display:none; margin-top:6px;">
-                <input type="text" id="pin-address-detail-input" class="form-text-input" placeholder="เลขที่ / ห้อง / อาคาร (จะนำไปต่อท้ายที่อยู่)" style="height:36px; font-size:12px;">
+            <div id="pin-address-detail-input-wrap" style="display:block;">
+                <input type="text" id="pin-address-detail-input" class="form-text-input" placeholder="ระบุบ้านเลขที่ / ชื่อหมู่บ้าน / ซอย / ชื่ออาคาร / เลขห้อง" style="height:40px; font-size:12.5px; background:var(--bg-surface-subtle); border:1.5px solid rgba(255, 107, 0, 0.5); color:#ffffff; border-radius:10px; padding:0 12px; width:100%; box-sizing:border-box;">
             </div>
         </div>
         <button type="button" class="btn-green-action" id="btn-map-confirm-action" onclick="confirmPinLocation()" style="font-size:15px; font-weight:900; height:48px; position:relative; z-index:2001; pointer-events:auto; touch-action:manipulation;">
@@ -4621,11 +4657,16 @@
     <!-- Address Text & Inline Edit Link -->
     <div style="margin-bottom:14px;">
         <div style="font-size:13px; color:#ffffff; line-height:1.45; font-weight:700;" id="edit-address-display-text">กำลังโหลดที่อยู่...</div>
-        <div style="margin-top:4px;">
-            <span onclick="toggleAddressDetailInput()" style="font-size:11.5px; color:#ff6b00; font-weight:800; cursor:pointer;">แก้ไขรายละเอียดที่อยู่</span>
+        
+        <div style="background:rgba(255, 107, 0, 0.12); border:1.5px solid rgba(255, 107, 0, 0.45); border-radius:12px; padding:9px 12px; margin:8px 0 8px; display:flex; align-items:flex-start; gap:8px;">
+            <svg class="svg-icon-sm" viewBox="0 0 24 24" style="color:#ff6b00; flex-shrink:0; margin-top:2px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <div style="font-size:11.5px; color:#ffffff; line-height:1.45;">
+                <strong style="color:#ff6b00;">ลูกค้าบ้านพัก / หมู่บ้าน:</strong> หากทราบ <strong>บ้านเลขที่</strong> และซอย โปรดระบุเพื่อความแม่นยำและรวดเร็วในการจัดส่งด่วน
+            </div>
         </div>
-        <div id="edit-address-detail-input-wrap" style="display:none; margin-top:8px;">
-            <input type="text" id="edit-address-detail" class="form-text-input" placeholder="บ้านเลขที่ / ชื่ออาคาร / ชั้น / ซอย">
+        <div id="edit-address-detail-input-wrap" style="display:block;">
+            <label class="form-label-title" style="font-size:12px; font-weight:800; color:#e2e8f0; margin-bottom:4px; display:block;">บ้านเลขที่ / ชื่อหมู่บ้าน / ซอย / รายละเอียดสถานที่</label>
+            <input type="text" id="edit-address-detail" class="form-text-input" placeholder="เช่น บ้านเลขที่ 123/45 ซอย 2 หรือ คอนโด A ชั้น 5 ห้อง 502" style="height:40px; font-size:12.5px; background:var(--bg-surface-subtle); border:1.5px solid rgba(255, 107, 0, 0.5); color:#ffffff; border-radius:10px; padding:0 12px; width:100%; box-sizing:border-box;">
         </div>
     </div>
 
@@ -8531,43 +8572,223 @@
 
     /* ========================================================
        CHIANG MAI POI DATABASE (100% INSTANT ACCURATE SEARCH)
+       ตึก / อาคาร / คอนโด / หมู่บ้านจัดสรร / ห้าง / สถานที่สำคัญ ในเชียงใหม่
        ======================================================== */
+    let userLiveMarker = null;
+    let userLiveWatchId = null;
+    let userRealCoords = null;
+
+    function updateUserLiveDot(lat, lng) {
+        if (!lat || !lng) return;
+        userRealCoords = { lat: parseFloat(lat), lng: parseFloat(lng) };
+        if (!mapInstance) return;
+
+        const blueDotIcon = L.divIcon({
+            className: 'gmap-live-loc-container',
+            html: '<div class="gmap-live-loc-halo"></div><div class="gmap-live-loc-dot"></div>',
+            iconSize: [36, 36],
+            iconAnchor: [18, 18]
+        });
+
+        if (!userLiveMarker) {
+            userLiveMarker = L.marker([userRealCoords.lat, userRealCoords.lng], {
+                icon: blueDotIcon,
+                zIndexOffset: 450,
+                interactive: false
+            }).addTo(mapInstance);
+        } else {
+            userLiveMarker.setLatLng([userRealCoords.lat, userRealCoords.lng]);
+        }
+    }
+
+    function startLiveLocationTracking() {
+        if (!navigator.geolocation) return;
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                updateUserLiveDot(lat, lng);
+                if (!currentPinnedCoords || (currentPinnedCoords.lat === WAREHOUSE_COORDS.lat && currentPinnedCoords.lng === WAREHOUSE_COORDS.lng)) {
+                    if (mapInstance) {
+                        mapInstance.setView([lat, lng], 15);
+                    }
+                    onCenterPinMoved(lat, lng);
+                }
+            },
+            (err) => {
+                console.warn('GPS initial lookup notice:', err);
+            },
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+        );
+
+        if (!userLiveWatchId) {
+            userLiveWatchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    updateUserLiveDot(lat, lng);
+                },
+                (err) => {
+                    console.warn('GPS watchPosition notice:', err);
+                },
+                { enableHighAccuracy: true, maximumAge: 15000 }
+            );
+        }
+    }
+
     const CHIANGMAI_POI_DATABASE = [
+        // --- คอนโดมิเนียม & อพาร์ตเมนต์ชื่อดังในเชียงใหม่ ---
         { name: "My Place Condo (มายเพลส)", alt: ["มายเพลส", "my place", "myplace", "มายเพลสคอนโด"], address: "ถ.ศิริธร ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8042, lng: 98.9795 },
         { name: "The Green City Condo 2 ตึก D", alt: ["greencity", "green city", "เดอะกรีนซิตี้", "ตึก d", "ตึกd"], address: "143 เชียงใหม่บิสสิเนสพาร์ค ซอย 5 ต.หนองป่าครั่ง อ.เมือง เชียงใหม่ 50000", lat: 18.7995, lng: 99.0305 },
         { name: "The Green City Condo 1 (ตึก A/B/C)", alt: ["greencity", "green city 1", "เดอะกรีนซิตี้"], address: "เชียงใหม่บิสสิเนสพาร์ค ซอย 5 ต.หนองป่าครั่ง อ.เมือง เชียงใหม่ 50000", lat: 18.7992, lng: 99.0302 },
+        { name: "My Hip Condo 1-2 (CBP)", alt: ["มายฮิป", "my hip", "myhip 1", "myhip 2"], address: "เชียงใหม่บิสสิเนสพาร์ค ซอย 2 ต.หนองป่าครั่ง อ.เมือง เชียงใหม่ 50000", lat: 18.7990, lng: 99.0298 },
+        { name: "My Hip Condo 3-4 (CBP)", alt: ["มายฮิป 3", "มายฮิป 4", "my hip 3", "my hip 4"], address: "เชียงใหม่บิสสิเนสพาร์ค ต.หนองป่าครั่ง อ.เมือง เชียงใหม่ 50000", lat: 18.7985, lng: 99.0310 },
         { name: "เชียงใหม่บิสสิเนสพาร์ค (CBP)", alt: ["cbp", "business park", "บิสเนสพาร์ค", "บิสสิเนส"], address: "ถ.ซุปเปอร์ไฮเวย์ เชียงใหม่-ลำปาง ต.หนองป่าครั่ง อ.เมือง เชียงใหม่ 50000", lat: 18.7989, lng: 99.0289 },
-        { name: "บิ๊กซี เอ็กซ์ตร้า เชียงใหม่ 2 (แยกศาลเด็ก)", alt: ["big c extra", "บิ๊กซีเอ็กซ์ตร้า", "ศาลเด็ก", "บิ๊กซี 2"], address: "เชียงใหม่บิสสิเนสพาร์ค ต.หนองป่าครั่ง อ.เมือง เชียงใหม่ 50000", lat: 18.8005, lng: 99.0272 },
-        { name: "My Hip Condo (CBP)", alt: ["มายฮิป", "my hip"], address: "เชียงใหม่บิสสิเนสพาร์ค ซอย 2 ต.หนองป่าครั่ง อ.เมือง เชียงใหม่ 50000", lat: 18.7990, lng: 99.0298 },
+        { name: "อาคาร AIA Chiang Mai (CBP)", alt: ["aia", "ตึกเอไอเอ", "ตึก aia", "aia tower"], address: "เชียงใหม่บิสสิเนสพาร์ค ต.หนองป่าครั่ง อ.เมือง เชียงใหม่ 50000", lat: 18.8000, lng: 99.0285 },
         { name: "Dcondo Campus Resort Chiang Mai", alt: ["ดีคอนโด แคมปัส", "dcondo campus", "หลัง มช", "แคมปัส รีสอร์ท"], address: "ถ.สุเทพ ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7940, lng: 98.9540 },
+        { name: "Dcondo Campus Dome", alt: ["ดีคอนโด โดม", "dcondo dome"], address: "ถ.สุเทพ ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7955, lng: 98.9515 },
         { name: "Dcondo Sign Chiang Mai", alt: ["ดีคอนโด ซายน์", "dcondo sign"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8085, lng: 99.0195 },
         { name: "Dcondo Ping Chiang Mai", alt: ["ดีคอนโด พิงค์", "dcondo ping"], address: "ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8090, lng: 99.0205 },
         { name: "Dcondo Nim Chiang Mai", alt: ["ดีคอนโด นิม", "dcondo nim"], address: "ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8055, lng: 99.0185 },
         { name: "Dcondo Rin Chiang Mai", alt: ["ดีคอนโด ริน", "dcondo rin"], address: "ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8078, lng: 99.0190 },
+        { name: "Dcondo Pana Chiang Mai", alt: ["ดีคอนโด พนา", "dcondo pana"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8115, lng: 99.0220 },
+        { name: "Dcondo Reef Chiang Mai", alt: ["ดีคอนโด รีฟ", "dcondo reef"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8105, lng: 99.0235 },
+        { name: "Supalai Monte @ Viang Chiangmai", alt: ["ศุภาลัย มอนเต้ 1", "supalai monte"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.วัดเกต อ.เมือง เชียงใหม่ 50000", lat: 18.8035, lng: 99.0235 },
+        { name: "Supalai Monte 2", alt: ["ศุภาลัย มอนเต้ 2", "monte 2"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.วัดเกต อ.เมือง เชียงใหม่ 50000", lat: 18.8045, lng: 99.0245 },
+        { name: "Supalai Primo Mahidol", alt: ["ศุภาลัย พรีโม่ มหิดล", "supalai primo"], address: "ถ.มหิดล ต.ป่าแดด อ.เมือง เชียงใหม่ 50100", lat: 18.7650, lng: 98.9910 },
+        { name: "Escent Condo Chiangmai (Central)", alt: ["เอสเซ็นท์", "escent central", "เอสเซ็นท์ เซ็นทรัล"], address: "ติดเซ็นทรัลเฟสติวัล ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8080, lng: 99.0175 },
+        { name: "Escent Park Ville Chiangmai", alt: ["เอสเซ็นท์ พาร์ควิลล์", "escent park ville"], address: "ติดเซ็นทรัลเฟสติวัล ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8095, lng: 99.0165 },
+        { name: "Escent Ville Chiangmai", alt: ["เอสเซ็นท์ วิลล์", "escent ville"], address: "ติดเซ็นทรัลเฟสติวัล ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8088, lng: 99.0168 },
+        { name: "The Astra Condo Changklan", alt: ["ดิ แอสตร้า", "astra changklan"], address: "ถ.ช้างคลาน ต.ช้างคลาน อ.เมือง เชียงใหม่ 50100", lat: 18.7780, lng: 98.9995 },
+        { name: "The Astra Sky River", alt: ["แอสตร้า สกายริเวอร์", "sky river", "astra sky river"], address: "ถ.ช้างคลาน ต.ช้างคลาน อ.เมือง เชียงใหม่ 50100", lat: 18.7720, lng: 99.0010 },
+        { name: "The Shine Condo Changklan", alt: ["เดอะ ชายน์", "the shine"], address: "ถ.ช้างคลาน ต.ช้างคลาน อ.เมือง เชียงใหม่ 50100", lat: 18.7760, lng: 99.0005 },
+        { name: "The Spring Condo", alt: ["เดอะ สปริง คอนโด", "spring condo"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8065, lng: 99.0210 },
+        { name: "One Plus Condo Nineteen (นิมมาน 19)", alt: ["วันพลัส นิมมาน", "one plus 19", "oneplus 19"], address: "ถ.นิมมานเหมินท์ ซอย 19 ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7990, lng: 98.9660 },
+        { name: "One Plus Condo Huay Kaew", alt: ["วันพลัส ห้วยแก้ว", "one plus huay kaew"], address: "ถ.ห้วยแก้ว ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.8030, lng: 98.9710 },
+        { name: "One Plus Condo Kamthieng", alt: ["วันพลัส คำเที่ยง", "one plus kamthieng"], address: "ถ.อัษฎาธร ต.ป่าตัน อ.เมือง เชียงใหม่ 50300", lat: 18.8060, lng: 98.9970 },
+        { name: "One Plus Condo Suan Dok", alt: ["วันพลัส สวนดอก", "one plus suandok"], address: "ถ.ศิริมังคลาจารย์ ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7880, lng: 98.9690 },
+        { name: "One Plus Condo Klongchon", alt: ["วันพลัส คลองชล", "one plus klongchon"], address: "ถ.คันคลองชลประทาน ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7910, lng: 98.9590 },
+        { name: "One Plus Condo Jed Yod", alt: ["วันพลัส เจ็ดยอด", "one plus jed yod"], address: "ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8090, lng: 98.9720 },
+        { name: "One Plus Condo Mahidol", alt: ["วันพลัส มหิดล", "one plus mahidol"], address: "ถ.มหิดล ต.ป่าแดด อ.เมือง เชียงใหม่ 50100", lat: 18.7640, lng: 98.9940 },
+        { name: "One Plus Condo Nai Wiang", alt: ["วันพลัส ในเวียง", "one plus nai wiang"], address: "ต.พระสิงห์ อ.เมือง เชียงใหม่ 50200", lat: 18.7860, lng: 98.9830 },
+        { name: "Hillside Plaza & Condotel 4 (นิมมาน)", alt: ["ฮิลล์ไซด์ 4", "hillside 4", "ฮิลล์ไซด์ นิมมาน"], address: "ถ.ห้วยแก้ว ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8010, lng: 98.9685 },
+        { name: "Hillside Condo 3 (นิมมาน ซอย 8)", alt: ["ฮิลล์ไซด์ 3", "hillside 3"], address: "ถ.นิมมานเหมินท์ ซอย 8 ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7970, lng: 98.9675 },
+        { name: "Hillside Condo 7 (คันคลอง)", alt: ["ฮิลล์ไซด์ 7", "hillside 7"], address: "ถ.คันคลองชลประทาน ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8060, lng: 98.9630 },
+        { name: "Hillside Condo 2 (นิมมาน)", alt: ["ฮิลล์ไซด์ 2", "hillside 2"], address: "ถ.นิมมานเหมินท์ ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7985, lng: 98.9670 },
+        { name: "Casa Condo Chang Phueak", alt: ["คาซ่า ช้างเผือก", "casa condo"], address: "ถ.โชตนา ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8150, lng: 98.9780 },
+        { name: "Casa Condo @ CMU (หลังมอ)", alt: ["คาซ่า สวนดอก", "casa cmu"], address: "ถ.สุเทพ ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7910, lng: 98.9620 },
+        { name: "Arise Condo Mahidol", alt: ["อะไรซ์ มหิดล", "arise condo", "อะไรซ์คอนโด"], address: "ถ.มหิดล ต.ป่าแดด อ.เมือง เชียงใหม่ 50100", lat: 18.7610, lng: 98.9960 },
+        { name: "Palm Springs Nimman (Areca/Royal)", alt: ["ปาล์ม สปริงส์ นิมมาน", "palm springs nimman"], address: "ถ.นิมมานเหมินท์ ซอย 5 ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7975, lng: 98.9690 },
+        { name: "Palm Springs Privato", alt: ["ปาล์ม สปริงส์ พริวาโต", "privato"], address: "ถ.มหิดล ต.ป่าแดด อ.เมือง เชียงใหม่ 50100", lat: 18.7620, lng: 98.9810 },
+        { name: "The Unique Condo @ Nimman", alt: ["เดอะ ยูนีค นิมมาน", "unique nimman"], address: "ถ.สุขเกษม ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7985, lng: 98.9665 },
+        { name: "The Unique Condo @ Ruamchok", alt: ["เดอะ ยูนีค รวมโชค", "unique ruamchok"], address: "ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8250, lng: 99.0110 },
+        { name: "The Touch Condo Jed Yod", alt: ["เดอะ ทัช คอนโด", "the touch jed yod"], address: "ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8080, lng: 98.9740 },
+        { name: "North Condo Serene Lake", alt: ["นอร์ท คอนโด ซีรีนเลค", "north condo"], address: "โครงการซีรีนเลค ต.แม่เหียะ อ.เมือง เชียงใหม่ 50100", lat: 18.7520, lng: 98.9620 },
+        { name: "Twin Peaks Condo Changklan", alt: ["ทวินพีคส์", "twin peaks"], address: "ถ.ช้างคลาน ต.ช้างคลาน อ.เมือง เชียงใหม่ 50100", lat: 18.7775, lng: 98.9998 },
+        { name: "Karnkanok 3 Condo Jed Yod", alt: ["กาญจน์กนก 3 เจ็ดยอด", "karnkanok 3"], address: "ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8095, lng: 98.9730 },
+        { name: "Punna Residence @ Nimman", alt: ["ปันนา เรสซิเดนซ์ นิมมาน", "punna nimman"], address: "ถ.นิมมานเหมินท์ ซอย 6 ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7970, lng: 98.9685 },
+        { name: "Punna Oasis (CBP อาเขต)", alt: ["ปันนา โอเอซิส", "punna oasis"], address: "เชียงใหม่บิสสิเนสพาร์ค ต.หนองป่าครั่ง อ.เมือง เชียงใหม่ 50000", lat: 18.8010, lng: 99.0220 },
+        { name: "Tree Boutique Condo Changklan", alt: ["ทรี บูทีค", "tree boutique"], address: "ถ.ประชาสัมพันธ์ ต.ช้างคลาน อ.เมือง เชียงใหม่ 50100", lat: 18.7735, lng: 99.0020 },
+        { name: "Liv@Nimman Condo", alt: ["ลิฟ แอท นิมมาน", "liv nimman"], address: "ถ.นิมมานเหมินท์ ซอย 2 ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7978, lng: 98.9670 },
+        { name: "Moda Condo (แยกรินคำ)", alt: ["โมดา คอนโด", "moda condo"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8035, lng: 98.9680 },
+        { name: "Prime Square Condo", alt: ["ไพร์ม สแควร์", "prime square"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8050, lng: 98.9750 },
+        { name: "The Vidi Condominium", alt: ["เดอะ วิดี สันติธรรม", "vidi condo"], address: "ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8045, lng: 98.9785 },
+        { name: "City View Condo", alt: ["ซิตี้วิว คอนโด", "city view"], address: "ถ.ช้างคลาน ต.ช้างคลาน อ.เมือง เชียงใหม่ 50100", lat: 18.7810, lng: 99.0010 },
+        { name: "Galae Thong Tower", alt: ["กาแลทอง ทาวเวอร์", "galae thong"], address: "ถ.ช้างคลาน ต.ช้างคลาน อ.เมือง เชียงใหม่ 50100", lat: 18.7745, lng: 99.0025 },
+
+        // --- หมู่บ้านจัดสรรชื่อดังในเชียงใหม่ ---
+        { name: "หมู่บ้านกูลพันธ์วิลล์ 1 (Koolpant Ville 1)", alt: ["กูลพันธ์ 1", "koolpant 1"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.ดอนจั่น อ.เมือง เชียงใหม่ 50000", lat: 18.7680, lng: 99.0220 },
+        { name: "หมู่บ้านกูลพันธ์วิลล์ 5 (Koolpant Ville 5)", alt: ["กูลพันธ์ 5", "koolpant 5"], address: "ถ.เชียงใหม่-หางดง ต.แม่เหียะ อ.เมือง เชียงใหม่ 50100", lat: 18.7350, lng: 98.9730 },
+        { name: "หมู่บ้านกูลพันธ์วิลล์ 7 (The Heritage)", alt: ["กูลพันธ์ 7", "koolpant 7"], address: "ถ.เชียงใหม่-หางดง ต.สันผักหวาน อ.หางดง เชียงใหม่ 50230", lat: 18.7280, lng: 98.9710 },
+        { name: "หมู่บ้านกูลพันธ์วิลล์ 9 (The Legend)", alt: ["กูลพันธ์ 9", "koolpant 9"], address: "ถ.เชียงใหม่-หางดง ต.บ้านแหวน อ.หางดง เชียงใหม่ 50230", lat: 18.7180, lng: 98.9680 },
+        { name: "หมู่บ้านกูลพันธ์วิลล์ 10 (Koolpant Ville 10)", alt: ["กูลพันธ์ 10", "koolpant 10"], address: "ถ.เชียงใหม่-สันกำแพง ต.ต้นเปา อ.สันกำแพง เชียงใหม่ 50130", lat: 18.7890, lng: 99.0550 },
+        { name: "หมู่บ้านกูลพันธ์วิลล์ 12 (Koolpant Ville 12)", alt: ["กูลพันธ์ 12", "koolpant 12"], address: "ถ.เชียงใหม่-พร้าว ต.หนองหาร อ.สันทราย เชียงใหม่ 50290", lat: 18.8450, lng: 99.0250 },
+        { name: "หมู่บ้านกูลพันธ์วิลล์ 14 (Koolpant Ville 14)", alt: ["กูลพันธ์ 14", "koolpant 14"], address: "ต.สันทรายหลวง อ.สันทราย เชียงใหม่ 50210", lat: 18.8350, lng: 99.0350 },
+        { name: "หมู่บ้านกูลพันธ์วิลล์ 15 (Park Avenue)", alt: ["กูลพันธ์ 15", "koolpant 15"], address: "ต.สันทรายน้อย อ.สันทราย เชียงใหม่ 50210", lat: 18.8480, lng: 99.0380 },
+        { name: "หมู่บ้านกูลพันธ์วิลล์ 17 (Koolpant Ville 17)", alt: ["กูลพันธ์ 17", "koolpant 17"], address: "ต.ป่าแดด อ.เมือง เชียงใหม่ 50100", lat: 18.7420, lng: 98.9850 },
+        { name: "หมู่บ้านลัดดารมย์ อิลิแกนซ์ (Laddarom Elegance)", alt: ["ลัดดารมย์", "laddarom elegance"], address: "วงแหวนรอบ 2 ต.หนองผึ้ง อ.สารภี เชียงใหม่ 50140", lat: 18.7520, lng: 99.0280 },
+        { name: "หมู่บ้านลัดดารมย์ พายัพ (Laddarom Payap)", alt: ["ลัดดารมย์ พายัพ", "laddarom payap"], address: "ใกล้ ม.พายัพ ต.สันทรายน้อย อ.สันทราย เชียงใหม่ 50210", lat: 18.7970, lng: 99.0380 },
+        { name: "หมู่บ้านวรารมย์ เจริญเมือง (Vararom Charoenmuang)", alt: ["วรารมย์ เจริญเมือง", "vararom"], address: "ถ.เจริญเมือง ต.ต้นเปา อ.สันกำแพง เชียงใหม่ 50130", lat: 18.7750, lng: 99.0520 },
+        { name: "หมู่บ้านวรารมย์ พรีเมี่ยม แก้วนวรัฐ", alt: ["วรารมย์ แก้วนวรัฐ", "vararom premium"], address: "ถ.แก้วนวรัฐ ต.สันทรายน้อย อ.สันทราย เชียงใหม่ 50210", lat: 18.8180, lng: 99.0410 },
+        { name: "หมู่บ้านชัยพฤกษ์ เชียงใหม่ (Chaiyapruek)", alt: ["ชัยพฤกษ์", "chaiyapruek"], address: "ถ.วงแหวนรอบ 2 ต.หนองหอย อ.เมือง เชียงใหม่ 50000", lat: 18.7560, lng: 99.0240 },
+        { name: "หมู่บ้านแลนด์แอนด์เฮ้าส์พาร์ค แม่โจ้ (LH Park)", alt: ["แลนด์แอนด์เฮ้าส์ แม่โจ้", "lh park maejo"], address: "ถ.เชียงใหม่-พร้าว ต.หนองหาร อ.สันทราย เชียงใหม่ 50290", lat: 18.8820, lng: 99.0220 },
+        { name: "หมู่บ้านสีวลี เชียงใหม่ (Sivalai)", alt: ["สีวลี", "sivalai"], address: "ถ.เชียงใหม่-หางดง ต.แม่เหียะ อ.เมือง เชียงใหม่ 50100", lat: 18.7450, lng: 98.9680 },
+        { name: "หมู่บ้านสีวลี สันกำแพง (Sivalai San Kamphaeng)", alt: ["สีวลี สันกำแพง", "sivalai 2"], address: "ถ.เชียงใหม่-สันกำแพง ต.ต้นเปา อ.สันกำแพง เชียงใหม่ 50130", lat: 18.7760, lng: 99.0480 },
+        { name: "หมู่บ้านซีรีนเลค เชียงใหม่ (Serene Lake)", alt: ["ซีรีนเลค", "serene lake"], address: "ถ.สมโภชเชียงใหม่ 700 ปี ต.แม่เหียะ อ.เมือง เชียงใหม่ 50100", lat: 18.7510, lng: 98.9610 },
+        { name: "หมู่บ้านกาญจน์กนกวิลล์ 1 (Karnkanok Ville 1)", alt: ["กาญจน์กนก 1", "karnkanok ville 1"], address: "ถ.เชียงใหม่-สันกำแพง ต.ต้นเปา อ.สันกำแพง เชียงใหม่ 50130", lat: 18.7710, lng: 99.0450 },
+        { name: "หมู่บ้านกาญจน์กนกวิลล์ 2-4 (สันทราย/ป่าแดด)", alt: ["กาญจน์กนกวิลล์", "karnkanok ville"], address: "ต.สันทรายหลวง อ.สันทราย เชียงใหม่ 50210", lat: 18.8250, lng: 99.0280 },
+        { name: "หมู่บ้านกาญจน์กนกวิลล์ 10-15 (สารภี/วงแหวน)", alt: ["กาญจน์กนก สารภี", "karnkanok 12"], address: "ต.หนองผึ้ง อ.สารภี เชียงใหม่ 50140", lat: 18.7390, lng: 99.0120 },
+        { name: "หมู่บ้านดิ เออร์บาน่า 1-2 (The Urbana 1/2)", alt: ["ดิเออร์บาน่า", "the urbana", "เออร์บาน่า 1", "เออร์บาน่า 2"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.ท่าศาลา อ.เมือง เชียงใหม่ 50000", lat: 18.7540, lng: 99.0210 },
+        { name: "หมู่บ้านดิ เออร์บาน่า 3-5 (The Urbana 3/4/5)", alt: ["เออร์บาน่า 3", "the urbana 3", "เออร์บาน่า 4"], address: "ต.ป่าแดด อ.เมือง เชียงใหม่ 50100", lat: 18.7490, lng: 99.0180 },
+        { name: "หมู่บ้านพฤกษาวิลล์ มหิดล-ดอนจั่น", alt: ["พฤกษาวิลล์", "pruksa ville", "พฤกษา มหิดล"], address: "ถ.มหิดล ต.ท่าศาลา อ.เมือง เชียงใหม่ 50000", lat: 18.7610, lng: 99.0260 },
+        { name: "หมู่บ้านเพอร์เฟค พาร์ค เชียงใหม่ (Perfect Park)", alt: ["เพอร์เฟคพาร์ค", "perfect park"], address: "ต.แม่เหียะ อ.เมือง เชียงใหม่ 50100", lat: 18.7480, lng: 98.9580 },
+        { name: "หมู่บ้านเชียงใหม่แลนด์ (Chiang Mai Land)", alt: ["เชียงใหม่แลนด์", "chiang mai land"], address: "ถ.ช้างคลาน ต.ช้างคลาน อ.เมือง เชียงใหม่ 50100", lat: 18.7710, lng: 98.9980 },
+        { name: "หมู่บ้านอรสิริน 1-3 (Ornsirin 1/2/3)", alt: ["อรสิริน", "ornsirin", "อรสิริน 3"], address: "ถ.วงแหวนรอบนอก ต.สันทรายน้อย อ.สันทราย เชียงใหม่ 50210", lat: 18.8280, lng: 99.0390 },
+        { name: "หมู่บ้านอรสิริน 6-11 (Ornsirin 6/11)", alt: ["อรสิริน 6", "ornsirin 11"], address: "ถ.เชียงใหม่-สันกำแพง ต.ต้นเปา อ.สันกำแพง เชียงใหม่ 50130", lat: 18.7810, lng: 99.0620 },
+        { name: "หมู่บ้านสมหวัง เชียงใหม่ (Somwang Village)", alt: ["หมู่บ้านสมหวัง", "somwang"], address: "ต.หนองผึ้ง อ.สารภี เชียงใหม่ 50140", lat: 18.7150, lng: 98.9880 },
+        { name: "หมู่บ้านวังตาล (Wang Tan Village)", alt: ["หมู่บ้านวังตาล", "wang tan"], address: "ต.สันผักหวาน อ.หางดง เชียงใหม่ 50230", lat: 18.7410, lng: 98.9750 },
+        { name: "หมู่บ้านบุราสิริ สันผีเสื้อ (Burasiri)", alt: ["บุราสิริ", "burasiri", "สันผีเสื้อ"], address: "ต.สันผีเสื้อ อ.เมือง เชียงใหม่ 50300", lat: 18.8420, lng: 98.9950 },
+        { name: "หมู่บ้านสราญสิริ ป่าแดด (Saransiri)", alt: ["สราญสิริ", "saransiri"], address: "ต.ป่าแดด อ.เมือง เชียงใหม่ 50100", lat: 18.7460, lng: 98.9910 },
+        { name: "หมู่บ้านอนาสิริ พายัพ (Anasiri Payap)", alt: ["อนาสิริ", "anasiri payap", "อนาสิริ พายัพ"], address: "ต.สันทรายน้อย อ.สันทราย เชียงใหม่ 50210", lat: 18.7960, lng: 99.0390 },
+        { name: "หมู่บ้านเศรษฐสิริ สันทราย (Setthasiri)", alt: ["เศรษฐสิริ", "setthasiri"], address: "ต.หนองจ๊อม อ.สันทราย เชียงใหม่ 50210", lat: 18.8320, lng: 99.0260 },
+        { name: "หมู่บ้านมาลาดา แกรนด์ คูลี่ (Malada)", alt: ["มาลาดา", "malada grand coulee"], address: "ถ.เชียงใหม่-สันกำแพง ต.ต้นเปา อ.สันกำแพง เชียงใหม่ 50130", lat: 18.7650, lng: 99.0620 },
+        { name: "หมู่บ้านธนาวิลล์ เชียงใหม่ (Thana Ville)", alt: ["ธนาวิลล์", "thana ville"], address: "ต.แม่เหียะ อ.เมือง เชียงใหม่ 50100", lat: 18.7520, lng: 98.9550 },
+        { name: "หมู่บ้านบ้านนนนิภา แม่โจ้ (Nonnipa)", alt: ["นนนิภา", "nonnipa maejo"], address: "ต.หนองหาร อ.สันทราย เชียงใหม่ 50290", lat: 18.8950, lng: 99.0200 },
+
+        // --- ศูนย์การค้า, ห้างสรรพสินค้า & คอมมูนิตี้มอลล์ ---
+        { name: "บิ๊กซี เอ็กซ์ตร้า เชียงใหม่ 2 (แยกศาลเด็ก)", alt: ["big c extra", "บิ๊กซีเอ็กซ์ตร้า", "ศาลเด็ก", "บิ๊กซี 2"], address: "เชียงใหม่บิสสิเนสพาร์ค ต.หนองป่าครั่ง อ.เมือง เชียงใหม่ 50000", lat: 18.8005, lng: 99.0272 },
         { name: "เซ็นทรัล เชียงใหม่ (เซ็นทรัลเฟสติวัล)", alt: ["เซ็นทรัลเฟส", "central festival", "เซ็นเฟส", "central chiangmai"], address: "99/3 หมู่ 4 ถ.ซุปเปอร์ไฮเวย์ ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8070, lng: 99.0180 },
         { name: "เมญ่า เชียงใหม่ (MAYA Lifestyle)", alt: ["ห้างเมญ่า", "maya", "แยกรินคำ"], address: "55 หมู่ 5 ถ.ห้วยแก้ว ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8023, lng: 98.9667 },
         { name: "วัน นิมมาน (One Nimman)", alt: ["วันนิมมาน", "one nimman"], address: "ถ.นิมมานเหมินท์ ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7998, lng: 98.9682 },
+        { name: "ธิงค์พาร์ค เชียงใหม่ (Think Park)", alt: ["think park", "ธิงค์พาร์ค", "แยกรินคำ"], address: "แยกรินคำ ถ.ห้วยแก้ว ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.8015, lng: 98.9675 },
         { name: "เซ็นทรัล เชียงใหม่ แอร์พอร์ต", alt: ["โรบินสันแอร์พอร์ต", "central airport", "เซ็นทรัลแอร์พอร์ต"], address: "2 ถ.มหิดล ต.หายยา อ.เมือง เชียงใหม่ 50100", lat: 18.7690, lng: 98.9754 },
-        { name: "The Astra Condo Changklan", alt: ["ดิ แอสตร้า", "astra changklan"], address: "ถ.ช้างคลาน ต.ช้างคลาน อ.เมือง เชียงใหม่ 50100", lat: 18.7780, lng: 98.9995 },
-        { name: "The Astra Sky River", alt: ["แอสตร้า สกายริเวอร์", "sky river"], address: "ถ.ช้างคลาน ต.ช้างคลาน อ.เมือง เชียงใหม่ 50100", lat: 18.7720, lng: 99.0010 },
-        { name: "Supalai Monte @ Viang Chiangmai", alt: ["ศุภาลัย มอนเต้ 1", "supalai monte"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.วัดเกต อ.เมือง เชียงใหม่ 50000", lat: 18.8035, lng: 99.0235 },
-        { name: "Supalai Monte 2", alt: ["ศุภาลัย มอนเต้ 2", "monte 2"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.วัดเกต อ.เมือง เชียงใหม่ 50000", lat: 18.8045, lng: 99.0245 },
-        { name: "Escent Condo Chiangmai (Central)", alt: ["เอสเซ็นท์", "escent central"], address: "ติดเซ็นทรัลเฟสติวัล ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8080, lng: 99.0175 },
-        { name: "Casa Condo Chang Phueak", alt: ["คาซ่า ช้างเผือก", "casa condo"], address: "ถ.โชตนา ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8150, lng: 98.9780 },
-        { name: "Arise Condo Mahidol", alt: ["อะไรซ์ มหิดล", "arise condo"], address: "ถ.มหิดล ต.ป่าแดด อ.เมือง เชียงใหม่ 50100", lat: 18.7610, lng: 98.9960 },
+        { name: "มีโชค พลาซ่า & กาดรวมโชค (Ruamchok)", alt: ["มีโชคพลาซ่า", "รวมโชค", "ตลาดรวมโชค", "meechok"], address: "แยกรวมโชค ต.ฟ้าฮ่าม อ.เมือง เชียงใหม่ 50000", lat: 18.8240, lng: 99.0115 },
+        { name: "กาดฝรั่ง วิลเลจ (Kad Farang Village)", alt: ["กาดฝรั่ง", "kad farang"], address: "ถ.เชียงใหม่-หางดง ต.บ้านแหวน อ.หางดง เชียงใหม่ 50230", lat: 18.6940, lng: 98.9320 },
+        { name: "สตาร์ เอวีนิว อาเขต (Star Avenue)", alt: ["star avenue", "สตาร์เอวีนิว"], address: "ใกล้ขนส่งอาเขต ต.วัดเกต อ.เมือง เชียงใหม่ 50000", lat: 18.8008, lng: 99.0170 },
+        { name: "นิ่ม ซิตี้ เดลี่ (Nim City Daily)", alt: ["นิ่มซิตี้", "nim city"], address: "ถ.มหิดล ต.หายยา อ.เมือง เชียงใหม่ 50100", lat: 18.7715, lng: 98.9805 },
+        { name: "พรอมเมนาดา เชียงใหม่ (Promenada)", alt: ["พรอมเมนาดา", "promenada"], address: "ถ.สมโภชเชียงใหม่ 700 ปี ต.ท่าศาลา อ.เมือง เชียงใหม่ 50000", lat: 18.7660, lng: 99.0380 },
+        { name: "บิ๊กซี ดอนจั่น (Big C Don Chan)", alt: ["บิ๊กซี ดอนจั่น", "big c donchan"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.ท่าศาลา อ.เมือง เชียงใหม่ 50000", lat: 18.7640, lng: 99.0340 },
+        { name: "บิ๊กซี หางดง 1 (แม่เหียะ)", alt: ["บิ๊กซี หางดง", "บิ๊กซี แม่เหียะ"], address: "ถ.เชียงใหม่-หางดง ต.แม่เหียะ อ.เมือง เชียงใหม่ 50100", lat: 18.7480, lng: 98.9720 },
+        { name: "โลตัส คำเที่ยง (Lotus Khamthieng)", alt: ["โลตัส คำเที่ยง", "โลตัสคำเที่ยง"], address: "ถ.อัษฎาธร ต.ป่าตัน อ.เมือง เชียงใหม่ 50300", lat: 18.8040, lng: 98.9980 },
+        { name: "แม็คโคร เชียงใหม่ 1 (หนองป่าครั่ง)", alt: ["แม็คโคร เชียงใหม่", "makro cnx"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.หนองป่าครั่ง อ.เมือง เชียงใหม่ 50000", lat: 18.7920, lng: 99.0340 },
+        { name: "แม็คโคร หางดง (แม่เหียะ)", alt: ["แม็คโคร หางดง", "makro hangdong"], address: "ถ.เชียงใหม่-หางดง ต.แม่เหียะ อ.เมือง เชียงใหม่ 50100", lat: 18.7420, lng: 98.9690 },
+
+        // --- มหาวิทยาลัย & สถานศึกษา ---
         { name: "มหาวิทยาลัยเชียงใหม่ (มช. หน้ามอ)", alt: ["มช", "cmu", "หน้ามอ มช"], address: "239 ถ.ห้วยแก้ว ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.8020, lng: 98.9505 },
         { name: "มหาวิทยาลัยเชียงใหม่ (มช. หลังมอ)", alt: ["หลังมอ มช", "ประตูหลัง มช"], address: "ถ.สุเทพ ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7935, lng: 98.9525 },
-        { name: "กาดหน้ามอ / กาดมาลินพลาซ่า", alt: ["มาลิน", "malin plaza", "กาดหน้ามอ"], address: "99/58 ถ.ห้วยแก้ว ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8080, lng: 98.9550 },
+        { name: "มหาวิทยาลัยเชียงใหม่ (ศูนย์การศึกษาสวนดอก)", alt: ["มช สวนดอก", "cmu suan dok"], address: "ถ.อินทวโรรส ต.ศรีภูมิ อ.เมือง เชียงใหม่ 50200", lat: 18.7890, lng: 98.9730 },
         { name: "มหาวิทยาลัยพายัพ (เขตแม่คาว)", alt: ["ม.พายัพ", "payap university", "พายัพ"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.สันทรายน้อย อ.เมือง เชียงใหม่ 50000", lat: 18.7930, lng: 99.0320 },
+        { name: "มหาวิทยาลัยพายัพ (เขตแก้วนวรัฐ)", alt: ["พายัพ แก้วนวรัฐ", "payap kaewnawarat"], address: "ถ.แก้วนวรัฐ ต.วัดเกต อ.เมือง เชียงใหม่ 50000", lat: 18.7950, lng: 99.0120 },
         { name: "มหาวิทยาลัยราชภัฏเชียงใหม่", alt: ["ราชภัฏเชียงใหม่", "cmru"], address: "ถ.โชตนา ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8040, lng: 98.9870 },
         { name: "มหาวิทยาลัยแม่โจ้", alt: ["แม่โจ้", "mju"], address: "ต.หนองหาร อ.สันทราย เชียงใหม่ 50290", lat: 18.8930, lng: 99.0150 },
-        { name: "ถนนนิมมานเหมินท์ ซอย 9", alt: ["นิมมาน 9", "nimman 9"], address: "ถ.นิมมานเหมินท์ ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7960, lng: 98.9680 },
+
+        // --- โรงพยาบาลสำคัญ ---
+        { name: "โรงพยาบาลมหาราชนครเชียงใหม่ (สวนดอก)", alt: ["รพ.สวนดอก", "มหาราช", "suan dok", "โรงพยาบาลสวนดอก"], address: "110 ถ.อินทวโรรส ต.ศรีภูมิ อ.เมือง เชียงใหม่ 50200", lat: 18.7895, lng: 98.9740 },
+        { name: "โรงพยาบาลกรุงเทพ เชียงใหม่", alt: ["รพ.กรุงเทพเชียงใหม่", "bangkok hospital"], address: "ถ.ซุปเปอร์ไฮเวย์ ต.หนองป่าครั่ง อ.เมือง เชียงใหม่ 50000", lat: 18.7930, lng: 99.0290 },
+        { name: "โรงพยาบาลเชียงใหม่ ราม", alt: ["เชียงใหม่ราม", "chiangmai ram"], address: "ถ.บุญเรืองฤทธิ์ ต.ศรีภูมิ อ.เมือง เชียงใหม่ 50200", lat: 18.7950, lng: 98.9810 },
+        { name: "โรงพยาบาลแมคคอร์มิค", alt: ["แมคคอร์มิค", "mccormick"], address: "ถ.แก้วนวรัฐ ต.วัดเกต อ.เมือง เชียงใหม่ 50000", lat: 18.7970, lng: 99.0110 },
+        { name: "โรงพยาบาลลานนา", alt: ["รพ.ลานนา", "lanna hospital"], address: "ถ.สุขเกษม ต.ป่าตัน อ.เมือง เชียงใหม่ 50300", lat: 18.8160, lng: 98.9890 },
+        { name: "โรงพยาบาลราชเวช เชียงใหม่", alt: ["ราชเวช", "rajavej"], address: "ถ.เชียงใหม่-ลำพูน ต.หนองหอย อ.เมือง เชียงใหม่ 50000", lat: 18.7610, lng: 99.0060 },
+        { name: "โรงพยาบาลเซ็นทรัลเชียงใหม่ เมโมเรียล", alt: ["เซ็นทรัลเมโมเรียล", "central memorial"], address: "ถ.ช้างคลาน ต.ช้างคลาน อ.เมือง เชียงใหม่ 50100", lat: 18.7750, lng: 98.9870 },
+        { name: "โรงพยาบาลนครพิงค์", alt: ["รพ.นครพิงค์", "nakornping"], address: "ถ.โชตนา ต.ดอนแก้ว อ.แม่ริม เชียงใหม่ 50180", lat: 18.8520, lng: 98.9720 },
+
+        // --- จุดคมนาคม, ตลาด & จุดแลนด์มาร์คสำคัญ ---
+        { name: "สนามบินนานาชาติเชียงใหม่ (CNX)", alt: ["สนามบินเชียงใหม่", "cnx airport", "สนามบิน"], address: "60 ถ.มหิดล ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7710, lng: 98.9630 },
+        { name: "สถานีขนส่งผู้โดยสารเชียงใหม่ (อาเขต 2/3)", alt: ["อาเขต", "arcade bus", "ขนส่งอาเขต"], address: "ต.วัดเกต อ.เมือง เชียงใหม่ 50000", lat: 18.8000, lng: 99.0180 },
+        { name: "สถานีรถไฟเชียงใหม่", alt: ["รถไฟเชียงใหม่", "railway cnx"], address: "ถ.รถไฟ ต.วัดเกต อ.เมือง เชียงใหม่ 50000", lat: 18.7850, lng: 99.0170 },
+        { name: "ประตูท่าแพ", alt: ["ท่าแพ", "tha phae"], address: "ถ.ท่าแพ ต.ช้างคลาน อ.เมือง เชียงใหม่ 50100", lat: 18.7880, lng: 98.9935 },
+        { name: "ประตูช้างเผือก", alt: ["ช้างเผือก", "chang phueak gate"], address: "ถ.มณีนพรัตน์ ต.ศรีภูมิ อ.เมือง เชียงใหม่ 50200", lat: 18.7960, lng: 98.9860 },
+        { name: "ประตูเชียงใหม่", alt: ["ประตูเมืองเชียงใหม่", "chiang mai gate"], address: "ถ.บำรุงบุรี ต.พระสิงห์ อ.เมือง เชียงใหม่ 50200", lat: 18.7810, lng: 98.9880 },
         { name: "ย่านสันติธรรม (วงเวียนสันติธรรม)", alt: ["สันติธรรม", "santitham"], address: "ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8020, lng: 98.9800 },
         { name: "ย่านเจ็ดยอด (วัดเจ็ดยอด)", alt: ["เจ็ดยอด", "jed yod"], address: "ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8100, lng: 98.9700 },
-        { name: "ประตูท่าแพ", alt: ["ท่าแพ", "tha phae"], address: "ถ.ท่าแพ ต.ช้างคลาน อ.เมือง เชียงใหม่ 50100", lat: 18.7880, lng: 98.9935 },
-        { name: "ขนส่งอาเขตเชียงใหม่", alt: ["อาเขต", "arcade bus"], address: "ต.วัดเกต อ.เมือง เชียงใหม่ 50000", lat: 18.8000, lng: 99.0180 },
-        { name: "โรงพยาบาลมหาราชนครเชียงใหม่ (สวนดอก)", alt: ["รพ.สวนดอก", "มหาราช", "suan dok"], address: "110 ถ.อินทวโรรส ต.ศรีภูมิ อ.เมือง เชียงใหม่ 50200", lat: 18.7895, lng: 98.9740 },
-        { name: "สนามบินนานาชาติเชียงใหม่ (CNX)", alt: ["สนามบินเชียงใหม่", "cnx airport"], address: "60 ถ.มหิดล ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7710, lng: 98.9630 }
+        { name: "ถนนนิมมานเหมินท์ ซอย 9", alt: ["นิมมาน 9", "nimman 9", "นิมมาน"], address: "ถ.นิมมานเหมินท์ ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7960, lng: 98.9680 },
+        { name: "กาดหน้ามอ / กาดมาลินพลาซ่า", alt: ["มาลิน", "malin plaza", "กาดหน้ามอ"], address: "99/58 ถ.ห้วยแก้ว ต.ช้างเผือก อ.เมือง เชียงใหม่ 50300", lat: 18.8080, lng: 98.9550 },
+        { name: "ตลาดวโรรส (กาดหลวง)", alt: ["กาดหลวง", "warorot", "วโรรส"], address: "ถ.วิชยานนท์ ต.ช้างม่อย อ.เมือง เชียงใหม่ 50300", lat: 18.7900, lng: 99.0010 },
+        { name: "ตลาดต้นพยอม (สุเทพ)", alt: ["ต้นพยอม", "ton payom"], address: "ถ.สุเทพ ต.สุเทพ อ.เมือง เชียงใหม่ 50200", lat: 18.7920, lng: 98.9580 },
+        { name: "ตลาดสันป่าข่อย", alt: ["สันป่าข่อย", "san pa khoi"], address: "ถ.เจริญเมือง ต.วัดเกต อ.เมือง เชียงใหม่ 50000", lat: 18.7870, lng: 99.0090 },
+        { name: "ตลาดหนองหอย", alt: ["หนองหอย", "nong hoi"], address: "ถ.เชียงใหม่-ลำพูน ต.หนองหอย อ.เมือง เชียงใหม่ 50000", lat: 18.7620, lng: 99.0100 },
+        { name: "ตลาดสมเพชร", alt: ["สมเพชร", "sompet market"], address: "ถ.มูลเมือง ต.ศรีภูมิ อ.เมือง เชียงใหม่ 50200", lat: 18.7925, lng: 98.9930 }
     ];
 
     window._currentSearchResults = [];
@@ -8599,28 +8820,42 @@
 
         searchDebounceTimer = setTimeout(async () => {
             try {
-                // Tier 1: Dedicated backend search endpoint (Zero CORS issues, server-biased)
-                const res = await fetch(`${window.API_BASE}/api/selfservice/search-places?q=${encodeURIComponent(query)}`);
+                // Tier 1: Search via Dedicated endpoint or OpenStreetMap Nominatim with Chiang Mai bounding box
+                const osmUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ' เชียงใหม่')}&viewbox=98.80,19.05,99.20,18.65&bounded=0&limit=7&accept-language=th`;
+                const res = await fetch(osmUrl);
                 const data = await res.json();
-                if (data && data.success && Array.isArray(data.results) && data.results.length > 0) {
-                    window._currentSearchResults = data.results;
-                    renderSearchResults(data.results);
+                if (Array.isArray(data) && data.length > 0) {
+                    const onlineResults = data.map(item => ({
+                        lat: item.lat,
+                        lon: item.lon,
+                        display_name: item.display_name,
+                        isPOI: false
+                    }));
+                    // Combine matched POIs first, then online results
+                    const merged = [...(window._currentSearchResults || [])];
+                    onlineResults.forEach(onItem => {
+                        if (!merged.some(m => Math.abs(parseFloat(m.lat) - parseFloat(onItem.lat)) < 0.001 && Math.abs(parseFloat(m.lon) - parseFloat(onItem.lon)) < 0.001)) {
+                            merged.push(onItem);
+                        }
+                    });
+                    window._currentSearchResults = merged;
+                    renderSearchResults(merged);
                     return;
                 }
-            } catch (backendErr) {
-                console.warn('Backend search place error:', backendErr);
+            } catch (searchErr) {
+                console.warn('Place search notice:', searchErr);
             }
 
-            // Fallback: If backend returns empty or fails, use matched local POIs
+            // Fallback: If network lookup returned nothing, use matched local POIs
             if (matchedPOIs.length > 0) {
                 renderSearchResults(window._currentSearchResults);
             } else {
                 if (resBox) {
-                    resBox.innerHTML = '<div class="map-search-item" style="color:#94a3b8; background:#1c202d;">ไม่พบสถานที่ กรุณาลองพิมพ์ชื่อถนน อาคาร หรือซอย</div>';
+                    resBox.innerHTML = '<div class="map-search-item" style="color:#94a3b8; background:#1c202d;">ไม่พบสถานที่ กรุณาลองพิมพ์ชื่อหมู่บ้าน คอนโด หรือถนน</div>';
                     resBox.style.display = 'block';
                 }
             }
-        }, 250);
+        }, 300);
     }
 
     function renderSearchResults(results) {
@@ -8632,7 +8867,7 @@
             return;
         }
 
-        resBox.innerHTML = results.slice(0, 7).map((item, idx) => `
+        resBox.innerHTML = results.slice(0, 8).map((item, idx) => `
             <div class="map-search-item" onclick="handleSearchResultClick(${idx})" style="display:flex; align-items:center; gap:8px;">
                 <svg class="svg-icon-sm" viewBox="0 0 24 24" style="color:#ff6b00; flex-shrink:0;">
                     ${item.isPOI ? '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>' : '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'}
@@ -8681,6 +8916,14 @@
             confirmBtn.textContent = (parent === 'home') ? 'สั่งสินค้าเลย' : 'ยืนยันที่อยู่จัดส่ง';
         }
 
+        // Pre-fill house number / address detail if previously entered
+        const pinDetailInput = document.getElementById('pin-address-detail-input');
+        if (pinDetailInput && currentSavedAddress && currentSavedAddress.title) {
+            if (currentSavedAddress.title !== 'ตำแหน่งที่ปักหมุด' && currentSavedAddress.title !== 'ที่อยู่จัดส่ง') {
+                pinDetailInput.value = currentSavedAddress.title;
+            }
+        }
+
         setTimeout(() => {
             if (!mapInstance) {
                 mapInstance = L.map('map-container', { zoomControl: false }).setView([currentPinnedCoords.lat, currentPinnedCoords.lng], 15);
@@ -8699,6 +8942,13 @@
                 mapInstance.invalidateSize();
                 mapInstance.setView([currentPinnedCoords.lat, currentPinnedCoords.lng], 15);
             }
+
+            // Show real-time Google Maps style blue dot
+            if (userRealCoords) {
+                updateUserLiveDot(userRealCoords.lat, userRealCoords.lng);
+            }
+            startLiveLocationTracking();
+
             onCenterPinMoved(currentPinnedCoords.lat, currentPinnedCoords.lng);
         }, 220);
     }
@@ -8829,11 +9079,15 @@
     }
 
     function locateCurrentGPS() {
-        if (!navigator.geolocation) return;
+        if (!navigator.geolocation) {
+            showToast('อุปกรณ์ไม่รองรับการระบุพิกัด GPS');
+            return;
+        }
         navigator.geolocation.getCurrentPosition(
             (pos) => {
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
+                updateUserLiveDot(lat, lng);
                 if (mapInstance) {
                     mapInstance.flyTo([lat, lng], 16, { animate: true, duration: 0.8 });
                 }
@@ -8841,6 +9095,7 @@
             },
             (err) => {
                 console.warn('GPS location unavailable:', err);
+                showToast('กรุณากดเปิดใช้งาน GPS / สิทธิ์ระบุตำแหน่งบนเบราว์เซอร์');
             },
             { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
         );
