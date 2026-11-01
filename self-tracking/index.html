@@ -46,29 +46,24 @@
             flex-direction: column;
             align-items: center;
             flex: 1;
-            padding: 0 16px 40px;
+            padding: 0 16px 50px;
         }
 
-        /* Top Capsule Pill with vapor.club FLAGSHIP STORE logo */
-        .top-capsule {
+        /* Top Capsule Logo Bar with exact gradient matching sample image */
+        .top-capsule-wrap {
             width: 92%;
-            max-width: 900px;
-            height: 52px;
+            max-width: 920px;
             margin: 18px auto 26px;
-            border-radius: 999px;
-            background: linear-gradient(180deg, #c74300 0%, #a43000 50%, #8c2600 100%);
-            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.28), inset 0 -2px 6px rgba(0, 0, 0, 0.35), 0 6px 16px rgba(0, 0, 0, 0.12);
             display: flex;
-            align-items: center;
             justify-content: center;
-            padding: 4px 20px;
+            align-items: center;
         }
-        .top-capsule img {
-            height: 28px;
-            width: auto;
-            max-width: 80%;
-            object-fit: contain;
-            filter: brightness(0) invert(1);
+        .capsule-img {
+            width: 100%;
+            max-width: 920px;
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.15));
         }
 
         /* Titles */
@@ -160,7 +155,7 @@
         .order-result-area {
             width: 100%;
             max-width: 520px;
-            margin-top: 24px;
+            margin-top: 26px;
             display: flex;
             flex-direction: column;
             gap: 16px;
@@ -381,41 +376,186 @@
             background: #05b04c;
         }
 
-        /* Promo Graphic Section matching Image 2 */
-        .promo-section {
-            width: 100%;
-            max-width: 540px;
-            margin: 36px auto 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .promo-img {
-            width: 100%;
-            height: auto;
-            max-width: 540px;
-            display: block;
-            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.15));
-            border-radius: 14px;
-        }
-
-        /* Bottom Footer Bar */
+        /* Bottom Footer Bar with Click to Open LINE Popup */
         .footer-bar {
             width: 100%;
             background: #eb5500;
             color: #ffffff;
-            font-size: 12.5px;
+            font-size: 13px;
             font-weight: 500;
             text-align: center;
-            padding: 11px 16px;
+            padding: 12px 16px;
             letter-spacing: 0.2px;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .footer-bar:hover {
+            background: #da4b00;
+        }
+        .footer-btn-pill {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* Modal Backdrop & LINE Popup */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 16px;
+            z-index: 999;
+            animation: fadeIn 0.25s ease-out;
+        }
+        .line-popup-card {
+            width: 100%;
+            max-width: 440px;
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            padding: 24px 20px 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            color: #f3f4f6;
+            animation: scaleIn 0.25s ease-out;
+            position: relative;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .popup-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 18px;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: #94a3b8;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .popup-close-btn:hover {
+            background: rgba(255, 255, 255, 0.16);
+            color: #ffffff;
+        }
+
+        .popup-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+        .popup-subtitle {
+            font-size: 12.5px;
+            color: #94a3b8;
+            margin-bottom: 18px;
+        }
+
+        /* 3 LINE Channel List */
+        .line-channels-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .line-channel-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
+        }
+        .line-channel-card:hover {
+            background: rgba(6, 199, 85, 0.08);
+            border-color: rgba(6, 199, 85, 0.35);
+            transform: translateY(-2px);
+        }
+        .line-channel-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .line-icon-badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: #06c755;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 900;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3);
+        }
+        .channel-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .channel-id-tag {
+            font-size: 12px;
+            color: #06c755;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        .channel-desc {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        .channel-chat-btn {
+            background: #06c755;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 7px 14px;
+            border-radius: 999px;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+        .line-channel-card:hover .channel-chat-btn {
+            background: #05b04c;
         }
 
         /* Toast */
         .toast {
             position: fixed;
-            bottom: 45px;
+            bottom: 60px;
             left: 50%;
             transform: translateX(-50%);
             background: #181d2a;
@@ -426,7 +566,7 @@
             font-size: 13px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             display: none;
-            z-index: 100;
+            z-index: 1000;
         }
 
         @media (max-width: 600px) {
@@ -436,25 +576,18 @@
             .sub-title {
                 font-size: 12px;
             }
-            .top-capsule {
-                height: 44px;
-                margin: 14px auto 20px;
-            }
-            .top-capsule img {
-                height: 22px;
-            }
             .footer-bar {
-                font-size: 11px;
-                padding: 10px 12px;
+                font-size: 11.5px;
+                padding: 11px 12px;
             }
         }
     </style>
 </head>
 <body>
     <div class="main-wrapper">
-        <!-- Top Capsule Logo Bar (vapor.club FLAGSHIP STORE) -->
-        <div class="top-capsule">
-            <img src="/assets/logo_flagship_official.png" alt="vapor.club" onerror="this.src='/assets/logo.png'">
+        <!-- Top Capsule Logo Bar with exact gradient matching sample image -->
+        <div class="top-capsule-wrap">
+            <img src="/assets/capsule_bar.png" alt="vapor.club Flagship Store" class="capsule-img" />
         </div>
 
         <!-- Main Title & Subtitle -->
@@ -562,23 +695,67 @@
 
                 <div class="action-row">
                     <button id="copyPageLinkBtn" class="btn-secondary">คัดลอกลิงก์หน้านี้</button>
-                    <a id="contactAdminBtn" href="https://line.me/R/ti/p/@vaporclub" target="_blank" class="btn-secondary btn-line">ติดต่อแอดมิน LINE</a>
+                    <button id="contactAdminBtn" type="button" class="btn-secondary btn-line" onclick="openLinePopup()">ติดต่อแอดมิน LINE</button>
                 </div>
             </div>
         </div>
-
-        <!-- Promotional Graphic Section (Matching Image 2) -->
-        <section class="promo-section" id="promoSection">
-            <a href="https://line.me/R/ti/p/@vaporclub" target="_blank" style="display: block; width: 100%; text-decoration: none;">
-                <img src="/assets/tracking_art_transparent.png" alt="Vapor Club - Feel The Flavours" class="promo-img" onerror="this.onerror=null; this.src='/assets/tracking_promo.png';">
-            </a>
-        </section>
     </div>
 
-    <!-- Bottom Footer Bar -->
-    <footer class="footer-bar">
-        ติดต่อสอบถาม และ สั่งสินค้าทางไลน์เพื่อรับสิทธิพิเศษมากมาย โปรดยอมรับเงื่อนไขของทางร้านก่อนการสั่งซื้อ
+    <!-- Bottom Footer Bar (Click to open LINE popup) -->
+    <footer class="footer-bar" onclick="openLinePopup()">
+        <span>ติดต่อสอบถาม และ สั่งสินค้าทางไลน์เพื่อรับสิทธิพิเศษมากมาย โปรดยอมรับเงื่อนไขของทางร้านก่อนการสั่งซื้อ</span>
+        <span class="footer-btn-pill">เลือกแชท LINE 3 ช่องทาง</span>
     </footer>
+
+    <!-- LINE 3 Accounts Popup Modal -->
+    <div id="lineModalBackdrop" class="modal-backdrop" onclick="closeLinePopupOnBackdrop(event)">
+        <div class="line-popup-card">
+            <button class="popup-close-btn" onclick="closeLinePopup()" title="ปิด">&times;</button>
+            <div class="popup-title">ติดต่อแอดมินทาง LINE</div>
+            <div class="popup-subtitle">เลือกช่องทาง LINE ทางการของร้านเพื่อสอบถามหรือแจ้งสถานะได้ตลอด 24 ชม.</div>
+
+            <div class="line-channels-list">
+                <!-- LINE 1: Vapro V2 (@361zkkun) -->
+                <a href="https://line.me/R/ti/p/@361zkkun" target="_blank" class="line-channel-card">
+                    <div class="line-channel-info">
+                        <div class="line-icon-badge">L</div>
+                        <div>
+                            <div class="channel-name">Vapor Flagship (Vapro V2)</div>
+                            <div class="channel-id-tag">LINE ID: @361zkkun</div>
+                            <div class="channel-desc">ช่องทางหลัก สอบถามสินค้าและสั่งซื้อด่วน</div>
+                        </div>
+                    </div>
+                    <div class="channel-chat-btn">แชทเลย</div>
+                </a>
+
+                <!-- LINE 2: Vapor Club Official (@vaporclub) -->
+                <a href="https://line.me/R/ti/p/@vaporclub" target="_blank" class="line-channel-card">
+                    <div class="line-channel-info">
+                        <div class="line-icon-badge">L</div>
+                        <div>
+                            <div class="channel-name">Vapor Club Official</div>
+                            <div class="channel-id-tag">LINE ID: @vaporclub</div>
+                            <div class="channel-desc">ฝ่ายบริการลูกค้า ติดตามพัสดุและเคลมสินค้า</div>
+                        </div>
+                    </div>
+                    <div class="channel-chat-btn">แชทเลย</div>
+                </a>
+
+                <!-- LINE 3: MOOOD@CNX (@mooodcnx) -->
+                <a href="https://line.me/R/ti/p/@mooodcnx" target="_blank" class="line-channel-card">
+                    <div class="line-channel-info">
+                        <div class="line-icon-badge">L</div>
+                        <div>
+                            <div class="channel-name">Vapor Flagship (MOOOD@CNX)</div>
+                            <div class="channel-id-tag">LINE ID: @mooodcnx</div>
+                            <div class="channel-desc">สาขาเชียงใหม่ บริการจัดส่งด่วนพื้นที่เชียงใหม่</div>
+                        </div>
+                    </div>
+                    <div class="channel-chat-btn">แชทเลย</div>
+                </a>
+            </div>
+        </div>
+    </div>
 
     <div id="toast" class="toast">คัดลอกเรียบร้อยแล้ว</div>
 
@@ -592,6 +769,22 @@
             toast.textContent = msg;
             toast.style.display = 'block';
             setTimeout(() => { toast.style.display = 'none'; }, 2500);
+        }
+
+        function openLinePopup() {
+            const modal = document.getElementById('lineModalBackdrop');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function closeLinePopup() {
+            const modal = document.getElementById('lineModalBackdrop');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function closeLinePopupOnBackdrop(e) {
+            if (e.target.id === 'lineModalBackdrop') {
+                closeLinePopup();
+            }
         }
 
         function maskPhone(phone) {
