@@ -6709,8 +6709,8 @@
         if (isDelivery) {
             // Delivery discount ONLY applies to shipping fee, NEVER subtotal!
             const cat = String(v.targetCategory || v.target || '').toUpperCase();
-            const isPostalOnly = cat === 'POSTAL' || v.type === 'shipping_postal_fixed' || v.type === 'shipping_postal_percent' || (/พัสดุ/i.test(v.title || '') && !/ด่วน|ไรเดอร์/i.test(v.title || ''));
-            const isExpressOnly = cat === 'DELIVERY' || v.type === 'shipping_express_fixed' || v.type === 'shipping_express_percent' || (/ด่วน|ไรเดอร์/i.test(v.title || '') && !/พัสดุ/i.test(v.title || ''));
+            const isPostalOnly = cat === 'POSTAL' || v.type === 'shipping_postal_fixed' || v.type === 'shipping_postal_percent' || (/พัสดุ|ems/i.test(v.title || '') && !/ด่วน|ไรเดอร์|grab/i.test(v.title || ''));
+            const isExpressOnly = cat === 'DELIVERY' || v.type === 'shipping_express_fixed' || v.type === 'shipping_express_percent' || (/ด่วน|ไรเดอร์|grab/i.test(v.title || '') && !/พัสดุ|ems/i.test(v.title || ''));
 
             if (isPostalOnly) {
                 if (shippingMethod === 'postal' && shipping > 0) {
@@ -7971,7 +7971,7 @@
             if (!code) return;
 
             const rawCat = String(p.targetCategory || p.target_category || '').toUpperCase();
-            const isPostal = rawCat === 'POSTAL' || (/พัสดุ/i.test(p.name || '') && !/ด่วน|ไรเดอร์/i.test(p.name || ''));
+            const isPostal = rawCat === 'POSTAL' || (/พัสดุ|ems/i.test(p.name || '') && !/ด่วน|ไรเดอร์|grab/i.test(p.name || ''));
             const isAllDelivery = rawCat === 'ALL_DELIVERY';
             const isDelivery = isPostal || isAllDelivery || rawCat === 'DELIVERY' ||
                                /ค่าส่ง|จัดส่ง|delivery|shipping/i.test(p.name || '') ||
