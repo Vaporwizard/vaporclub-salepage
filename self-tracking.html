@@ -15,171 +15,170 @@
             font-family: 'Prompt', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
+
+        /* Exact background gradient matching uploaded design */
         body {
-            background-color: #080a10;
-            color: #f3f4f6;
+            background: linear-gradient(180deg, 
+                #ff751f 0%, 
+                #ff751f 180px, 
+                #eb6f21 240px, 
+                #db6c26 300px, 
+                #cf6d2f 350px, 
+                #c7723c 400px, 
+                #c48963 460px, 
+                #c89a7c 520px, 
+                #d1af99 580px, 
+                #dec8ba 640px, 
+                #efe5df 100%);
+            background-color: #efe5df;
+            background-repeat: no-repeat;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 0 0 50px 0;
+            color: #1e293b;
             position: relative;
-            overflow-x: hidden;
         }
 
-        /* Hero Banner with KEX feel in Vapor Club Dark Orange Theme */
-        .hero-banner {
+        .main-wrapper {
             width: 100%;
-            background: linear-gradient(180deg, #18110b 0%, #0d0f17 100%);
-            border-bottom: 1px solid rgba(255, 107, 0, 0.2);
-            padding: 40px 16px 36px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-        .hero-banner::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 650px;
-            height: 180px;
-            background: radial-gradient(circle, rgba(255, 107, 0, 0.15) 0%, rgba(255, 107, 0, 0) 70%);
-            pointer-events: none;
+            flex: 1;
+            padding: 0 16px 40px;
         }
 
-        .logo-wrap {
-            text-align: center;
-            margin-bottom: 16px;
-            position: relative;
-            z-index: 2;
-        }
-        .store-logo {
-            max-height: 85px;
-            width: auto;
-            display: block;
-            margin: 0 auto;
-            filter: drop-shadow(0 4px 12px rgba(255, 107, 0, 0.25));
-        }
-
-        .hero-title {
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            color: #ffffff;
-            text-align: center;
-            margin-bottom: 6px;
-            position: relative;
-            z-index: 2;
-        }
-        .hero-subtitle {
-            font-size: 13px;
-            color: #94a3b8;
-            text-align: center;
-            margin-bottom: 24px;
-            position: relative;
-            z-index: 2;
-        }
-
-        /* Search Input Box Container (KEX Bar) */
-        .search-container {
-            width: 100%;
-            max-width: 580px;
-            position: relative;
-            z-index: 2;
-        }
-        .search-bar {
+        /* Top Capsule Pill with vapor.club FLAGSHIP STORE logo */
+        .top-capsule {
+            width: 92%;
+            max-width: 900px;
+            height: 52px;
+            margin: 18px auto 26px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #c74300 0%, #a43000 50%, #8c2600 100%);
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.28), inset 0 -2px 6px rgba(0, 0, 0, 0.35), 0 6px 16px rgba(0, 0, 0, 0.12);
             display: flex;
             align-items: center;
+            justify-content: center;
+            padding: 4px 20px;
+        }
+        .top-capsule img {
+            height: 28px;
+            width: auto;
+            max-width: 80%;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
+        /* Titles */
+        .header-section {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+        .main-title {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        }
+        .sub-title {
+            color: #ffffff;
+            font-size: 13.5px;
+            font-weight: 400;
+            opacity: 0.96;
+            letter-spacing: 0.2px;
+        }
+
+        /* Search Bar */
+        .search-box-wrapper {
+            width: 100%;
+            max-width: 490px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .search-pill {
             background: #ffffff;
             border-radius: 999px;
+            display: flex;
+            align-items: center;
             padding: 5px 6px 5px 20px;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 107, 0, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.08);
             transition: all 0.25s ease;
         }
-        .search-bar:focus-within {
-            box-shadow: 0 12px 36px rgba(255, 107, 0, 0.35), 0 0 0 2px #ff6b00;
+        .search-pill:focus-within {
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2), 0 0 0 2px #ff6000;
         }
         .search-input {
             flex: 1;
-            background: transparent;
             border: none;
             outline: none;
-            font-size: 15px;
+            background: transparent;
+            font-size: 14.5px;
+            color: #1e293b;
             font-weight: 500;
-            color: #0f172a;
-            padding: 10px 4px;
+            padding: 8px 4px;
         }
         .search-input::placeholder {
             color: #94a3b8;
             font-weight: 400;
         }
         .search-btn {
-            background: #111827;
+            background: #182026;
             color: #ffffff;
             border: none;
             border-radius: 999px;
-            padding: 11px 26px;
+            padding: 9px 24px;
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: background 0.2s, transform 0.1s;
             white-space: nowrap;
         }
         .search-btn:hover {
-            background: #ff6b00;
-            color: #ffffff;
+            background: #0f172a;
         }
         .search-btn:active {
             transform: scale(0.97);
         }
 
         .search-error {
-            background: rgba(239, 68, 68, 0.12);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            color: #fca5a5;
+            background: rgba(220, 38, 38, 0.9);
+            color: #ffffff;
             font-size: 13px;
             border-radius: 10px;
-            padding: 10px 14px;
-            margin-top: 14px;
+            padding: 9px 14px;
+            margin-top: 12px;
             text-align: center;
             display: none;
-            animation: fadeIn 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        /* Result Container */
-        .content-area {
+        /* Order Result Card (Shown ONLY when an order is searched) */
+        .order-result-area {
             width: 100%;
-            max-width: 580px;
-            padding: 24px 16px 0;
+            max-width: 520px;
+            margin-top: 24px;
             display: flex;
             flex-direction: column;
             gap: 16px;
         }
-
         .card {
-            background: #111622;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: #121622;
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 22px 20px;
-            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
             animation: slideUp 0.35s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(14px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Order Header Banner */
         .order-header-card {
             display: flex;
             justify-content: space-between;
@@ -211,14 +210,12 @@
             font-size: 11px;
             cursor: pointer;
             font-weight: 600;
-            transition: background 0.15s;
         }
         .copy-pill-btn:hover {
             background: rgba(255, 107, 0, 0.2);
             color: #ffffff;
         }
 
-        /* Arrived Alert Banner */
         .arrived-alert {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.35));
             border: 1.5px solid #10b981;
@@ -236,7 +233,7 @@
             50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
         }
 
-        /* Stepper */
+        /* 5-Step Stepper */
         .stepper {
             display: flex;
             flex-direction: column;
@@ -311,7 +308,6 @@
             color: #cbd5e1;
         }
 
-        /* Detail sections */
         .info-row {
             display: flex;
             justify-content: space-between;
@@ -333,7 +329,6 @@
             word-break: break-word;
         }
 
-        /* Item list */
         .items-box {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -355,7 +350,6 @@
             font-weight: 600;
         }
 
-        /* Action buttons */
         .action-row {
             display: flex;
             gap: 10px;
@@ -387,10 +381,41 @@
             background: #05b04c;
         }
 
-        /* Toast notification */
+        /* Promo Graphic Section matching Image 2 */
+        .promo-section {
+            width: 100%;
+            max-width: 540px;
+            margin: 36px auto 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .promo-img {
+            width: 100%;
+            height: auto;
+            max-width: 540px;
+            display: block;
+            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.15));
+            border-radius: 14px;
+        }
+
+        /* Bottom Footer Bar */
+        .footer-bar {
+            width: 100%;
+            background: #eb5500;
+            color: #ffffff;
+            font-size: 12.5px;
+            font-weight: 500;
+            text-align: center;
+            padding: 11px 16px;
+            letter-spacing: 0.2px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Toast */
         .toast {
             position: fixed;
-            bottom: 24px;
+            bottom: 45px;
             left: 50%;
             transform: translateX(-50%);
             background: #181d2a;
@@ -399,34 +424,56 @@
             border-radius: 30px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             font-size: 13px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             display: none;
             z-index: 100;
+        }
+
+        @media (max-width: 600px) {
+            .main-title {
+                font-size: 24px;
+            }
+            .sub-title {
+                font-size: 12px;
+            }
+            .top-capsule {
+                height: 44px;
+                margin: 14px auto 20px;
+            }
+            .top-capsule img {
+                height: 22px;
+            }
+            .footer-bar {
+                font-size: 11px;
+                padding: 10px 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Top Hero Banner with Center Logo & Prominent KEX-style Search Bar -->
-    <header class="hero-banner">
-        <div class="logo-wrap">
-            <img src="/assets/logo.png" alt="Vapor Club" class="store-logo" onerror="this.onerror=null; this.src='/assets/logo_flagship_official.png';">
+    <div class="main-wrapper">
+        <!-- Top Capsule Logo Bar (vapor.club FLAGSHIP STORE) -->
+        <div class="top-capsule">
+            <img src="/assets/logo_flagship_official.png" alt="vapor.club" onerror="this.src='/assets/logo.png'">
         </div>
-        <h1 class="hero-title">ติดตามสถานะพัสดุและจัดส่ง</h1>
-        <p class="hero-subtitle">พิมพ์เลขออเดอร์เพื่อตรวจสอบสถานะเรียลไทม์ได้ตลอด 24 ชั่วโมง</p>
 
-        <div class="search-container">
-            <div class="search-bar">
-                <input type="text" id="orderInput" class="search-input" placeholder="กรอกเลขออเดอร์ เช่น ORD-xxxxxx" autocomplete="off" />
+        <!-- Main Title & Subtitle -->
+        <header class="header-section">
+            <h1 class="main-title">ติดตามสถานะพัสดุและจัดส่ง</h1>
+            <p class="sub-title">พิมพ์เลขออเดอร์เพื่อตรวจสอบสถานะเรียลไทม์ได้ตลอด 24 ชั่วโมง</p>
+        </header>
+
+        <!-- Search Pill -->
+        <div class="search-box-wrapper">
+            <div class="search-pill">
+                <input type="text" id="orderInput" class="search-input" placeholder="กรอกเลขออเดอร์ เช่น ORD-XXXXXX" autocomplete="off" />
                 <button id="searchBtn" class="search-btn">ติดตาม</button>
             </div>
             <div id="searchError" class="search-error"></div>
         </div>
-    </header>
 
-    <!-- Main Content Area: ONLY displayed once an order ID is searched -->
-    <main class="content-area">
-        <div id="orderResult" style="display: none; flex-direction: column; gap: 16px;">
-            <!-- Stepper Card -->
+        <!-- Order Result Area (Only shown when an order is searched) -->
+        <div id="orderResult" class="order-result-area" style="display: none;">
             <div class="card">
                 <div class="order-header-card">
                     <div>
@@ -442,12 +489,10 @@
                     </div>
                 </div>
 
-                <!-- Arrived Alert Banner (Shown if rider arrived) -->
                 <div id="arrivedAlertBanner" class="arrived-alert" style="display: none;">
                     พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ
                 </div>
 
-                <!-- 5-Step Progress Stepper -->
                 <div class="stepper" id="stepperContainer">
                     <div class="step-item" id="step1">
                         <div class="step-circle">1</div>
@@ -487,7 +532,6 @@
                 </div>
             </div>
 
-            <!-- Details Card -->
             <div class="card">
                 <div style="font-size: 14px; font-weight: 700; color: #f3f4f6; margin-bottom: 12px;">ข้อมูลการจัดส่ง</div>
                 <div class="info-row">
@@ -513,9 +557,7 @@
 
                 <div style="margin-top: 14px;">
                     <div class="info-label" style="margin-bottom: 6px;">รายการสินค้าที่สั่งซื้อ</div>
-                    <div class="items-box" id="itemsContainer">
-                        <!-- Filled by JS -->
-                    </div>
+                    <div class="items-box" id="itemsContainer"></div>
                 </div>
 
                 <div class="action-row">
@@ -524,7 +566,19 @@
                 </div>
             </div>
         </div>
-    </main>
+
+        <!-- Promotional Graphic Section (Matching Image 2) -->
+        <section class="promo-section" id="promoSection">
+            <a href="https://line.me/R/ti/p/@vaporclub" target="_blank" style="display: block; width: 100%; text-decoration: none;">
+                <img src="/assets/tracking_art_transparent.png" alt="Vapor Club - Feel The Flavours" class="promo-img" onerror="this.onerror=null; this.src='/assets/tracking_promo.png';">
+            </a>
+        </section>
+    </div>
+
+    <!-- Bottom Footer Bar -->
+    <footer class="footer-bar">
+        ติดต่อสอบถาม และ สั่งสินค้าทางไลน์เพื่อรับสิทธิพิเศษมากมาย โปรดยอมรับเงื่อนไขของทางร้านก่อนการสั่งซื้อ
+    </footer>
 
     <div id="toast" class="toast">คัดลอกเรียบร้อยแล้ว</div>
 
@@ -567,7 +621,7 @@
             const searchError = document.getElementById('searchError');
             searchError.style.display = 'none';
             const searchBtn = document.getElementById('searchBtn');
-            searchBtn.textContent = 'กำลังค้นหา...';
+            searchBtn.textContent = 'ค้นหา...';
             searchBtn.disabled = true;
             
             try {
@@ -592,16 +646,15 @@
         }
 
         function renderOrder(data) {
-            document.getElementById('orderResult').style.display = 'flex';
+            const orderResult = document.getElementById('orderResult');
+            orderResult.style.display = 'flex';
             currentOrderId = data.orderId;
             document.getElementById('displayOrderId').textContent = data.orderId;
             document.getElementById('displayStatusText').textContent = data.statusText || data.status;
 
-            // Delivery method
             const isExpress = data.deliveryMethod === 'express' || (data.deliveryTitle && (data.deliveryTitle.includes('ด่วน') || data.deliveryTitle.includes('ไรเดอร์') || data.deliveryTitle.includes('Grab') || data.deliveryTitle.includes('Lalamove')));
             document.getElementById('displayDeliveryMethod').textContent = data.deliveryTitle || (isExpress ? 'ส่งด่วน (ไรเดอร์)' : 'พัสดุด่วน');
 
-            // Tracking link if safe to view
             const trackingUrlRow = document.getElementById('trackingUrlRow');
             const trackingUrlLink = document.getElementById('trackingUrlLink');
             if (data.riderTrackingUrl) {
@@ -611,12 +664,10 @@
                 trackingUrlRow.style.display = 'none';
             }
 
-            // Masked Customer Info (Safe invariant: Warehouse coordinates never displayed)
             document.getElementById('displayRecipientName').textContent = data.recipientName ? maskName(data.recipientName) : '-';
             document.getElementById('displayRecipientPhone').textContent = data.recipientPhone ? maskPhone(data.recipientPhone) : '-';
             document.getElementById('displayRecipientAddress').textContent = data.recipientAddress ? maskAddress(data.recipientAddress) : '-';
 
-            // Items list
             const itemsBox = document.getElementById('itemsContainer');
             itemsBox.innerHTML = '';
             if (data.items && data.items.length > 0) {
@@ -633,7 +684,6 @@
                 itemsBox.innerHTML = '<div style="font-size: 12px; color: #94a3b8;">ไม่มีรายละเอียดสินค้า</div>';
             }
 
-            // Stepper state
             const currentStep = data.currentStep || 1;
             const isArrived = (data.status === 'ARRIVED' || currentStep === 4);
             const arrivedBanner = document.getElementById('arrivedAlertBanner');
@@ -654,17 +704,14 @@
                 }
             }
 
-            // Update URL without reload
             const url = new URL(window.location);
             if (url.searchParams.get('orderId') !== currentOrderId) {
                 url.searchParams.set('orderId', currentOrderId);
                 window.history.replaceState({}, '', url);
             }
 
-            // Smooth scroll to results
-            document.getElementById('orderResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            orderResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-            // Polling if active order
             if (pollTimer) clearInterval(pollTimer);
             if (currentStep < 5) {
                 pollTimer = setInterval(() => {
@@ -673,7 +720,6 @@
             }
         }
 
-        // Event listeners
         document.getElementById('searchBtn').addEventListener('click', () => {
             const val = document.getElementById('orderInput').value.trim();
             if (val) fetchTracking(val);
@@ -700,7 +746,6 @@
             });
         });
 
-        // Initialize only if URL explicitly has an orderId param
         window.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             const initialId = params.get('orderId') || params.get('order_id') || params.get('id');
