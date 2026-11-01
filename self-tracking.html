@@ -43,6 +43,43 @@
     svg { display: block; }
     .container { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 20px; }
 
+        /* ---------- Language Switcher ---------- */
+    .lang-switch {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      padding: 2px 4px;
+      gap: 2px;
+      margin-left: 6px;
+    }
+    .lang-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all .2s ease;
+      font-family: inherit;
+    }
+    .lang-btn:hover {
+      color: #fff;
+    }
+    .lang-btn.active {
+      background: var(--brand);
+      color: #fff;
+      box-shadow: 0 1px 6px rgba(242, 107, 29, 0.4);
+    }
+    .lang-divider {
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 10px;
+      user-select: none;
+    }
+
     /* ---------- Header ---------- */
     .topbar {
       background: var(--ink);
@@ -292,22 +329,29 @@
         <span class="logo-sub">FLAGSHIP STORE</span>
       </a>
       <nav class="nav">
-        <a href="#track" class="active">ติดตามพัสดุ</a>
-        <a href="#contact">ติดต่อเรา</a>
+        <a href="#track" class="active" data-i18n="nav_track">ติดตามพัสดุ</a>
+        <a href="#contact" data-i18n="nav_contact">ติดต่อเรา</a>
       </nav>
-      <span class="verified">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 4 5v6c0 5.1 3.4 9.8 8 11 4.6-1.2 8-5.9 8-11V5l-8-3Zm-1.2 14.2-3.5-3.5 1.4-1.4 2.1 2.1 4.6-4.6 1.4 1.4-6 6Z"/></svg>
-        Official Store
-      </span>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="lang-switch" id="langSwitch">
+          <button type="button" class="lang-btn active" data-lang="th" title="ภาษาไทย">TH</button>
+          <span class="lang-divider">|</span>
+          <button type="button" class="lang-btn" data-lang="en" title="English">EN</button>
+        </div>
+        <span class="verified">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 4 5v6c0 5.1 3.4 9.8 8 11 4.6-1.2 8-5.9 8-11V5l-8-3Zm-1.2 14.2-3.5-3.5 1.4-1.4 2.1 2.1 4.6-4.6 1.4 1.4-6 6Z"/></svg>
+          <span data-i18n="official_store">Official Store</span>
+        </span>
+      </div>
     </div>
   </header>
 
   <!-- Hero -->
   <section class="hero" id="track">
     <div class="container">
-      <span class="eyebrow"><span class="dot"></span>ระบบติดตามพัสดุ อัปเดตแบบเรียลไทม์</span>
-      <h1>ติดตามสถานะพัสดุและการจัดส่ง</h1>
-      <p class="lead">กรอกเลขคำสั่งซื้อเพื่อตรวจสอบสถานะได้ตลอด 24 ชั่วโมง</p>
+      <span class="eyebrow"><span class="dot"></span><span data-i18n="hero_eyebrow">ระบบติดตามพัสดุ อัปเดตแบบเรียลไทม์</span></span>
+      <h1 data-i18n="hero_title">ติดตามสถานะพัสดุและการจัดส่ง</h1>
+      <p class="lead" data-i18n="hero_lead">กรอกเลขคำสั่งซื้อเพื่อตรวจสอบสถานะได้ตลอด 24 ชั่วโมง</p>
     </div>
   </section>
 
@@ -322,7 +366,7 @@
         </div>
         <button type="submit" class="btn-primary" id="trackBtn">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          ตรวจสอบ
+          <span id="trackBtnText" data-i18n="search_btn">ตรวจสอบ</span>
         </button>
       </div>
     </form>
@@ -330,11 +374,11 @@
     <div class="trust">
       <div class="trust-item">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        จัดส่งทั่วประเทศ
+        <span data-i18n="trust_nationwide">จัดส่งทั่วประเทศ</span>
       </div>
       <div class="trust-item">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-        อัปเดตสถานะตลอด 24 ชม.
+        <span data-i18n="trust_24h">อัปเดตสถานะตลอด 24 ชม.</span>
       </div>
       <div class="trust-item">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
@@ -376,18 +420,163 @@
   <script>
     const API_BASE = "https://vapro-ai-admin.onrender.com";
     let pollTimer = null;
+    let currentOrderData = null;
+    let currentOrderId = null;
+    let lastSearchStatus = null; // 'found' | 'not_found' | null
 
-    // ช่องทางติดต่อ LINE ทางการของร้าน
-    const CONTACTS = [
-      { name: "Vapor Club", id: "@257vljxf", tag: "บริการลูกค้า", desc: "ฝ่ายบริการลูกค้า ติดตามพัสดุและเคลมสินค้า", link: "https://line.me/R/ti/p/@257vljxf" },
-      { name: "Vapor Plus", id: "@361zkkun", tag: "สั่งซื้อด่วน", desc: "สั่งด่วน / สอบถามสินค้าและสต็อก (Vapro V2)", link: "https://line.me/R/ti/p/@361zkkun" },
-      { name: "MOOOD@CNX", id: "@903aykgr", tag: "สาขาเชียงใหม่", desc: "สาขาเชียงใหม่ / บริการจัดส่งด่วนพื้นที่ CNX", link: "https://line.me/R/ti/p/@903aykgr" },
-    ];
+    const I18N = {
+      th: {
+        nav_track: "ติดตามพัสดุ",
+        nav_contact: "ติดต่อเรา",
+        official_store: "Official Store",
+        hero_eyebrow: "ระบบติดตามพัสดุ อัปเดตแบบเรียลไทม์",
+        hero_title: "ติดตามสถานะพัสดุและการจัดส่ง",
+        hero_lead: "กรอกเลขคำสั่งซื้อเพื่อตรวจสอบสถานะได้ตลอด 24 ชั่วโมง",
+        search_label: "เลขคำสั่งซื้อ (Order ID)",
+        search_placeholder: "เช่น ORD-XXXXXX",
+        search_btn: "ตรวจสอบ",
+        search_btn_loading: "กำลังค้นหา",
+        trust_nationwide: "จัดส่งทั่วประเทศ",
+        trust_24h: "อัปเดตสถานะตลอด 24 ชม.",
+        trust_secure: "แพ็คเกจมิดชิด ปลอดภัย",
+        order_id_label: "เลขคำสั่งซื้อ",
+        copy_order_title: "คัดลอกเลขออเดอร์",
+        copy_tracking_title: "คัดลอกเลขพัสดุ",
+        toast_copied: "คัดลอกเรียบร้อยแล้ว",
+        status_arrived_banner: "พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ",
+        status_arrived_pill: "ไรเดอร์ถึงจุดหมายแล้ว",
+        meta_carrier: "บริการจัดส่ง",
+        meta_tracking: "ข้อมูลจัดส่ง / พัสดุ",
+        meta_status_delivered: "สถานะการส่ง",
+        meta_status_eta: "คาดว่าจะได้รับ",
+        meta_address: "จุดส่งสินค้า",
+        meta_direct_rider: "ไรเดอร์จัดส่งตรงถึงจุดหมาย",
+        meta_live_gps: "เปิดดูเส้นทางสด (Live GPS)",
+        meta_pending_dispatch: "รอการส่งมอบ",
+        packed_photo_title: "รูปถ่ายการแพ็คสินค้าจริง",
+        items_title: "รายการสินค้าในคำสั่งซื้อ",
+        total_label: "ยอดรวมทั้งสิ้น",
+        timeline_title: "ประวัติการจัดส่ง",
+        not_found_title: "ไม่พบคำสั่งซื้อ “{id}”",
+        not_found_desc: "กรุณาตรวจสอบเลขคำสั่งซื้ออีกครั้ง หรือติดต่อเจ้าหน้าที่ผ่าน LINE ด้านล่าง",
+        error_title: "เกิดข้อผิดพลาด",
+        error_desc: "ไม่สามารถเชื่อมต่อระบบได้ กรุณาลองใหม่อีกครั้ง",
+        channels_subtitle: "OFFICIAL CHANNELS",
+        channels_title: "ช่องทางติดต่ออย่างเป็นทางการ",
+        channels_desc: "สอบถามสินค้า สั่งซื้อ หรือแจ้งปัญหาการจัดส่ง ผ่าน LINE Official ของร้าน",
+        btn_add_line: "เพิ่มเพื่อน / แชทไลน์",
+        footer_desc: "จัดส่งด่วนเชียงใหม่ (30-45 นาที) และพัสดุด่วนทั่วประเทศ",
+        footer_rights: "สงวนลิขสิทธิ์",
+        steps: ["สั่งซื้อแล้ว", "แพ็คสินค้า", "ส่งมอบขนส่ง", "กำลังจัดส่ง", "จัดส่งสำเร็จ"],
+        events: {
+          delivered: "จัดส่งสำเร็จ — คุณลูกค้าได้รับสินค้าเรียบร้อยแล้ว",
+          arrived: "พี่ไรเดอร์เดินทางถึงจุดหมายแล้ว",
+          in_transit: "พี่ไรเดอร์กำลังเดินทางมุ่งหน้าไปส่งสินค้า",
+          packed: "ฝ่ายคลังสินค้าแพ็คสินค้าและเตรียมพร้อมส่งมอบ",
+          ordered: "ยืนยันคำสั่งซื้อและการชำระเงินเรียบร้อย",
+          loc_dropoff: "จุดส่ง",
+          loc_transit: "ระหว่างการจัดส่ง",
+          loc_wh: "คลังสินค้า Vapor Club",
+          loc_sys: "ระบบ Vapor Club",
+          time_completed: "จัดส่งสำเร็จ",
+          time_arrived: "ถึงที่หมาย",
+          time_batch: "รอบจัดส่ง: {batch}",
+          time_packed: "เตรียมสินค้าเสร็จสิ้น",
+          time_ordered: "บันทึกข้อมูลแล้ว"
+        },
+        contacts: [
+          { name: "Vapor Club", id: "@257vljxf", tag: "บริการลูกค้า", desc: "ฝ่ายบริการลูกค้า ติดตามพัสดุและเคลมสินค้า", link: "https://line.me/R/ti/p/@257vljxf" },
+          { name: "Vapor Plus", id: "@361zkkun", tag: "สั่งซื้อด่วน", desc: "สั่งด่วน / สอบถามสินค้าและสต็อก (Vapro V2)", link: "https://line.me/R/ti/p/@361zkkun" },
+          { name: "MOOOD@CNX", id: "@903aykgr", tag: "สาขาเชียงใหม่", desc: "สาขาเชียงใหม่ / บริการจัดส่งด่วนพื้นที่ CNX", link: "https://line.me/R/ti/p/@903aykgr" },
+        ]
+      },
+      en: {
+        nav_track: "Track Order",
+        nav_contact: "Contact Us",
+        official_store: "Official Store",
+        hero_eyebrow: "Real-Time Order & Delivery Tracking",
+        hero_title: "Track Your Parcel & Delivery Status",
+        hero_lead: "Enter your order number to track your package 24/7",
+        search_label: "Order Number (Order ID)",
+        search_placeholder: "e.g. ORD-XXXXXX",
+        search_btn: "Track",
+        search_btn_loading: "Searching...",
+        trust_nationwide: "Nationwide Delivery",
+        trust_24h: "24/7 Live Status Updates",
+        trust_secure: "Discreet & Secure Packaging",
+        order_id_label: "Order ID",
+        copy_order_title: "Copy Order ID",
+        copy_tracking_title: "Copy Tracking Number",
+        toast_copied: "Copied to clipboard",
+        status_arrived_banner: "Driver has arrived at your destination! Please meet driver for pickup.",
+        status_arrived_pill: "Driver Arrived",
+        meta_carrier: "Delivery Method",
+        meta_tracking: "Parcel / Tracking Info",
+        meta_status_delivered: "Delivery Status",
+        meta_status_eta: "Estimated Delivery",
+        meta_address: "Drop-off Location",
+        meta_direct_rider: "Direct Express Rider",
+        meta_live_gps: "View Live GPS Route",
+        meta_pending_dispatch: "Awaiting Courier Pickup",
+        packed_photo_title: "Actual Packed Order Photo",
+        items_title: "Order Items",
+        total_label: "Total Amount",
+        timeline_title: "Delivery Timeline",
+        not_found_title: "Order “{id}” not found",
+        not_found_desc: "Please double check your order number or contact support via our official LINE channels below.",
+        error_title: "Connection Error",
+        error_desc: "Unable to retrieve tracking data. Please try again.",
+        channels_subtitle: "OFFICIAL CHANNELS",
+        channels_title: "Official Contact Channels",
+        channels_desc: "Inquire about products, place express orders, or report delivery issues via our Official LINE accounts",
+        btn_add_line: "Add Friend / Chat LINE",
+        footer_desc: "Chiang Mai Express Delivery (30-45 mins) & Nationwide Parcel Shipping",
+        footer_rights: "All rights reserved.",
+        steps: ["Order Placed", "Packing", "Handed Over", "Out for Delivery", "Delivered"],
+        events: {
+          delivered: "Delivered — Order received successfully",
+          arrived: "Driver arrived at destination",
+          in_transit: "Driver is on the way to destination",
+          packed: "Warehouse packed and ready for courier pickup",
+          ordered: "Order & payment confirmed",
+          loc_dropoff: "Drop-off",
+          loc_transit: "In Transit",
+          loc_wh: "Vapor Club Warehouse",
+          loc_sys: "Vapor Club Storefront",
+          time_completed: "Completed",
+          time_arrived: "Arrived",
+          time_batch: "Batch: {batch}",
+          time_packed: "Packed",
+          time_ordered: "Recorded"
+        },
+        contacts: [
+          { name: "Vapor Club", id: "@257vljxf", tag: "Customer Care", desc: "Customer service, parcel tracking & warranty claims", link: "https://line.me/R/ti/p/@257vljxf" },
+          { name: "Vapor Plus", id: "@361zkkun", tag: "Express Order", desc: "Express order & stock inquiries (Vapro V2)", link: "https://line.me/R/ti/p/@361zkkun" },
+          { name: "MOOOD@CNX", id: "@903aykgr", tag: "Chiang Mai", desc: "Chiang Mai branch & express local CNX delivery", link: "https://line.me/R/ti/p/@903aykgr" },
+        ]
+      }
+    };
 
-    function formatDateTime(iso) {
+    let currentLang = localStorage.getItem("vapor_lang") || "th";
+    if (currentLang !== "th" && currentLang !== "en") currentLang = "th";
+
+    function t(key, params = {}) {
+      const dict = I18N[currentLang] || I18N.th;
+      let text = dict[key] || I18N.th[key] || key;
+      for (const [k, v] of Object.entries(params)) {
+        text = text.replace(new RegExp(`\\{${k}\\}`, "g"), v);
+      }
+      return text;
+    }
+
+    function formatDateTime(iso, lang = currentLang) {
       try {
         const d = new Date(iso);
         if (isNaN(d.getTime())) return iso || "";
+        if (lang === "en") {
+          return d.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }) + " · " +
+                 d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+        }
         return d.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" }) + " · " +
                d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }) + " น.";
       } catch (e) {
@@ -424,76 +613,8 @@
           if (!res.ok) continue;
           const json = await res.json();
           if (json && json.success) {
-            const t = json.tracking || json;
-            const rawStep = Number(t.currentStep) || 1;
-            const stepIndex = Math.min(4, Math.max(0, rawStep - 1));
-            const isArrived = !!(t.isArrived || t.status === "ARRIVED" || rawStep === 4);
-            const isDelivered = !!(t.isDelivered || t.status === "DELIVERED" || rawStep === 5);
-
-            const carrier = t.deliveryTitle || (t.deliveryType === "POSTAL" ? "พัสดุด่วน Flash Express ทั่วประเทศ" : "ไรเดอร์ส่งด่วนเมืองเชียงใหม่ (30-45 นาที)");
-            const tracking = t.trackingNo || "";
-
-            let eta = t.statusDesc || "กำลังดำเนินการจัดส่ง";
-            if (isDelivered) {
-              eta = "จัดส่งสำเร็จเรียบร้อยแล้ว";
-            } else if (isArrived) {
-              eta = "พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ";
-            } else if (t.deliveryType === "EXPRESS") {
-              eta = "ประมาณ 30-45 นาที";
-            }
-
-            const events = [];
-            if (isDelivered) {
-              events.push({
-                title: "จัดส่งสำเร็จ — ลูกค้าได้รับสินค้าเรียบร้อยแล้ว",
-                loc: t.addressHint ? `จุดส่ง: ${t.addressHint}` : "ปลายทางผู้รับ",
-                time: t.updatedAt ? formatDateTime(t.updatedAt) : "จัดส่งสำเร็จ"
-              });
-            }
-            if (isArrived || isDelivered) {
-              events.push({
-                title: "พี่ไรเดอร์เดินทางถึงจุดหมายแล้ว",
-                loc: t.addressHint ? `จุดส่ง: ${t.addressHint}` : "จุดหมายปลายทาง",
-                time: "ถึงที่หมาย"
-              });
-            }
-            if (rawStep >= 3) {
-              events.push({
-                title: "พี่ไรเดอร์กำลังเดินทางมุ่งหน้าไปส่งสินค้า",
-                loc: "ระหว่างการจัดส่ง",
-                time: t.batchTime ? `รอบจัดส่ง: ${t.batchTime}` : "กำลังเดินทาง"
-              });
-            }
-            if (rawStep >= 2) {
-              events.push({
-                title: "ฝ่ายคลังสินค้าแพ็คสินค้าและเตรียมพร้อมส่งมอบ",
-                loc: "คลังสินค้า Vapor Club",
-                time: "เตรียมสินค้าเสร็จสิ้น"
-              });
-            }
-            events.push({
-              title: "ยืนยันคำสั่งซื้อและการชำระเงินเรียบร้อย",
-              loc: "ระบบ Vapor Club",
-              time: t.createdAt ? formatDateTime(t.createdAt) : "บันทึกข้อมูลแล้ว"
-            });
-
-            return {
-              id: t.orderId || cand,
-              step: stepIndex,
-              carrier: carrier,
-              tracking: tracking,
-              riderTrackingUrl: t.riderTrackingUrl || "",
-              packedPhotoUrl: t.packedPhotoUrl || null,
-              eta: eta,
-              isArrived: isArrived,
-              isDelivered: isDelivered,
-              items: t.items || [],
-              total: t.total || 0,
-              addressHint: t.addressHint || "",
-              dates: ["", "", "", "", ""],
-              events: events,
-              rawStep: rawStep
-            };
+            const raw = json.tracking || json;
+            return raw;
           }
         } catch (err) {
           console.warn("Fetch failed for candidate:", cand, err);
@@ -502,7 +623,6 @@
       return null;
     }
 
-    const STEPS = ["สั่งซื้อแล้ว", "แพ็คสินค้า", "ส่งมอบขนส่ง", "กำลังจัดส่ง", "จัดส่งสำเร็จ"];
     const STEP_ICONS = [
       '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/>',
       '<path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
@@ -516,56 +636,126 @@
 
     const $ = s => document.querySelector(s);
     const form = $("#trackForm"), input = $("#orderInput"), btn = $("#trackBtn"), result = $("#result");
-    const btnHTML = btn.innerHTML;
     const escapeHTML = s => String(s || "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
     function normalize(raw) {
       return (raw || "").trim();
     }
 
-    function renderOrder(id, o) {
-      const delivered = o.step === STEPS.length - 1 || o.isDelivered;
-      const arrived = o.isArrived;
+    function renderOrder(id, rawOrder) {
+      currentOrderData = rawOrder;
+      currentOrderId = id;
+      lastSearchStatus = 'found';
 
-      const steps = STEPS.map((name, i) => {
-        const cls = i < o.step || delivered ? "done" : i === o.step ? "current" : "";
+      const o = rawOrder;
+      const rawStep = Number(o.currentStep) || 1;
+      const stepIndex = Math.min(4, Math.max(0, rawStep - 1));
+      const isArrived = !!(o.isArrived || o.status === "ARRIVED" || rawStep === 4);
+      const isDelivered = !!(o.isDelivered || o.status === "DELIVERED" || rawStep === 5);
+
+      const dict = I18N[currentLang];
+      const stepsList = dict.steps;
+      const evDict = dict.events;
+
+      let carrier = "";
+      if (currentLang === "en") {
+        carrier = o.deliveryType === "POSTAL" ? "Flash Express Nationwide Parcel" : "Chiang Mai Express Rider (30-45 mins)";
+      } else {
+        carrier = o.deliveryTitle || (o.deliveryType === "POSTAL" ? "พัสดุด่วน Flash Express ทั่วประเทศ" : "ไรเดอร์ส่งด่วนเมืองเชียงใหม่ (30-45 นาที)");
+      }
+
+      let eta = "";
+      if (currentLang === "en") {
+        if (isDelivered) eta = "Delivered successfully";
+        else if (isArrived) eta = "Driver has arrived at destination";
+        else if (o.deliveryType === "EXPRESS") eta = "Approx. 30-45 mins";
+        else eta = "1-2 business days";
+      } else {
+        if (isDelivered) eta = "จัดส่งสำเร็จเรียบร้อยแล้ว";
+        else if (isArrived) eta = "พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ";
+        else if (o.deliveryType === "EXPRESS") eta = "ประมาณ 30-45 นาที";
+        else eta = o.statusDesc || "กำลังดำเนินการจัดส่ง";
+      }
+
+      const delivered = isDelivered || stepIndex === stepsList.length - 1;
+      const arrived = isArrived;
+
+      const steps = stepsList.map((name, i) => {
+        const cls = i < stepIndex || delivered ? "done" : i === stepIndex ? "current" : "";
         return `<div class="step ${cls}">
           <div class="step-icon">${svg(STEP_ICONS[i])}</div>
           <div class="step-name">${name}</div>
-          <div class="step-date">${(o.dates && o.dates[i]) ? o.dates[i] : "&nbsp;"}</div>
+          <div class="step-date">&nbsp;</div>
         </div>`;
       }).join("");
 
-      const events = (o.events && o.events.length > 0) ? o.events.map(e => `<li><span class="dot"></span>
+      // Events timeline
+      const events = [];
+      if (isDelivered) {
+        events.push({
+          title: evDict.delivered,
+          loc: o.addressHint ? `${evDict.loc_dropoff}: ${o.addressHint}` : (currentLang === 'en' ? "Recipient location" : "ปลายทางผู้รับ"),
+          time: o.updatedAt ? formatDateTime(o.updatedAt, currentLang) : evDict.time_completed
+        });
+      }
+      if (isArrived || isDelivered) {
+        events.push({
+          title: evDict.arrived,
+          loc: o.addressHint ? `${evDict.loc_dropoff}: ${o.addressHint}` : (currentLang === 'en' ? "Destination" : "จุดหมายปลายทาง"),
+          time: evDict.time_arrived
+        });
+      }
+      if (rawStep >= 3) {
+        events.push({
+          title: evDict.in_transit,
+          loc: evDict.loc_transit,
+          time: o.batchTime ? evDict.time_batch.replace("{batch}", o.batchTime) : (currentLang === 'en' ? "In transit" : "กำลังเดินทาง")
+        });
+      }
+      if (rawStep >= 2) {
+        events.push({
+          title: evDict.packed,
+          loc: evDict.loc_wh,
+          time: evDict.time_packed
+        });
+      }
+      events.push({
+        title: evDict.ordered,
+        loc: evDict.loc_sys,
+        time: o.createdAt ? formatDateTime(o.createdAt, currentLang) : evDict.time_ordered
+      });
+
+      const eventsHTML = events.map(e => `<li><span class="dot"></span>
         <div class="tl-row"><span class="tl-title">${e.title}</span><span class="tl-time">${e.time}</span></div>
-        <div class="tl-loc">${e.loc}</div></li>`).join("") : "";
+        <div class="tl-loc">${e.loc}</div></li>`).join("");
 
       let trackingCell = "";
-      if (o.tracking) {
-        trackingCell = `${o.tracking}<button class="copy-btn" data-copy="${o.tracking}" title="คัดลอกเลขพัสดุ">${svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', 16)}</button>`;
+      if (o.trackingNo) {
+        trackingCell = `${o.trackingNo}<button class="copy-btn" data-copy="${o.trackingNo}" title="${t('copy_tracking_title')}">${svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', 16)}</button>`;
       } else if (o.riderTrackingUrl) {
-        trackingCell = `<a href="${o.riderTrackingUrl}" target="_blank" style="color:var(--brand); text-decoration:underline; font-weight:600;">เปิดดูเส้นทางสด (Live GPS)</a>`;
+        trackingCell = `<a href="${o.riderTrackingUrl}" target="_blank" style="color:var(--brand); text-decoration:underline; font-weight:600;">${t('meta_live_gps')}</a>`;
       } else {
-        trackingCell = `<span style="color:var(--muted);font-weight:500">ไรเดอร์จัดส่งตรงถึงจุดหมาย</span>`;
+        trackingCell = `<span style="color:var(--muted);font-weight:500">${t('meta_direct_rider')}</span>`;
       }
 
       const arrivedBannerHTML = arrived ? `
         <div class="arrived-banner">
-          พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ
+          ${t('status_arrived_banner')}
         </div>` : "";
 
-            const packedPhotoHTML = o.packedPhotoUrl ? `
+      const packedPhotoHTML = o.packedPhotoUrl ? `
         <div class="card timeline-card" style="margin-top:16px;">
-          <div class="section-title">${svg('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>', 18)}รูปถ่ายการแพ็คสินค้าจริง</div>
+          <div class="section-title">${svg('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>', 18)}${t('packed_photo_title')}</div>
           <div style="border-radius:12px; overflow:hidden; border:1px solid var(--line); background:#0f172a; margin-top:10px;">
             <a href="${escapeHTML(o.packedPhotoUrl)}" target="_blank" rel="noopener">
-              <img src="${escapeHTML(o.packedPhotoUrl)}" alt="รูปแพ็คสินค้า" style="width:100%; max-height:460px; object-fit:contain; display:block; margin:0 auto;" />
+              <img src="${escapeHTML(o.packedPhotoUrl)}" alt="Packed Photo" style="width:100%; max-height:460px; object-fit:contain; display:block; margin:0 auto;" />
             </a>
           </div>
         </div>` : "";
-      const itemsCardHTML = (o.items && o.items.length > 0) ? `
+
+      const itemsCardHTML = (Array.isArray(o.items) && o.items.length > 0) ? `
         <div class="card timeline-card" style="margin-top:16px;">
-          <div class="section-title">${svg('<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/>', 18)}รายการสินค้าในคำสั่งซื้อ</div>
+          <div class="section-title">${svg('<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/>', 18)}${t('items_title')}</div>
           <div style="display:flex; flex-direction:column; gap:8px;">
             ${o.items.map(it => `
               <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; padding:10px 0; border-bottom:1px solid var(--line);">
@@ -579,45 +769,47 @@
           </div>
           ${o.total ? `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; font-weight:700; font-size:15px; color:var(--ink);">
-              <span>ยอดรวมทั้งสิ้น</span>
+              <span>${t('total_label')}</span>
               <span style="color:var(--brand); font-size:17px;">฿${Number(o.total).toLocaleString()}</span>
             </div>` : ''}
         </div>` : "";
+
+      const statusBadgeText = delivered ? stepsList[4] : (arrived ? t('status_arrived_pill') : stepsList[stepIndex]);
 
       result.innerHTML = `
         <div class="card">
           <div class="order-head">
             <div>
-              <div class="order-id-label">เลขคำสั่งซื้อ</div>
+              <div class="order-id-label">${t('order_id_label')}</div>
               <div class="order-id">
-                ${o.id || id}
-                <button class="copy-btn" data-copy="${o.id || id}" title="คัดลอกเลขออเดอร์">${svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', 18)}</button>
+                ${o.orderId || id}
+                <button class="copy-btn" data-copy="${o.orderId || id}" title="${t('copy_order_title')}">${svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', 18)}</button>
               </div>
             </div>
             <span class="status-pill ${delivered ? "done" : (arrived ? "arrived" : "progress")}">
               ${delivered ? svg('<path d="M20 6 9 17l-5-5"/>', 16) : '<span class="pulse"></span>'}
-              ${arrived ? "ไรเดอร์ถึงจุดหมายแล้ว" : STEPS[o.step]}
+              ${statusBadgeText}
             </span>
           </div>
           ${arrivedBannerHTML}
           <div class="stepper">${steps}</div>
           <div class="meta">
-            <div><div class="meta-label">บริการจัดส่ง</div><div class="meta-value">${o.carrier}</div></div>
-            <div><div class="meta-label">ข้อมูลจัดส่ง / พัสดุ</div><div class="meta-value">${trackingCell}</div></div>
-            <div><div class="meta-label">${delivered ? "สถานะการส่ง" : "คาดว่าจะได้รับ"}</div><div class="meta-value">${o.eta}</div></div>
-            ${o.addressHint ? `<div><div class="meta-label">จุดส่งสินค้า</div><div class="meta-value">${escapeHTML(o.addressHint)}</div></div>` : ''}
+            <div><div class="meta-label">${t('meta_carrier')}</div><div class="meta-value">${carrier}</div></div>
+            <div><div class="meta-label">${t('meta_tracking')}</div><div class="meta-value">${trackingCell}</div></div>
+            <div><div class="meta-label">${delivered ? t('meta_status_delivered') : t('meta_status_eta')}</div><div class="meta-value">${eta}</div></div>
+            ${o.addressHint ? `<div><div class="meta-label">${t('meta_address')}</div><div class="meta-value">${escapeHTML(o.addressHint)}</div></div>` : ''}
           </div>
         </div>
         ${packedPhotoHTML}
         ${itemsCardHTML}
-        ${events ? `
+        ${eventsHTML ? `
         <div class="card timeline-card">
-          <div class="section-title">${svg('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>', 18)}ประวัติการจัดส่ง</div>
-          <ul class="timeline">${events}</ul>
+          <div class="section-title">${svg('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>', 18)}${t('timeline_title')}</div>
+          <ul class="timeline">${eventsHTML}</ul>
         </div>` : ""}`;
 
       if (pollTimer) clearInterval(pollTimer);
-      if (o.rawStep && o.rawStep < 5) {
+      if (rawStep < 5) {
         pollTimer = setInterval(() => {
           track(id, true);
         }, 15000);
@@ -625,12 +817,14 @@
     }
 
     function renderNotFound(id) {
+      currentOrderId = id;
+      lastSearchStatus = 'not_found';
       if (pollTimer) clearInterval(pollTimer);
       result.innerHTML = `
         <div class="card not-found">
           <div class="icon">${svg('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8.5 11h5"/>', 28)}</div>
-          <h3>ไม่พบคำสั่งซื้อ “${escapeHTML(id)}”</h3>
-          <p>กรุณาตรวจสอบเลขคำสั่งซื้ออีกครั้ง หรือติดต่อเจ้าหน้าที่ผ่าน LINE ด้านล่าง</p>
+          <h3>${t('not_found_title', { id: escapeHTML(id) })}</h3>
+          <p>${t('not_found_desc')}</p>
         </div>`;
     }
 
@@ -640,19 +834,19 @@
       input.value = id;
       if (!isSilent) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner"></span>กำลังค้นหา';
+        btn.innerHTML = `<span class="spinner"></span>${t('search_btn_loading')}`;
       }
       try {
         const order = await fetchOrder(id);
         order ? renderOrder(id, order) : renderNotFound(id);
       } catch {
         if (!isSilent) {
-          result.innerHTML = `<div class="card not-found"><h3>เกิดข้อผิดพลาด</h3><p>ไม่สามารถเชื่อมต่อระบบได้ กรุณาลองใหม่อีกครั้ง</p></div>`;
+          result.innerHTML = `<div class="card not-found"><h3>${t('error_title')}</h3><p>${t('error_desc')}</p></div>`;
         }
       } finally {
         if (!isSilent) {
           btn.disabled = false;
-          btn.innerHTML = btnHTML;
+          btn.innerHTML = `${svg('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', 18)}<span id="trackBtnText">${t('search_btn')}</span>`;
           result.classList.add("show");
           history.replaceState(null, "", `?orderId=${encodeURIComponent(id)}`);
           result.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -661,36 +855,86 @@
     }
 
     function toast(msg) {
-      const t = $("#toast");
+      let t = $("#toast");
+      if (!t) {
+        t = document.createElement("div");
+        t.id = "toast";
+        t.className = "toast";
+        document.body.appendChild(t);
+      }
       t.textContent = msg;
       t.classList.add("show");
       clearTimeout(toast.timer);
       toast.timer = setTimeout(() => t.classList.remove("show"), 1800);
     }
 
+    function renderContacts() {
+      const contacts = I18N[currentLang].contacts;
+      $("#contactGrid").innerHTML = contacts.map(c => `
+        <div class="card contact-card">
+          <div class="cc-top">
+            <div class="line-badge">${LINE_ICON}</div>
+            <div>
+              <div class="cc-name">${c.name}</div>
+              <div class="cc-id">${c.id}</div>
+            </div>
+          </div>
+          <div class="cc-desc"><span class="cc-tag">${c.tag}</span><br>${c.desc}</div>
+          <a class="btn-line" href="${c.link || ('https://line.me/R/ti/p/' + encodeURIComponent(c.id))}" target="_blank" rel="noopener">
+            ${t('btn_add_line')}
+            ${svg('<path d="M7 17 17 7M7 7h10v10"/>', 16)}
+          </a>
+        </div>`).join("");
+    }
+
+    function setLanguage(lang) {
+      if (lang !== "th" && lang !== "en") return;
+      currentLang = lang;
+      localStorage.setItem("vapor_lang", lang);
+
+      // Update switcher active states
+      document.querySelectorAll(".lang-btn").forEach(b => {
+        b.classList.toggle("active", b.dataset.lang === lang);
+      });
+
+      // Update static data-i18n elements
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.dataset.i18n;
+        if (key) el.textContent = t(key);
+      });
+
+      // Update placeholder
+      if (input) input.placeholder = t("search_placeholder");
+
+      // Update track button
+      const btnText = $("#trackBtnText");
+      if (btnText) btnText.textContent = t("search_btn");
+
+      // Re-render contact grid
+      renderContacts();
+
+      // Re-render order or not-found if present
+      if (lastSearchStatus === 'found' && currentOrderData) {
+        renderOrder(currentOrderId, currentOrderData);
+      } else if (lastSearchStatus === 'not_found' && currentOrderId) {
+        renderNotFound(currentOrderId);
+      }
+    }
+
+    // Language switch click events
+    document.querySelectorAll(".lang-btn").forEach(btn => {
+      btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
+    });
+
     form.addEventListener("submit", e => { e.preventDefault(); track(input.value); });
     result.addEventListener("click", e => {
       const b = e.target.closest("[data-copy]");
       if (!b) return;
-      navigator.clipboard.writeText(b.dataset.copy).then(() => toast("คัดลอกเรียบร้อยแล้ว"));
+      navigator.clipboard.writeText(b.dataset.copy).then(() => toast(t("toast_copied")));
     });
 
-    $("#contactGrid").innerHTML = CONTACTS.map(c => `
-      <div class="card contact-card">
-        <div class="cc-top">
-          <div class="line-badge">${LINE_ICON}</div>
-          <div>
-            <div class="cc-name">${c.name}</div>
-            <div class="cc-id">${c.id}</div>
-          </div>
-        </div>
-        <div class="cc-desc"><span class="cc-tag">${c.tag}</span><br>${c.desc}</div>
-        <a class="btn-line" href="${c.link || ('https://line.me/R/ti/p/' + encodeURIComponent(c.id))}" target="_blank" rel="noopener">
-          เพิ่มเพื่อน / แชทไลน์
-          ${svg('<path d="M7 17 17 7M7 7h10v10"/>', 16)}
-        </a>
-      </div>`).join("");
-
+    // Initialize UI
+    setLanguage(currentLang);
     $("#year").textContent = new Date().getFullYear();
 
     history.scrollRestoration = "manual";
