@@ -325,12 +325,6 @@
           ตรวจสอบ
         </button>
       </div>
-      <div class="search-hint">
-        <span>ตัวอย่าง:</span>
-        <button type="button" class="chip" data-demo="ORD-240501">ORD-240501</button>
-        <button type="button" class="chip" data-demo="ORD-240502">ORD-240502</button>
-        <button type="button" class="chip" data-demo="ORD-240503">ORD-240503</button>
-      </div>
     </form>
 
     <div class="trust">
@@ -385,45 +379,10 @@
 
     // ช่องทางติดต่อ LINE ทางการของร้าน
     const CONTACTS = [
-      { name: "Vapor Flagship (Vapro V2)", id: "@361zkkun", tag: "สั่งซื้อ", desc: "สั่งด่วน / สอบถามสินค้าและสต็อก" },
-      { name: "Vapor Club Official", id: "@vaporclub", tag: "บริการลูกค้า", desc: "บริการลูกค้า / ติดตามพัสดุและเคลม" },
-      { name: "MOOOD@CNX", id: "@mooodcnx", tag: "สาขาเชียงใหม่", desc: "สาขาเชียงใหม่ / ส่งด่วนพื้นที่ CNX" },
+      { name: "Vapor Club", id: "@257vljxf", tag: "บริการลูกค้า", desc: "ฝ่ายบริการลูกค้า ติดตามพัสดุและเคลมสินค้า", link: "https://line.me/R/ti/p/@257vljxf" },
+      { name: "Vapor Plus", id: "@361zkkun", tag: "สั่งซื้อด่วน", desc: "สั่งด่วน / สอบถามสินค้าและสต็อก (Vapro V2)", link: "https://line.me/R/ti/p/@361zkkun" },
+      { name: "MOOOD@CNX", id: "@903aykgr", tag: "สาขาเชียงใหม่", desc: "สาขาเชียงใหม่ / บริการจัดส่งด่วนพื้นที่ CNX", link: "https://line.me/R/ti/p/@903aykgr" },
     ];
-
-    // ข้อมูลตัวอย่าง Fallback สำหรับทดสอบ
-    const MOCK_ORDERS = {
-      "ORD-240501": {
-        step: 3, carrier: "Kerry Express", tracking: "KEX0193847562TH", eta: "พรุ่งนี้ ภายใน 18:00 น.",
-        dates: ["28 ต.ค.", "29 ต.ค.", "29 ต.ค.", "1 พ.ย.", ""],
-        events: [
-          { title: "พัสดุอยู่ระหว่างการนำส่งถึงผู้รับ", loc: "ศูนย์กระจายสินค้า ลาดพร้าว, กรุงเทพฯ", time: "1 พ.ย. 2569 · 08:42" },
-          { title: "พัสดุถึงศูนย์กระจายสินค้าปลายทาง", loc: "ศูนย์กระจายสินค้า ลาดพร้าว, กรุงเทพฯ", time: "31 ต.ค. 2569 · 22:15" },
-          { title: "พัสดุออกจากศูนย์คัดแยก", loc: "ศูนย์คัดแยกบางนา, สมุทรปราการ", time: "30 ต.ค. 2569 · 03:10" },
-          { title: "ส่งมอบพัสดุให้บริษัทขนส่งแล้ว", loc: "vapor.club Flagship Store", time: "29 ต.ค. 2569 · 16:30" },
-          { title: "แพ็คสินค้าเรียบร้อย", loc: "vapor.club Flagship Store", time: "29 ต.ค. 2569 · 11:05" },
-          { title: "ยืนยันคำสั่งซื้อแล้ว", loc: "ระบบ vapor.club", time: "28 ต.ค. 2569 · 20:47" },
-        ],
-      },
-      "ORD-240502": {
-        step: 4, carrier: "Flash Express", tracking: "TH4728193650A", eta: "จัดส่งสำเร็จแล้ว",
-        dates: ["25 ต.ค.", "25 ต.ค.", "26 ต.ค.", "27 ต.ค.", "27 ต.ค."],
-        events: [
-          { title: "จัดส่งสำเร็จ — ผู้รับลงชื่อรับพัสดุแล้ว", loc: "อ.เมือง, เชียงใหม่", time: "27 ต.ค. 2569 · 14:20" },
-          { title: "พัสดุอยู่ระหว่างการนำส่งถึงผู้รับ", loc: "สาขาช้างเผือก, เชียงใหม่", time: "27 ต.ค. 2569 · 09:02" },
-          { title: "ส่งมอบพัสดุให้บริษัทขนส่งแล้ว", loc: "vapor.club Flagship Store", time: "26 ต.ค. 2569 · 15:45" },
-          { title: "แพ็คสินค้าเรียบร้อย", loc: "vapor.club Flagship Store", time: "25 ต.ค. 2569 · 17:30" },
-          { title: "ยืนยันคำสั่งซื้อแล้ว", loc: "ระบบ vapor.club", time: "25 ต.ค. 2569 · 10:12" },
-        ],
-      },
-      "ORD-240503": {
-        step: 1, carrier: "รอระบุ", tracking: "", eta: "ภายใน 2–3 วันทำการ",
-        dates: ["1 พ.ย.", "", "", "", ""],
-        events: [
-          { title: "กำลังแพ็คสินค้า", loc: "vapor.club Flagship Store", time: "1 พ.ย. 2569 · 10:30" },
-          { title: "ยืนยันคำสั่งซื้อแล้ว", loc: "ระบบ vapor.club", time: "1 พ.ย. 2569 · 09:58" },
-        ],
-      },
-    };
 
     function maskPhone(phone) {
       if (!phone) return "-";
@@ -504,8 +463,7 @@
         console.warn("Backend fetch failed, checking mock:", err);
       }
 
-      // ตรวจสอบ Mock Orders
-      return MOCK_ORDERS[orderId] || null;
+      return null;
     }
 
     const STEPS = ["สั่งซื้อแล้ว", "แพ็คสินค้า", "ส่งมอบขนส่ง", "กำลังจัดส่ง", "จัดส่งสำเร็จ"];
@@ -644,7 +602,6 @@
     }
 
     form.addEventListener("submit", e => { e.preventDefault(); track(input.value); });
-    document.querySelectorAll("[data-demo]").forEach(c => c.addEventListener("click", () => track(c.dataset.demo)));
     result.addEventListener("click", e => {
       const b = e.target.closest("[data-copy]");
       if (!b) return;
@@ -661,7 +618,7 @@
           </div>
         </div>
         <div class="cc-desc"><span class="cc-tag">${c.tag}</span><br>${c.desc}</div>
-        <a class="btn-line" href="https://line.me/R/ti/p/${encodeURIComponent(c.id)}" target="_blank" rel="noopener">
+        <a class="btn-line" href="${c.link || ('https://line.me/R/ti/p/' + encodeURIComponent(c.id))}" target="_blank" rel="noopener">
           เพิ่มเพื่อน / แชทไลน์
           ${svg('<path d="M7 17 17 7M7 7h10v10"/>', 16)}
         </a>
