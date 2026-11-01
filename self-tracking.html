@@ -483,6 +483,7 @@
               carrier: carrier,
               tracking: tracking,
               riderTrackingUrl: t.riderTrackingUrl || "",
+              packedPhotoUrl: t.packedPhotoUrl || null,
               eta: eta,
               isArrived: isArrived,
               isDelivered: isDelivered,
@@ -553,6 +554,15 @@
           พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ
         </div>` : "";
 
+            const packedPhotoHTML = o.packedPhotoUrl ? `
+        <div class="card timeline-card" style="margin-top:16px;">
+          <div class="section-title">${svg('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>', 18)}รูปถ่ายการแพ็คสินค้าจริง</div>
+          <div style="border-radius:12px; overflow:hidden; border:1px solid var(--line); background:#0f172a; margin-top:10px;">
+            <a href="${escapeHTML(o.packedPhotoUrl)}" target="_blank" rel="noopener">
+              <img src="${escapeHTML(o.packedPhotoUrl)}" alt="รูปแพ็คสินค้า" style="width:100%; max-height:460px; object-fit:contain; display:block; margin:0 auto;" />
+            </a>
+          </div>
+        </div>` : "";
       const itemsCardHTML = (o.items && o.items.length > 0) ? `
         <div class="card timeline-card" style="margin-top:16px;">
           <div class="section-title">${svg('<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/>', 18)}รายการสินค้าในคำสั่งซื้อ</div>
@@ -598,6 +608,7 @@
             ${o.addressHint ? `<div><div class="meta-label">จุดส่งสินค้า</div><div class="meta-value">${escapeHTML(o.addressHint)}</div></div>` : ''}
           </div>
         </div>
+        ${packedPhotoHTML}
         ${itemsCardHTML}
         ${events ? `
         <div class="card timeline-card">
