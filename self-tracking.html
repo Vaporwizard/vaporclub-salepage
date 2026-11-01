@@ -384,85 +384,120 @@
       { name: "MOOOD@CNX", id: "@903aykgr", tag: "สาขาเชียงใหม่", desc: "สาขาเชียงใหม่ / บริการจัดส่งด่วนพื้นที่ CNX", link: "https://line.me/R/ti/p/@903aykgr" },
     ];
 
-    function maskPhone(phone) {
-      if (!phone) return "-";
-      const clean = phone.replace(/[^0-9]/g, "");
-      if (clean.length < 8) return phone;
-      return clean.substring(0, 3) + "xxx" + clean.substring(clean.length - 4);
-    }
-
-    function maskName(name) {
-      if (!name) return "-";
-      const parts = name.trim().split(" ");
-      if (parts.length === 1) return name.charAt(0) + "***";
-      return parts[0].charAt(0) + "*** " + parts[parts.length - 1].charAt(0) + "***";
-    }
-
-    function maskAddress(addr) {
-      if (!addr) return "-";
-      if (addr.length <= 15) return addr;
-      return addr.substring(0, 10) + "... (ปิดบังเพื่อความปลอดภัย)";
-    }
-
-    // เรียก API หลังบ้านจริงพร้อม Fallback ตัวอย่าง
-    async function fetchOrder(orderId) {
+    function formatDateTime(iso) {
       try {
-        const res = await fetch(`${API_BASE}/api/public/orders/${encodeURIComponent(orderId)}/tracking`);
-        const json = await res.json();
-        if (res.ok && json.success) {
-          const rawStep = json.currentStep || 1;
-          const stepIndex = Math.min(4, Math.max(0, rawStep - 1));
-          const isArrived = (json.status === "ARRIVED" || rawStep === 4);
-          const isDelivered = (json.status === "DELIVERED" || rawStep === 5);
-
-          const carrier = json.deliveryTitle || (json.deliveryMethod === "express" ? "ส่งด่วน (ไรเดอร์)" : "พัสดุด่วน");
-          const tracking = json.trackingNo || json.tracking_no || "";
-          
-          let eta = "กำลังเตรียมจัดส่ง";
-          if (isArrived) {
-            eta = "พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ";
-          } else if (isDelivered) {
-            eta = "จัดส่งสำเร็จเรียบร้อยแล้ว";
-          } else if (json.deliveryMethod === "express" || carrier.includes("ด่วน")) {
-            eta = "ประมาณ 30-45 นาที";
-          } else {
-            eta = "1-2 วันทำการ";
-          }
-
-          const events = [];
-          if (isDelivered) {
-            events.push({ title: "จัดส่งสำเร็จ — ลูกค้าได้รับสินค้าเรียบร้อยแล้ว", loc: maskAddress(json.recipientAddress), time: "เรียบร้อย" });
-          }
-          if (isArrived) {
-            events.push({ title: "พี่ไรเดอร์ถึงจุดหมายแล้ว กรุณาเตรียมรับสินค้า", loc: maskAddress(json.recipientAddress), time: "ถึงแล้ว" });
-          }
-          if (rawStep >= 3) {
-            events.push({ title: "ไรเดอร์กำลังเดินทางมุ่งหน้าไปหาคุณ", loc: "ระหว่างการจัดส่ง", time: "กำลังเดินทาง" });
-          }
-          if (rawStep >= 2) {
-            events.push({ title: "แอดมินแพ็คสินค้าและเตรียมจัดส่งเรียบร้อย", loc: "คลังสินค้า vapor.club", time: "เสร็จสิ้น" });
-          }
-          events.push({ title: "ยืนยันคำสั่งซื้อและการชำระเงินเรียบร้อย", loc: "ระบบ vapor.club", time: "บันทึกข้อมูลแล้ว" });
-
-          return {
-            step: stepIndex,
-            carrier: carrier,
-            tracking: tracking,
-            riderTrackingUrl: json.riderTrackingUrl || "",
-            eta: eta,
-            isArrived: isArrived,
-            isDelivered: isDelivered,
-            recipientName: json.recipientName ? maskName(json.recipientName) : "",
-            recipientPhone: json.recipientPhone ? maskPhone(json.recipientPhone) : "",
-            dates: ["", "", "", "", ""],
-            events: events,
-            rawStep: rawStep
-          };
-        }
-      } catch (err) {
-        console.warn("Backend fetch failed, checking mock:", err);
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return iso || "";
+        return d.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" }) + " · " +
+               d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }) + " น.";
+      } catch (e) {
+        return iso || "";
       }
+    }
 
+    function getCandidates(raw) {
+      const v = (raw || "").trim().replace(/\s+/g, "");
+      if (!v) return [];
+      const list = [];
+      if (/^ord-/i.test(v)) {
+        const body = v.substring(4);
+        list.push(`ORD-${body.toLowerCase()}`);
+        list.push(`ORD-${body.toUpperCase()}`);
+        list.push(`ORD-${body}`);
+        list.push(v.toLowerCase());
+        list.push(v);
+      } else {
+        list.push(`ORD-${v.toLowerCase()}`);
+        list.push(`ORD-${v.toUpperCase()}`);
+        list.push(`ORD-${v}`);
+        list.push(v.toLowerCase());
+        list.push(v);
+      }
+      return Array.from(new Set(list));
+    }
+
+    async function fetchOrder(orderId) {
+      const candidates = getCandidates(orderId);
+      for (const cand of candidates) {
+        try {
+          const res = await fetch(`${API_BASE}/api/public/orders/${encodeURIComponent(cand)}/tracking`);
+          if (!res.ok) continue;
+          const json = await res.json();
+          if (json && json.success) {
+            const t = json.tracking || json;
+            const rawStep = Number(t.currentStep) || 1;
+            const stepIndex = Math.min(4, Math.max(0, rawStep - 1));
+            const isArrived = !!(t.isArrived || t.status === "ARRIVED" || rawStep === 4);
+            const isDelivered = !!(t.isDelivered || t.status === "DELIVERED" || rawStep === 5);
+
+            const carrier = t.deliveryTitle || (t.deliveryType === "POSTAL" ? "พัสดุด่วน Flash Express ทั่วประเทศ" : "ไรเดอร์ส่งด่วนเมืองเชียงใหม่ (30-45 นาที)");
+            const tracking = t.trackingNo || "";
+
+            let eta = t.statusDesc || "กำลังดำเนินการจัดส่ง";
+            if (isDelivered) {
+              eta = "จัดส่งสำเร็จเรียบร้อยแล้ว";
+            } else if (isArrived) {
+              eta = "พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ";
+            } else if (t.deliveryType === "EXPRESS") {
+              eta = "ประมาณ 30-45 นาที";
+            }
+
+            const events = [];
+            if (isDelivered) {
+              events.push({
+                title: "จัดส่งสำเร็จ — ลูกค้าได้รับสินค้าเรียบร้อยแล้ว",
+                loc: t.addressHint ? `จุดส่ง: ${t.addressHint}` : "ปลายทางผู้รับ",
+                time: t.updatedAt ? formatDateTime(t.updatedAt) : "จัดส่งสำเร็จ"
+              });
+            }
+            if (isArrived || isDelivered) {
+              events.push({
+                title: "พี่ไรเดอร์เดินทางถึงจุดหมายแล้ว",
+                loc: t.addressHint ? `จุดส่ง: ${t.addressHint}` : "จุดหมายปลายทาง",
+                time: "ถึงที่หมาย"
+              });
+            }
+            if (rawStep >= 3) {
+              events.push({
+                title: "พี่ไรเดอร์กำลังเดินทางมุ่งหน้าไปส่งสินค้า",
+                loc: "ระหว่างการจัดส่ง",
+                time: t.batchTime ? `รอบจัดส่ง: ${t.batchTime}` : "กำลังเดินทาง"
+              });
+            }
+            if (rawStep >= 2) {
+              events.push({
+                title: "ฝ่ายคลังสินค้าแพ็คสินค้าและเตรียมพร้อมส่งมอบ",
+                loc: "คลังสินค้า Vapor Club",
+                time: "เตรียมสินค้าเสร็จสิ้น"
+              });
+            }
+            events.push({
+              title: "ยืนยันคำสั่งซื้อและการชำระเงินเรียบร้อย",
+              loc: "ระบบ Vapor Club",
+              time: t.createdAt ? formatDateTime(t.createdAt) : "บันทึกข้อมูลแล้ว"
+            });
+
+            return {
+              id: t.orderId || cand,
+              step: stepIndex,
+              carrier: carrier,
+              tracking: tracking,
+              riderTrackingUrl: t.riderTrackingUrl || "",
+              eta: eta,
+              isArrived: isArrived,
+              isDelivered: isDelivered,
+              items: t.items || [],
+              total: t.total || 0,
+              addressHint: t.addressHint || "",
+              dates: ["", "", "", "", ""],
+              events: events,
+              rawStep: rawStep
+            };
+          }
+        } catch (err) {
+          console.warn("Fetch failed for candidate:", cand, err);
+        }
+      }
       return null;
     }
 
@@ -481,11 +516,10 @@
     const $ = s => document.querySelector(s);
     const form = $("#trackForm"), input = $("#orderInput"), btn = $("#trackBtn"), result = $("#result");
     const btnHTML = btn.innerHTML;
-    const escapeHTML = s => s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const escapeHTML = s => String(s || "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
     function normalize(raw) {
-      const v = raw.trim().toUpperCase().replace(/\s+/g, "");
-      return /^\d+$/.test(v) ? `ORD-${v}` : v;
+      return (raw || "").trim();
     }
 
     function renderOrder(id, o) {
@@ -511,12 +545,33 @@
       } else if (o.riderTrackingUrl) {
         trackingCell = `<a href="${o.riderTrackingUrl}" target="_blank" style="color:var(--brand); text-decoration:underline; font-weight:600;">เปิดดูเส้นทางสด (Live GPS)</a>`;
       } else {
-        trackingCell = `<span style="color:var(--muted);font-weight:500">รอการส่งมอบ</span>`;
+        trackingCell = `<span style="color:var(--muted);font-weight:500">ไรเดอร์จัดส่งตรงถึงจุดหมาย</span>`;
       }
 
       const arrivedBannerHTML = arrived ? `
         <div class="arrived-banner">
           พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ
+        </div>` : "";
+
+      const itemsCardHTML = (o.items && o.items.length > 0) ? `
+        <div class="card timeline-card" style="margin-top:16px;">
+          <div class="section-title">${svg('<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/>', 18)}รายการสินค้าในคำสั่งซื้อ</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            ${o.items.map(it => `
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; padding:10px 0; border-bottom:1px solid var(--line);">
+                <div>
+                  <span style="font-weight:600; color:var(--ink);">${escapeHTML(it.name)}</span>
+                  ${it.flavor ? `<span style="font-size:12.5px; color:var(--muted); margin-left:6px;">(${escapeHTML(it.flavor)})</span>` : ''}
+                </div>
+                <div style="font-weight:700; color:var(--ink-2); background:var(--bg); padding:2px 10px; border-radius:999px; border:1px solid var(--line);">x${it.qty || 1}</div>
+              </div>
+            `).join('')}
+          </div>
+          ${o.total ? `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; font-weight:700; font-size:15px; color:var(--ink);">
+              <span>ยอดรวมทั้งสิ้น</span>
+              <span style="color:var(--brand); font-size:17px;">฿${Number(o.total).toLocaleString()}</span>
+            </div>` : ''}
         </div>` : "";
 
       result.innerHTML = `
@@ -525,8 +580,8 @@
             <div>
               <div class="order-id-label">เลขคำสั่งซื้อ</div>
               <div class="order-id">
-                ${id}
-                <button class="copy-btn" data-copy="${id}" title="คัดลอกเลขออเดอร์">${svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', 18)}</button>
+                ${o.id || id}
+                <button class="copy-btn" data-copy="${o.id || id}" title="คัดลอกเลขออเดอร์">${svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', 18)}</button>
               </div>
             </div>
             <span class="status-pill ${delivered ? "done" : (arrived ? "arrived" : "progress")}">
@@ -537,18 +592,19 @@
           ${arrivedBannerHTML}
           <div class="stepper">${steps}</div>
           <div class="meta">
-            <div><div class="meta-label">บริษัทขนส่ง</div><div class="meta-value">${o.carrier}</div></div>
-            <div><div class="meta-label">เลขพัสดุ / ข้อมูลจัดส่ง</div><div class="meta-value">${trackingCell}</div></div>
-            <div><div class="meta-label">${delivered ? "สถานะ" : "คาดว่าจะได้รับ"}</div><div class="meta-value">${o.eta}</div></div>
+            <div><div class="meta-label">บริการจัดส่ง</div><div class="meta-value">${o.carrier}</div></div>
+            <div><div class="meta-label">ข้อมูลจัดส่ง / พัสดุ</div><div class="meta-value">${trackingCell}</div></div>
+            <div><div class="meta-label">${delivered ? "สถานะการส่ง" : "คาดว่าจะได้รับ"}</div><div class="meta-value">${o.eta}</div></div>
+            ${o.addressHint ? `<div><div class="meta-label">จุดส่งสินค้า</div><div class="meta-value">${escapeHTML(o.addressHint)}</div></div>` : ''}
           </div>
         </div>
+        ${itemsCardHTML}
         ${events ? `
         <div class="card timeline-card">
           <div class="section-title">${svg('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>', 18)}ประวัติการจัดส่ง</div>
           <ul class="timeline">${events}</ul>
         </div>` : ""}`;
 
-      // Polling ถ้าออเดอร์ยังไม่สำเร็จ
       if (pollTimer) clearInterval(pollTimer);
       if (o.rawStep && o.rawStep < 5) {
         pollTimer = setInterval(() => {
