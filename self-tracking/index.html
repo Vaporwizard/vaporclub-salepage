@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vapor Club</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Prompt', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 16px 40px;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .header {
+            text-align: center;
+            padding: 12px 0 8px;
+        }
+        .brand-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+        .brand-subtitle {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        /* Search Card */
+        .card {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+        .search-box {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .search-input {
+            flex: 1;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 12px 14px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus {
+            border-color: #3b82f6;
+        }
+        .search-btn {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .search-btn:hover {
+            background: #1d4ed8;
+        }
+
+        /* Order Header Banner */
+        .order-header-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 14px;
+            margin-bottom: 16px;
+        }
+        .order-id-label {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        .order-id-val {
+            font-size: 18px;
+            font-weight: 700;
+            color: #f9fafb;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .copy-pill-btn {
+            background: #1f2937;
+            border: 1px solid #374151;
+            color: #93c5fd;
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .copy-pill-btn:hover {
+            background: #374151;
+            color: #bfdbfe;
+        }
+
+        /* Arrived Alert Banner */
+        .arrived-alert {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.3));
+            border: 1px solid #10b981;
+            border-radius: 14px;
+            padding: 14px;
+            text-align: center;
+            color: #a7f3d0;
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 16px;
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+        }
+
+        /* Stepper */
+        .stepper {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            padding-left: 10px;
+        }
+        .stepper::before {
+            content: '';
+            position: absolute;
+            left: 23px;
+            top: 15px;
+            bottom: 25px;
+            width: 2px;
+            background: #374151;
+            z-index: 1;
+        }
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            position: relative;
+            z-index: 2;
+        }
+        .step-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #1f2937;
+            border: 2px solid #4b5563;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+        .step-item.active .step-circle {
+            background: #2563eb;
+            border-color: #60a5fa;
+            color: #fff;
+            box-shadow: 0 0 12px rgba(37, 99, 235, 0.6);
+        }
+        .step-item.completed .step-circle {
+            background: #10b981;
+            border-color: #34d399;
+            color: #fff;
+        }
+        .step-content {
+            flex: 1;
+        }
+        .step-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #d1d5db;
+        }
+        .step-item.active .step-title {
+            color: #60a5fa;
+        }
+        .step-item.completed .step-title {
+            color: #f3f4f6;
+        }
+        .step-desc {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        /* Detail sections */
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 8px 0;
+            border-bottom: 1px solid #1f2937;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            color: #9ca3af;
+        }
+        .info-value {
+            color: #f3f4f6;
+            font-weight: 500;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+        }
+
+        /* Item list */
+        .items-box {
+            background: #1a2234;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+        .item-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 4px 0;
+        }
+        .item-name {
+            color: #e5e7eb;
+        }
+        .item-qty {
+            color: #9ca3af;
+        }
+
+        /* Action buttons */
+        .action-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .btn-secondary {
+            flex: 1;
+            background: #1f2937;
+            border: 1px solid #374151;
+            color: #e5e7eb;
+            border-radius: 12px;
+            padding: 11px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+        .btn-secondary:hover {
+            background: #374151;
+        }
+        .btn-line {
+            background: #06c755;
+            color: #fff;
+            border: none;
+        }
+        .btn-line:hover {
+            background: #05b04c;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 20px;
+            border: 1px solid #374151;
+            font-size: 13px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 100;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #4b5563;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="brand-title">VAPOR CLUB</h1>
+            <p class="brand-subtitle">ระบบติดตามสถานะพัสดุและจัดส่ง (Self-Tracking)</p>
+        </div>
+
+        <!-- Search Box Card -->
+        <div class="card">
+            <label style="font-size: 13px; font-weight: 500; color: #d1d5db;">กรอกเลขออเดอร์เพื่อเช็คสถานะ</label>
+            <div class="search-box">
+                <input type="text" id="orderInput" class="search-input" placeholder="เช่น ORD-123456" />
+                <button id="searchBtn" class="search-btn">ค้นหา</button>
+            </div>
+            <div id="searchError" style="color: #f87171; font-size: 12px; margin-top: 8px; display: none;"></div>
+        </div>
+
+        <!-- Order Result Container -->
+        <div id="orderResult" style="display: none; display: flex; flex-direction: column; gap: 16px;">
+            <!-- Main Tracking Card -->
+            <div class="card">
+                <div class="order-header-card">
+                    <div>
+                        <div class="order-id-label">เลขออเดอร์</div>
+                        <div class="order-id-val">
+                            <span id="displayOrderId">-</span>
+                            <button id="copyOrderBtn" class="copy-pill-btn">คัดลอกเลข</button>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="order-id-label">สถานะ</div>
+                        <div id="displayStatusText" style="font-size: 14px; font-weight: 600; color: #60a5fa;">-</div>
+                    </div>
+                </div>
+
+                <!-- Arrived Alert (Shown if status is ARRIVED) -->
+                <div id="arrivedAlertBanner" class="arrived-alert" style="display: none;">
+                    พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ
+                </div>
+
+                <!-- Stepper -->
+                <div class="stepper" id="stepperContainer">
+                    <div class="step-item" id="step1">
+                        <div class="step-circle">1</div>
+                        <div class="step-content">
+                            <div class="step-title">ได้รับคำสั่งซื้อ</div>
+                            <div class="step-desc">บันทึกข้อมูลและตรวจสอบการชำระเงินเรียบร้อย</div>
+                        </div>
+                    </div>
+                    <div class="step-item" id="step2">
+                        <div class="step-circle">2</div>
+                        <div class="step-content">
+                            <div class="step-title">กำลังจัดเตรียมสินค้า</div>
+                            <div class="step-desc">แอดมินกำลังแพ็คสินค้าและเตรียมเรียกรถจัดส่ง</div>
+                        </div>
+                    </div>
+                    <div class="step-item" id="step3">
+                        <div class="step-circle">3</div>
+                        <div class="step-content">
+                            <div class="step-title">ไรเดอร์กำลังเดินทาง</div>
+                            <div class="step-desc" id="step3Desc">พัสดุถูกรับและกำลังมุ่งหน้าไปหาคุณ (ประมาณ 30-45 นาที)</div>
+                        </div>
+                    </div>
+                    <div class="step-item" id="step4">
+                        <div class="step-circle">4</div>
+                        <div class="step-content">
+                            <div class="step-title">ไรเดอร์ถึงจุดหมายแล้ว</div>
+                            <div class="step-desc">ไรเดอร์มาถึงจุดนัดรับแล้ว กรุณาเตรียมรับสินค้า</div>
+                        </div>
+                    </div>
+                    <div class="step-item" id="step5">
+                        <div class="step-circle">5</div>
+                        <div class="step-content">
+                            <div class="step-title">จัดส่งสำเร็จ</div>
+                            <div class="step-desc">ลูกค้าได้รับสินค้าเรียบร้อยแล้ว ขอบคุณที่ใช้บริการค่ะ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Details Card -->
+            <div class="card">
+                <div style="font-size: 14px; font-weight: 600; color: #f3f4f6; margin-bottom: 10px;">ข้อมูลการจัดส่ง</div>
+                <div class="info-row">
+                    <div class="info-label">รูปแบบจัดส่ง</div>
+                    <div class="info-value" id="displayDeliveryMethod">-</div>
+                </div>
+                <div class="info-row" id="trackingUrlRow" style="display: none;">
+                    <div class="info-label">ลิงก์ติดตามไรเดอร์</div>
+                    <div class="info-value"><a id="trackingUrlLink" href="#" target="_blank" style="color: #60a5fa; text-decoration: underline;">เปิดดูเส้นทางสด</a></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">ผู้รับ</div>
+                    <div class="info-value" id="displayRecipientName">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">เบอร์ติดต่อ</div>
+                    <div class="info-value" id="displayRecipientPhone">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">จุดส่งสินค้า</div>
+                    <div class="info-value" id="displayRecipientAddress">-</div>
+                </div>
+
+                <div style="margin-top: 14px;">
+                    <div class="info-label" style="margin-bottom: 6px;">รายการสินค้าที่สั่งซื้อ</div>
+                    <div class="items-box" id="itemsContainer">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <div class="action-row">
+                    <button id="copyPageLinkBtn" class="btn-secondary">คัดลอกลิงก์หน้านี้</button>
+                    <a id="contactAdminBtn" href="https://lin.ee/your-line" target="_blank" class="btn-secondary btn-line">ติดต่อแอดมิน LINE</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">คัดลอกเรียบร้อยแล้ว</div>
+
+    <script>
+        const API_BASE = 'https://vapro-ai-admin.onrender.com';
+        let currentOrderId = '';
+        let pollTimer = null;
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2500);
+        }
+
+        function maskPhone(phone) {
+            if (!phone) return '-';
+            const clean = phone.replace(/[^0-9]/g, '');
+            if (clean.length < 8) return phone;
+            return clean.substring(0, 3) + 'xxx' + clean.substring(clean.length - 4);
+        }
+
+        function maskName(name) {
+            if (!name) return '-';
+            const parts = name.trim().split(' ');
+            if (parts.length === 1) {
+                return name.charAt(0) + '***';
+            }
+            return parts[0].charAt(0) + '*** ' + parts[parts.length - 1].charAt(0) + '***';
+        }
+
+        function maskAddress(addr) {
+            if (!addr) return '-';
+            if (addr.length <= 15) return addr;
+            return addr.substring(0, 10) + '... (ปิดบังเพื่อความปลอดภัย)';
+        }
+
+        async function fetchTracking(orderId) {
+            if (!orderId) return;
+            const searchError = document.getElementById('searchError');
+            searchError.style.display = 'none';
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/public/orders/${encodeURIComponent(orderId)}/tracking`);
+                const data = await res.json();
+                
+                if (!res.ok || !data.success) {
+                    searchError.textContent = data.message || 'ไม่พบเลขออเดอร์นี้ กรุณาตรวจสอบอีกครั้ง';
+                    searchError.style.display = 'block';
+                    document.getElementById('orderResult').style.display = 'none';
+                    return;
+                }
+
+                renderOrder(data);
+            } catch (err) {
+                searchError.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง';
+                searchError.style.display = 'block';
+            }
+        }
+
+        function renderOrder(data) {
+            document.getElementById('orderResult').style.display = 'flex';
+            currentOrderId = data.orderId;
+            document.getElementById('displayOrderId').textContent = data.orderId;
+            document.getElementById('displayStatusText').textContent = data.statusText || data.status;
+
+            // Delivery method
+            const isExpress = data.deliveryMethod === 'express' || (data.deliveryTitle && (data.deliveryTitle.includes('ด่วน') || data.deliveryTitle.includes('ไรเดอร์') || data.deliveryTitle.includes('Grab') || data.deliveryTitle.includes('Lalamove')));
+            document.getElementById('displayDeliveryMethod').textContent = data.deliveryTitle || (isExpress ? 'ส่งด่วน (ไรเดอร์)' : 'พัสดุด่วน');
+
+            // Tracking link if safe to view
+            const trackingUrlRow = document.getElementById('trackingUrlRow');
+            const trackingUrlLink = document.getElementById('trackingUrlLink');
+            if (data.riderTrackingUrl) {
+                trackingUrlRow.style.display = 'flex';
+                trackingUrlLink.href = data.riderTrackingUrl;
+            } else {
+                trackingUrlRow.style.display = 'none';
+            }
+
+            // Masked Customer Info (Safe invariant: Warehouse coordinates never displayed)
+            document.getElementById('displayRecipientName').textContent = data.recipientName ? maskName(data.recipientName) : '-';
+            document.getElementById('displayRecipientPhone').textContent = data.recipientPhone ? maskPhone(data.recipientPhone) : '-';
+            document.getElementById('displayRecipientAddress').textContent = data.recipientAddress ? maskAddress(data.recipientAddress) : '-';
+
+            // Items list
+            const itemsBox = document.getElementById('itemsContainer');
+            itemsBox.innerHTML = '';
+            if (data.items && data.items.length > 0) {
+                data.items.forEach(it => {
+                    const line = document.createElement('div');
+                    line.className = 'item-line';
+                    line.innerHTML = `
+                        <span class="item-name">${it.name || it.title || 'สินค้า'}</span>
+                        <span class="item-qty">x${it.quantity || it.qty || 1}</span>
+                    `;
+                    itemsBox.appendChild(line);
+                });
+            } else {
+                itemsBox.innerHTML = '<div style="font-size: 12px; color: #9ca3af;">ไม่มีรายละเอียดสินค้า</div>';
+            }
+
+            // Stepper state
+            const currentStep = data.currentStep || 1;
+            const isArrived = (data.status === 'ARRIVED' || currentStep === 4);
+            const arrivedBanner = document.getElementById('arrivedAlertBanner');
+            if (isArrived) {
+                arrivedBanner.style.display = 'block';
+            } else {
+                arrivedBanner.style.display = 'none';
+            }
+
+            for (let i = 1; i <= 5; i++) {
+                const el = document.getElementById(`step${i}`);
+                if (!el) continue;
+                el.classList.remove('active', 'completed');
+                if (i < currentStep) {
+                    el.classList.add('completed');
+                } else if (i === currentStep) {
+                    el.classList.add('active');
+                }
+            }
+
+            // Update URL without reload
+            const url = new URL(window.location);
+            if (url.searchParams.get('orderId') !== currentOrderId) {
+                url.searchParams.set('orderId', currentOrderId);
+                window.history.replaceState({}, '', url);
+            }
+
+            // Polling if active order
+            if (pollTimer) clearInterval(pollTimer);
+            if (currentStep < 5) {
+                pollTimer = setInterval(() => {
+                    fetchTracking(currentOrderId);
+                }, 15000);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const val = document.getElementById('orderInput').value.trim();
+            if (val) fetchTracking(val);
+        });
+
+        document.getElementById('orderInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const val = document.getElementById('orderInput').value.trim();
+                if (val) fetchTracking(val);
+            }
+        });
+
+        document.getElementById('copyOrderBtn').addEventListener('click', () => {
+            if (currentOrderId) {
+                navigator.clipboard.writeText(currentOrderId).then(() => {
+                    showToast('คัดลอกเลขออเดอร์แล้ว');
+                });
+            }
+        });
+
+        document.getElementById('copyPageLinkBtn').addEventListener('click', () => {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                showToast('คัดลอกลิงก์ติดตามพัสดุแล้ว');
+            });
+        });
+
+        // Initialize from URL query params
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const initialId = params.get('orderId') || params.get('order_id') || params.get('id');
+            if (initialId) {
+                document.getElementById('orderInput').value = initialId;
+                fetchTracking(initialId);
+            }
+        });
+    </script>
+</body>
+</html>
