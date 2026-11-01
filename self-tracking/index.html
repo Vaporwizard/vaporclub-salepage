@@ -16,81 +16,101 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Exact background gradient matching uploaded design */
         body {
-            background: linear-gradient(180deg, 
-                #ff751f 0%, 
-                #ff751f 180px, 
-                #eb6f21 240px, 
-                #db6c26 300px, 
-                #cf6d2f 350px, 
-                #c7723c 400px, 
-                #c48963 460px, 
-                #c89a7c 520px, 
-                #d1af99 580px, 
-                #dec8ba 640px, 
-                #efe5df 100%);
-            background-color: #efe5df;
-            background-repeat: no-repeat;
+            background-color: #d36420;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
             color: #1e293b;
             position: relative;
+            overflow-x: hidden;
         }
 
-        .main-wrapper {
+        /* 1. Full-width Top Black Bar */
+        .top-navbar {
             width: 100%;
+            height: 54px;
+            background: #222222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 16px;
+            position: relative;
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        .top-nav-logo {
+            height: 26px;
+            width: auto;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
+        /* 2. Hero Section (Vibrant Orange with Floating Products) */
+        .hero-section {
+            width: 100%;
+            background: #ff751f;
+            position: relative;
+            padding: 38px 16px 42px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            flex: 1;
-            padding: 0 16px 50px;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
         }
 
-        /* Top Capsule Logo Bar with exact gradient matching sample image */
-        .top-capsule-wrap {
-            width: 92%;
-            max-width: 920px;
-            margin: 18px auto 26px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .capsule-img {
-            width: 100%;
-            max-width: 920px;
+        /* Floating Products on Left and Right */
+        .floating-vape-left {
+            position: absolute;
+            left: 20px;
+            top: 25px;
+            width: 185px;
             height: auto;
-            display: block;
-            filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.15));
+            pointer-events: none;
+            z-index: 2;
+            filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.2));
+            transition: transform 0.3s ease;
+        }
+        .floating-vape-right {
+            position: absolute;
+            right: 20px;
+            top: 25px;
+            width: 185px;
+            height: auto;
+            pointer-events: none;
+            z-index: 2;
+            filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.2));
+            transition: transform 0.3s ease;
         }
 
-        /* Titles */
-        .header-section {
+        /* Hero Center Content */
+        .hero-center-box {
+            width: 100%;
+            max-width: 580px;
             text-align: center;
-            margin-bottom: 22px;
+            position: relative;
+            z-index: 10;
         }
-        .main-title {
+        .hero-main-title {
             color: #ffffff;
-            font-size: 28px;
+            font-size: 29px;
             font-weight: 800;
             letter-spacing: 0.5px;
             margin-bottom: 6px;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
-        .sub-title {
+        .hero-sub-title {
             color: #ffffff;
             font-size: 13.5px;
             font-weight: 400;
-            opacity: 0.96;
-            letter-spacing: 0.2px;
+            opacity: 0.95;
+            margin-bottom: 24px;
         }
 
-        /* Search Bar */
+        /* Search Pill */
         .search-box-wrapper {
             width: 100%;
-            max-width: 490px;
+            max-width: 480px;
             margin: 0 auto;
             position: relative;
         }
@@ -100,11 +120,11 @@
             display: flex;
             align-items: center;
             padding: 5px 6px 5px 20px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
             transition: all 0.25s ease;
         }
         .search-pill:focus-within {
-            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2), 0 0 0 2px #ff6000;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25), 0 0 0 2px #ff6000;
         }
         .search-input {
             flex: 1;
@@ -151,14 +171,26 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
+        /* 3. Lower Section (Terracotta-Orange Background) */
+        .lower-section {
+            flex: 1;
+            width: 100%;
+            background: #d36420;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px 50px;
+            position: relative;
+        }
+
         /* Order Result Card (Shown ONLY when an order is searched) */
         .order-result-area {
             width: 100%;
             max-width: 520px;
-            margin-top: 26px;
             display: flex;
             flex-direction: column;
             gap: 16px;
+            margin-bottom: 24px;
         }
         .card {
             background: #121622;
@@ -376,37 +408,76 @@
             background: #05b04c;
         }
 
-        /* Bottom Footer Bar with Click to Open LINE Popup */
+        /* 4. Bottom Frame with LINE Direct Links */
+        .bottom-frame-container {
+            width: 100%;
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 20;
+        }
+
+        /* 3 Direct LINE Quick Action Buttons */
+        .line-quick-bar {
+            width: 100%;
+            max-width: 650px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 12px 14px;
+            flex-wrap: wrap;
+        }
+        .line-quick-btn {
+            background: rgba(0, 0, 0, 0.28);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border-radius: 999px;
+            padding: 7px 16px;
+            font-size: 12.5px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .line-quick-btn:hover {
+            background: #06c755;
+            border-color: #06c755;
+            transform: translateY(-2px);
+        }
+        .line-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #06c755;
+            box-shadow: 0 0 6px #06c755;
+        }
+        .line-quick-btn:hover .line-dot {
+            background: #ffffff;
+            box-shadow: 0 0 6px #ffffff;
+        }
+
+        /* Footer Text Strip */
         .footer-bar {
             width: 100%;
-            background: #eb5500;
+            background: #e45400;
             color: #ffffff;
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 500;
             text-align: center;
             padding: 12px 16px;
             letter-spacing: 0.2px;
-            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.12);
             cursor: pointer;
             user-select: none;
             transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex-wrap: wrap;
         }
         .footer-bar:hover {
-            background: #da4b00;
-        }
-        .footer-btn-pill {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 999px;
-            padding: 3px 10px;
-            font-size: 11.5px;
-            font-weight: 700;
-            color: #ffffff;
+            background: #d44c00;
         }
 
         /* Modal Backdrop & LINE Popup */
@@ -480,7 +551,6 @@
             margin-bottom: 18px;
         }
 
-        /* 3 LINE Channel List */
         .line-channels-list {
             display: flex;
             flex-direction: column;
@@ -569,42 +639,62 @@
             z-index: 1000;
         }
 
-        @media (max-width: 600px) {
-            .main-title {
+        @media (max-width: 900px) {
+            .floating-vape-left, .floating-vape-right {
+                width: 140px;
+                opacity: 0.85;
+            }
+        }
+        @media (max-width: 680px) {
+            .floating-vape-left, .floating-vape-right {
+                display: none;
+            }
+            .hero-main-title {
                 font-size: 24px;
             }
-            .sub-title {
+            .hero-sub-title {
                 font-size: 12px;
             }
-            .footer-bar {
-                font-size: 11.5px;
-                padding: 11px 12px;
+            .line-quick-bar {
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
+            }
+            .line-quick-btn {
+                width: 90%;
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
-    <div class="main-wrapper">
-        <!-- Top Capsule Logo Bar with exact gradient matching sample image -->
-        <div class="top-capsule-wrap">
-            <img src="/assets/capsule_bar.png" alt="vapor.club Flagship Store" class="capsule-img" />
-        </div>
+    <!-- 1. Top Black Header Bar with Centered Logo -->
+    <header class="top-navbar">
+        <img src="/assets/logo_flagship_official.png" alt="vapor.club" class="top-nav-logo" onerror="this.src='/assets/logo.png'">
+    </header>
 
-        <!-- Main Title & Subtitle -->
-        <header class="header-section">
-            <h1 class="main-title">ติดตามสถานะพัสดุและจัดส่ง</h1>
-            <p class="sub-title">พิมพ์เลขออเดอร์เพื่อตรวจสอบสถานะเรียลไทม์ได้ตลอด 24 ชั่วโมง</p>
-        </header>
+    <!-- 2. Upper Hero Section (Vibrant Orange with Floating Vapes) -->
+    <section class="hero-section">
+        <!-- Floating Products on Left & Right matching mockup -->
+        <img src="/assets/hero_left_transparent.png" alt="V Plus & Pods" class="floating-vape-left" onerror="this.style.display='none';">
+        <img src="/assets/hero_right_transparent.png" alt="Elfbar & Devices" class="floating-vape-right" onerror="this.style.display='none';">
 
-        <!-- Search Pill -->
-        <div class="search-box-wrapper">
-            <div class="search-pill">
-                <input type="text" id="orderInput" class="search-input" placeholder="กรอกเลขออเดอร์ เช่น ORD-XXXXXX" autocomplete="off" />
-                <button id="searchBtn" class="search-btn">ติดตาม</button>
+        <div class="hero-center-box">
+            <h1 class="hero-main-title">ติดตามสถานะพัสดุและจัดส่ง</h1>
+            <p class="hero-sub-title">พิมพ์เลขออเดอร์เพื่อตรวจสอบสถานะเรียลไทม์ได้ตลอด 24 ชั่วโมง</p>
+
+            <div class="search-box-wrapper">
+                <div class="search-pill">
+                    <input type="text" id="orderInput" class="search-input" placeholder="กรอกเลขออเดอร์ เช่น ORD-XXXXXX" autocomplete="off" />
+                    <button id="searchBtn" class="search-btn">ติดตาม</button>
+                </div>
+                <div id="searchError" class="search-error"></div>
             </div>
-            <div id="searchError" class="search-error"></div>
         </div>
+    </section>
 
+    <!-- 3. Lower Section (Terracotta-Orange Area) -->
+    <main class="lower-section">
         <!-- Order Result Area (Only shown when an order is searched) -->
         <div id="orderResult" class="order-result-area" style="display: none;">
             <div class="card">
@@ -699,13 +789,31 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Bottom Footer Bar (Click to open LINE popup) -->
-    <footer class="footer-bar" onclick="openLinePopup()">
-        <span>ติดต่อสอบถาม และ สั่งสินค้าทางไลน์เพื่อรับสิทธิพิเศษมากมาย โปรดยอมรับเงื่อนไขของทางร้านก่อนการสั่งซื้อ</span>
-        <span class="footer-btn-pill">เลือกแชท LINE 3 ช่องทาง</span>
-    </footer>
+    <!-- 4. Bottom Frame with Direct LINE Links & Footer -->
+    <div class="bottom-frame-container">
+        <!-- Direct LINE Quick Action Buttons -->
+        <div class="line-quick-bar">
+            <a href="https://line.me/R/ti/p/@361zkkun" target="_blank" class="line-quick-btn">
+                <span class="line-dot"></span>
+                <span>LINE: @361zkkun (Vapro V2)</span>
+            </a>
+            <a href="https://line.me/R/ti/p/@vaporclub" target="_blank" class="line-quick-btn">
+                <span class="line-dot"></span>
+                <span>LINE: @vaporclub (Vapor Club)</span>
+            </a>
+            <a href="https://line.me/R/ti/p/@mooodcnx" target="_blank" class="line-quick-btn">
+                <span class="line-dot"></span>
+                <span>LINE: @mooodcnx (MOOOD@CNX)</span>
+            </a>
+        </div>
+
+        <!-- Footer Strip (Clickable to open modal) -->
+        <footer class="footer-bar" onclick="openLinePopup()">
+            ติดต่อสอบถาม และ สั่งสินค้าทางไลน์เพื่อรับสิทธิพิเศษมากมาย โปรดยอมรับเงื่อนไขของทางร้านก่อนการสั่งซื้อ
+        </footer>
+    </div>
 
     <!-- LINE 3 Accounts Popup Modal -->
     <div id="lineModalBackdrop" class="modal-backdrop" onclick="closeLinePopupOnBackdrop(event)">
