@@ -6677,13 +6677,33 @@
         let discount = 0;
         let discountDesc = '';
 
-        const totalItemsCount = (typeof cart !== 'undefined' && Array.isArray(cart))
-            ? cart.reduce((sum, it) => sum + (it.qty || 1), 0)
-            : 0;
+        let eligibleItems = (typeof cart !== 'undefined' && Array.isArray(cart)) ? cart : [];
+        const hasProductFilter = Array.isArray(v.product_ids) && v.product_ids.length > 0;
+
+        if (hasProductFilter) {
+            eligibleItems = eligibleItems.filter(it => {
+                const itProdId = String(it.productId || it.product_id || it.id || '').trim();
+                const itName = String(it.name || '').trim().toLowerCase();
+                if (itProdId && v.product_ids.includes(itProdId)) return true;
+                const matchedProd = (typeof PRODUCTS !== 'undefined' && Array.isArray(PRODUCTS))
+                    ? PRODUCTS.find(p => v.product_ids.includes(String(p.id)))
+                    : null;
+                if (matchedProd && matchedProd.name && (itName.includes(matchedProd.name.toLowerCase()) || matchedProd.name.toLowerCase().includes(itName))) {
+                    return true;
+                }
+                return v.product_ids.some(pid => itName.includes(String(pid).toLowerCase()));
+            });
+            if (eligibleItems.length === 0) {
+                return { discount: 0, discountDesc: `ใช้ได้เฉพาะสินค้าที่ร่วมรายการ (${v.code})` };
+            }
+        }
+
+        const eligibleItemsCount = eligibleItems.reduce((sum, it) => sum + (it.qty || 1), 0);
+        const eligibleSubtotal = eligibleItems.reduce((sum, it) => sum + ((it.price || 0) * (it.qty || 1)), 0);
 
         // Check Minimum Quantity Condition (e.g. ซื้อ 4 ชิ้นขึ้นไป)
-        if (v.minQty > 0 && totalItemsCount < v.minQty) {
-            return { discount: 0, discountDesc: `ต้องสั่งซื้อตั้งแต่ ${v.minQty} ชิ้นขึ้นไป (${v.code})` };
+        if (v.minQty > 0 && eligibleItemsCount < v.minQty) {
+            return { discount: 0, discountDesc: `ต้องสั่งซื้อสินค้าที่ร่วมรายการตั้งแต่ ${v.minQty} ชิ้นขึ้นไป (${v.code})` };
         }
 
         if (isDelivery) {
@@ -6735,9 +6755,9 @@
             // Bundle Fixed Price: e.g. 10 pods for 1,100 THB
             const bQty = Number(v.bundleQty) || 1;
             const bPrice = Number(v.bundlePrice) || 0;
-            if (totalItemsCount >= bQty && bPrice > 0) {
-                const fullBundles = Math.floor(totalItemsCount / bQty);
-                const avgItemPrice = totalItemsCount > 0 ? (subtotal / totalItemsCount) : 0;
+            if (eligibleItemsCount >= bQty && bPrice > 0) {
+                const fullBundles = Math.floor(eligibleItemsCount / bQty);
+                const avgItemPrice = eligibleItemsCount > 0 ? (eligibleSubtotal / eligibleItemsCount) : 0;
                 const standardCost = avgItemPrice * (fullBundles * bQty);
                 const promoCost = fullBundles * bPrice;
                 discount = Math.max(0, Math.round(standardCost - promoCost));
@@ -6746,12 +6766,13 @@
         } else {
             // Product discount ONLY applies to subtotal!
             if (subtotal >= (v.minSpend || 0)) {
+                const targetSub = hasProductFilter ? eligibleSubtotal : subtotal;
                 if (v.discountPercent > 0 || v.type === 'discount_percent') {
                     const pct = v.discountPercent || v.discount || 0;
-                    discount = Math.round(subtotal * (pct / 100));
+                    discount = Math.round(targetSub * (pct / 100));
                     discountDesc = `ส่วนลด ${pct}% (${v.code})`;
                 } else {
-                    discount = Math.min(subtotal, v.discount);
+                    discount = Math.min(targetSub, v.discount);
                     discountDesc = `ส่วนลดคูปอง (${v.code})`;
                 }
             }
@@ -7989,6 +8010,7 @@
 
             VOUCHER_MASTER[code] = {
                 code: code,
+                product_ids: Array.isArray(p.product_ids) ? p.product_ids.map(String) : (Array.isArray(p.productIds) ? p.productIds.map(String) : []),
                 discount: isPercent ? 0 : discountVal,
                 discountPercent: isPercent ? discountVal : 0,
                 minSpend: Number(p.minSubtotal || 0),
@@ -8312,6 +8334,7 @@
                 return;
             }
             cart.push({
+                productId: String(activeProduct.id || ''),
                 name: activeProduct.name,
                 flavor: fullFlavorName,
                 price: activeProduct.price,
