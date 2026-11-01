@@ -3760,64 +3760,11 @@
             </div>
         </div>
 
-        <!-- 2. CAMPAIGN BANNER CAROUSEL (LOOP AD BANNER) -->
-        <div class="campaign-carousel-wrap">
-            <div class="campaign-carousel-track" id="campaign-carousel-track">
-                <!-- Slide 1: 4 หัว 500 -->
-                <div class="campaign-slide" style="background: linear-gradient(135deg, #ea580c 0%, #ff6b00 100%);" onclick="goToCategory('closed_system')">
-                    <div style="z-index:2;">
-                        <span style="font-size:10px; font-weight:800; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:4px; text-transform:uppercase;">HOT PROMO</span>
-                        <div style="font-size:16px; font-weight:900; margin-top:4px;">โปร 4 หัว 500 บาท</div>
-                        <div style="font-size:11px; opacity:0.9; margin-top:2px;">คละแบรนด์ MOOOD / INFY ได้ทันที</div>
-                    </div>
-                    <div style="background:rgba(255,255,255,0.2); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900;">
-                        %
-                    </div>
-                </div>
-
-                <!-- Slide 2: ส่งด่วนเชียงใหม่ -->
-                <div class="campaign-slide" style="background: linear-gradient(135deg, #181920 0%, #232733 100%); border:1px solid rgba(255,107,0,0.35);" onclick="openMapSheet()">
-                    <div style="z-index:2;">
-                        <span style="font-size:10px; font-weight:800; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:4px; text-transform:uppercase;">EXPRESS RIDER</span>
-                        <div style="font-size:16px; font-weight:900; margin-top:4px;">ส่งด่วน 30-45 นาที</div>
-                        <div style="font-size:11px; opacity:0.9; margin-top:2px;">ไรเดอร์วิ่งทั่วเมืองเชียงใหม่ ส่งด่วน 30-45 นาที</div>
-                    </div>
-                    <div style="background:rgba(255,255,255,0.2); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                        <svg class="svg-icon" viewBox="0 0 24 24" style="color:#ffffff; width:24px; height:24px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    </div>
-                </div>
-
-                <!-- Slide 3: Fast Delivery -->
-                <div class="campaign-slide" style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 60%, #fbbf24 100%);" onclick="switchNavTab('deals')">
-                    <div style="z-index:2;">
-                        <span style="font-size:10px; font-weight:800; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:4px; text-transform:uppercase;">FAST DELIVERY</span>
-                        <div style="font-size:16px; font-weight:900; margin-top:4px;">ส่งด่วนไรเดอร์ & พัสดุ</div>
-                        <div style="font-size:11px; opacity:0.9; margin-top:2px;">เชียงใหม่ 30-45 นาที / ทั่วไทย 1-2 วัน</div>
-                    </div>
-                    <div style="background:rgba(255,255,255,0.2); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                        <svg class="svg-icon" viewBox="0 0 24 24" style="color:#ffffff; width:24px; height:24px;"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                    </div>
-                </div>
-
-                <!-- Slide 4: VAPOR VIP CLUB -->
-                <div class="campaign-slide" style="background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 50%, #6366f1 100%);" onclick="switchNavTab('member')">
-                    <div style="z-index:2;">
-                        <span style="font-size:10px; font-weight:800; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:4px; text-transform:uppercase;">VIP MEMBER</span>
-                        <div style="font-size:16px; font-weight:900; margin-top:4px;">VAPOR VIP CLUB</div>
-                        <div style="font-size:11px; opacity:0.9; margin-top:2px;">สะสมยอดรับส่วนลดพิเศษ & ของขวัญวันเกิด</div>
-                    </div>
-                    <div style="background:rgba(255,255,255,0.2); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px;">
-                        </div>
-                </div>
-            </div>
-
+        <!-- 2. CAMPAIGN BANNER CAROUSEL (LOOP AD BANNER - SYNCED FROM BACKOFFICE CMS) -->
+        <div class="campaign-carousel-wrap" id="campaign-carousel-wrap" style="display:none;">
+            <div class="campaign-carousel-track" id="campaign-carousel-track"></div>
             <!-- Dots Indicator -->
-            <div class="campaign-dots-bar" id="campaign-dots-bar">
-                <div class="campaign-dot active"></div>
-                <div class="campaign-dot"></div>
-                <div class="campaign-dot"></div>
-                <div class="campaign-dot"></div>
-            </div>
+            <div class="campaign-dots-bar" id="campaign-dots-bar"></div>
         </div>
 
         <!-- 3. COLLECTIBLE VOUCHERS SECTION (NO EMOJIS) -->
@@ -11505,7 +11452,14 @@
     function initCarouselScrollLoop() {
         const track = document.getElementById('campaign-carousel-track');
         const dots = document.querySelectorAll('#campaign-dots-bar .campaign-dot');
-        if (!track || dots.length === 0) return;
+        if (!track || dots.length === 0) {
+            if (carouselTimer) { clearInterval(carouselTimer); carouselTimer = null; }
+            return;
+        }
+        if (dots.length === 1) {
+            if (carouselTimer) { clearInterval(carouselTimer); carouselTimer = null; }
+            return;
+        }
 
         let currentIdx = 0;
         const totalSlides = dots.length;
@@ -11543,8 +11497,9 @@
     }
 
     async function initCampaignCarousel() {
-        // Initial loop on static slides
-        initCarouselScrollLoop();
+        const carouselWrap = document.getElementById('campaign-carousel-wrap') || document.querySelector('.campaign-carousel-wrap');
+        const track = document.getElementById('campaign-carousel-track');
+        const dotsBar = document.getElementById('campaign-dots-bar');
 
         // Sync dynamic banners & product images from Hub Media CMS
         try {
@@ -11577,43 +11532,50 @@
                 }
 
                 // 2. Render dynamic banners from Hub
-                if (Array.isArray(data.banners) && data.banners.length > 0) {
-                    checkAndShowPopupBanners(data.banners);
-                    const carouselBanners = data.banners.filter(b => b.placement !== 'popup' && b.is_popup !== true && b.active !== false);
-                    const track = document.getElementById('campaign-carousel-track');
-                    const dotsBar = document.getElementById('campaign-dots-bar');
-                    if (track && dotsBar && carouselBanners.length > 0) {
-                        track.innerHTML = carouselBanners.map(b => {
-                            const isImg = !!b.imageUrl;
-                            if (isImg) {
-                                return `
-                                    <div class="campaign-slide" style="padding:0; aspect-ratio:16/7; max-height:160px; background:#000;" onclick="handleBannerClick('${b.linkCategory || 'all'}')">
-                                        <img src="${b.imageUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:18px; display:block;" alt="${b.title || 'Promo'}">
-                                    </div>
-                                `;
-                            } else {
-                                return `
-                                    <div class="campaign-slide" style="aspect-ratio:16/7; max-height:160px; background:${b.bgGradient || 'linear-gradient(135deg, #ea580c 0%, #ff6b00 100%)'};" onclick="handleBannerClick('${b.linkCategory || 'all'}')">
-                                        <div style="z-index:2;">
-                                            <span style="font-size:10px; font-weight:800; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:4px; text-transform:uppercase;">${b.tag || 'HOT PROMO'}</span>
-                                            <div style="font-size:16px; font-weight:900; margin-top:4px;">${b.title}</div>
-                                            <div style="font-size:11px; opacity:0.9; margin-top:2px;">${b.subtitle || ''}</div>
-                                        </div>
-                                        <div style="background:rgba(255,255,255,0.2); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:900;">
-                                            ${b.badgeText || '%'}
-                                        </div>
-                                    </div>
-                                `;
-                            }
-                        }).join('');
+                const allBanners = Array.isArray(data.banners) ? data.banners : [];
+                checkAndShowPopupBanners(allBanners);
 
-                        dotsBar.innerHTML = carouselBanners.map((_, i) => `<div class="campaign-dot ${i === 0 ? 'active' : ''}"></div>`).join('');
-                        initCarouselScrollLoop();
-                    }
+                const carouselBanners = allBanners.filter(b => b.placement !== 'popup' && b.is_popup !== true && b.active !== false);
+
+                if (carouselBanners.length > 0 && track && dotsBar) {
+                    track.innerHTML = carouselBanners.map(b => {
+                        const isImg = !!b.imageUrl;
+                        if (isImg) {
+                            return `
+                                <div class="campaign-slide" style="padding:0; aspect-ratio:16/7; max-height:160px; background:#000;" onclick="handleBannerClick('${b.linkCategory || 'all'}')">
+                                    <img src="${b.imageUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:18px; display:block;" alt="${b.title || 'Promo'}">
+                                </div>
+                            `;
+                        } else {
+                            return `
+                                <div class="campaign-slide" style="aspect-ratio:16/7; max-height:160px; background:${b.bgGradient || 'linear-gradient(135deg, #ea580c 0%, #ff6b00 100%)'};" onclick="handleBannerClick('${b.linkCategory || 'all'}')">
+                                    <div style="z-index:2;">
+                                        <span style="font-size:10px; font-weight:800; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:4px; text-transform:uppercase;">${b.tag || 'HOT PROMO'}</span>
+                                        <div style="font-size:16px; font-weight:900; margin-top:4px;">${b.title}</div>
+                                        <div style="font-size:11px; opacity:0.9; margin-top:2px;">${b.subtitle || ''}</div>
+                                    </div>
+                                    <div style="background:rgba(255,255,255,0.2); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:900;">
+                                        ${b.badgeText || '%'}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }).join('');
+
+                    dotsBar.innerHTML = carouselBanners.map((_, i) => `<div class="campaign-dot ${i === 0 ? 'active' : ''}"></div>`).join('');
+                    if (carouselWrap) carouselWrap.style.display = 'block';
+                    initCarouselScrollLoop();
+                } else {
+                    // No active carousel banners from Backoffice -> Hide carousel completely
+                    if (carouselWrap) carouselWrap.style.display = 'none';
+                    if (carouselTimer) { clearInterval(carouselTimer); carouselTimer = null; }
                 }
+            } else {
+                if (carouselWrap) carouselWrap.style.display = 'none';
             }
         } catch (e) {
             console.warn('[LIFF] Media config sync fallback:', e.message);
+            if (carouselWrap) carouselWrap.style.display = 'none';
         }
 
         // Ensure promotions are loaded even if media-config fails or has no promotions
