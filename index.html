@@ -6677,6 +6677,15 @@
         let discount = 0;
         let discountDesc = '';
 
+        const totalItemsCount = (typeof cart !== 'undefined' && Array.isArray(cart))
+            ? cart.reduce((sum, it) => sum + (it.qty || 1), 0)
+            : 0;
+
+        // Check Minimum Quantity Condition (e.g. ซื้อ 4 ชิ้นขึ้นไป)
+        if (v.minQty > 0 && totalItemsCount < v.minQty) {
+            return { discount: 0, discountDesc: `ต้องสั่งซื้อตั้งแต่ ${v.minQty} ชิ้นขึ้นไป (${v.code})` };
+        }
+
         if (isDelivery) {
             // Delivery discount ONLY applies to shipping fee, NEVER subtotal!
             const cat = String(v.targetCategory || v.target || '').toUpperCase();
@@ -6721,6 +6730,18 @@
                         discountDesc = `ส่วนลดค่าส่ง (${v.code})`;
                     }
                 }
+            }
+        } else if (v.type === 'bundle' || v.type === 'BUNDLE_FIXED_PRICE') {
+            // Bundle Fixed Price: e.g. 10 pods for 1,100 THB
+            const bQty = Number(v.bundleQty) || 1;
+            const bPrice = Number(v.bundlePrice) || 0;
+            if (totalItemsCount >= bQty && bPrice > 0) {
+                const fullBundles = Math.floor(totalItemsCount / bQty);
+                const avgItemPrice = totalItemsCount > 0 ? (subtotal / totalItemsCount) : 0;
+                const standardCost = avgItemPrice * (fullBundles * bQty);
+                const promoCost = fullBundles * bPrice;
+                discount = Math.max(0, Math.round(standardCost - promoCost));
+                discountDesc = `โปรเหมา ${bQty} ชิ้น ฿${bPrice} (${v.code})`;
             }
         } else {
             // Product discount ONLY applies to subtotal!
@@ -7954,6 +7975,10 @@
                 vType = isPercent ? 'shipping_express_percent' : 'shipping_express_fixed';
                 leftLbl = 'ลดค่าส่งด่วน';
                 finalTarget = 'DELIVERY';
+            } else if (p.pricingRule?.type === 'BUNDLE_FIXED_PRICE') {
+                vType = 'bundle';
+                leftLbl = 'เหมาแพ็ก';
+                finalTarget = 'ALL';
             } else if (isPercent) {
                 vType = 'discount_percent';
                 leftLbl = 'ส่วนลด';
@@ -7967,13 +7992,16 @@
                 discount: isPercent ? 0 : discountVal,
                 discountPercent: isPercent ? discountVal : 0,
                 minSpend: Number(p.minSubtotal || 0),
+                minQty: Number(p.minQty || p.min_qty || 0),
+                bundleQty: Number(p.pricingRule?.bundleQty || p.bundleQty || 1),
+                bundlePrice: Number(p.pricingRule?.bundlePrice || p.bundlePrice || 0),
                 type: vType,
                 targetCategory: finalTarget,
                 title: p.name || (isPostal ? `โค้ดลดส่งพัสดุ ${code}` : (isDelivery ? `โค้ดลดค่าส่ง ${code}` : `ส่วนลด ${code}`)),
                 leftLabel: leftLbl,
-                leftAmount: isPercent ? `${discountVal}%` : `฿${discountVal}`,
+                leftAmount: (p.pricingRule?.type === 'BUNDLE_FIXED_PRICE') ? `฿${p.pricingRule?.bundlePrice || 0}` : (isPercent ? `${discountVal}%` : `฿${discountVal}`),
                 desc: p.description || (p.minSubtotal ? `เมื่อช้อปครบ ฿${p.minSubtotal}` : 'ใช้ได้ทุกยอดคำสั่งซื้อ'),
-                condition: p.minSubtotal ? `ขั้นต่ำ ฿${p.minSubtotal}` : 'ไม่มีขั้นต่ำ',
+                condition: p.minQty ? `สั่งซื้อครบ ${p.minQty} ชิ้นขึ้นไป` : (p.minSubtotal ? `ขั้นต่ำ ฿${p.minSubtotal}` : 'ไม่มีขั้นต่ำ'),
                 isZoneSpecific: isZone,
                 zoneKeywords: p.zoneKeywords || existing.zoneKeywords || [],
                 isCollectible: p.triggerType === 'COLLECTIBLE' || !!p.isCollectible,
@@ -10697,6 +10725,14 @@
         let discount = 0;
         if (selectedVoucher && VOUCHER_MASTER[selectedVoucher]) {
             const vm = VOUCHER_MASTER[selectedVoucher];
+            const totalItemsCount = (typeof cart !== 'undefined' && Array.isArray(cart))
+                ? cart.reduce((sum, it) => sum + (it.qty || 1), 0)
+                : 0;
+
+            if (vm.minQty > 0 && totalItemsCount < vm.minQty) {
+                showToast(`ต้องสั่งซื้อตั้งแต่ ${vm.minQty} ชิ้นขึ้นไป สำหรับโค้ดส่วนลด "${selectedVoucher}"`);
+                return;
+            }
             if (vm.minSpend > 0 && subtotal < vm.minSpend) {
                 showToast(`ยอดสั่งซื้อไม่ถึงขั้นต่ำ ฿${vm.minSpend} สำหรับโค้ดส่วนลด "${selectedVoucher}"`);
                 return;
