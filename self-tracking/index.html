@@ -942,5 +942,52 @@
     const initial = params.get("orderId") || params.get("order_id") || params.get("order") || params.get("id");
     if (initial) track(initial);
   </script>
+<!-- maintenance-overlay:start -->
+<script>
+(function () {
+    // Maintenance mode (Backoffice > Settings): full-screen closed notice on customer pages.
+    // The main backend is the source of truth for every domain (storefront, payment pages, Render).
+    var host = location.hostname;
+    var base = (host.indexOf('vapro-ai-admin') !== -1 || host === 'localhost' || host === '127.0.0.1') ? '' : 'https://vapro-ai-admin.onrender.com';
+    function show(msg) {
+        var el = document.getElementById('maintenance-overlay');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'maintenance-overlay';
+            el.setAttribute('role', 'alertdialog');
+            el.setAttribute('aria-modal', 'true');
+            el.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;text-align:center;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Thai",sans-serif;';
+            el.innerHTML = '<div style="max-width:420px">' +
+                '<div style="font-size:12px;letter-spacing:.3em;opacity:.6;margin-bottom:18px">VAPOR CLUB</div>' +
+                '<div style="font-size:26px;font-weight:800;line-height:1.3">ร้านปิดปรับปรุงชั่วคราว</div>' +
+                '<div style="font-size:15px;letter-spacing:.12em;opacity:.75;margin-top:6px">CLOSED FOR MAINTENANCE</div>' +
+                '<div style="width:48px;height:1px;background:rgba(255,255,255,.35);margin:22px auto"></div>' +
+                '<p data-msg style="font-size:14px;line-height:1.7;opacity:.85;margin:0"></p></div>';
+            (document.body || document.documentElement).appendChild(el);
+        }
+        el.querySelector('[data-msg]').textContent = msg || 'ขออภัยในความไม่สะดวก เราจะกลับมาให้บริการเร็วๆ นี้ค่ะ';
+        document.documentElement.style.overflow = 'hidden';
+    }
+    function hide() {
+        var el = document.getElementById('maintenance-overlay');
+        if (el) {
+            el.parentNode.removeChild(el);
+            document.documentElement.style.overflow = '';
+        }
+    }
+    function check() {
+        fetch(base + '/api/public/store-status', { cache: 'no-store' })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (d && d.maintenance && d.maintenance.enabled) show(d.maintenance.message);
+                else hide();
+            })
+            .catch(function () {});
+    }
+    check();
+    setInterval(check, 60000);
+})();
+</script>
+<!-- maintenance-overlay:end -->
 </body>
 </html>

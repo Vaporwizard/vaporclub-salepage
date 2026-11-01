@@ -438,6 +438,12 @@
         const currentOrderId = (orderIdFromPath && orderIdFromPath.startsWith('ORD-')) ? orderIdFromPath : (urlParams.get('orderId') || 'ORD-10061');
 
         let countdownTimer = null;
+        // The storefront domain (Cloudflare Pages) has no /api, so call the Render backend directly there.
+        // Elsewhere (payment instance, Render) use same-origin /api with the main backend as fallback.
+        const MAIN_API = 'https://vapro-ai-admin.onrender.com';
+        const API_BASE = /(^|\.)vaporclub-th\.shop$|\.pages\.dev$/.test(window.location.hostname) ? MAIN_API : '';
+        const NEEDS_API_FALLBACK = API_BASE !== MAIN_API && !window.location.hostname.includes('vapro-ai-admin');
+
         let expireTimestamp = Date.now() + 30 * 60 * 1000;
 
         function showToast(message) {
@@ -545,14 +551,14 @@
 
         async function loadOrder() {
             try {
-                let res = await fetch('/api/pay/order-info/' + currentOrderId);
+                let res = await fetch(API_BASE + '/api/pay/order-info/' + currentOrderId);
                 let data = null;
                 try {
                     data = await res.json();
                 } catch(e) {}
 
                 // Direct fallback to main backend if vpstore-payment instance doesn't have the order
-                if ((!data || !data.success) && !window.location.hostname.includes('vapro-ai-admin')) {
+                if ((!data || !data.success) && NEEDS_API_FALLBACK) {
                     try {
                         const fallbackRes = await fetch('https://vapro-ai-admin.onrender.com/api/pay/order-info/' + currentOrderId);
                         const fallbackData = await fallbackRes.json();
@@ -761,7 +767,7 @@
             try {
                 let data = null;
                 try {
-                    const res = await fetch('/api/pay/apply-discount', {
+                    const res = await fetch(API_BASE + '/api/pay/apply-discount', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ orderId: currentOrderId, code })
@@ -770,7 +776,7 @@
                 } catch (e) {}
 
                 // Cross-domain fallback to Render backend if needed
-                if ((!data || !data.success) && !window.location.hostname.includes('vapro-ai-admin')) {
+                if ((!data || !data.success) && NEEDS_API_FALLBACK) {
                     try {
                         const fallbackRes = await fetch('https://vapro-ai-admin.onrender.com/api/pay/apply-discount', {
                             method: 'POST',
@@ -931,7 +937,7 @@
             }
 
             try {
-                let res = await fetch('/api/pay/upload-slip', {
+                let res = await fetch(API_BASE + '/api/pay/upload-slip', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ orderId: currentOrderId, slipBase64: selectedSlipBase64 })
@@ -939,9 +945,9 @@
                 let data = await res.json();
 
                 // Cross-instance fallback to vapro-ai-admin if needed
-                if ((!data || !data.success) && !window.location.hostname.includes('vapro-ai-admin')) {
+                if (!data && NEEDS_API_FALLBACK) {
                     try {
-                        const fallbackRes = await fetch('https://vapro-ai-admin.onrender.com/api/pay/upload-slip', {
+                        const fallbackRes = await fetch(MAIN_API + '/api/pay/upload-slip', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ orderId: currentOrderId, slipBase64: selectedSlipBase64 })
@@ -995,9 +1001,9 @@
 
         async function checkStatus() {
             try {
-                let res = await fetch('/api/pay/check-status/' + currentOrderId);
+                let res = await fetch(API_BASE + '/api/pay/check-status/' + currentOrderId);
                 let data = await res.json();
-                if ((!data || !data.success || !data.isPaid) && !window.location.hostname.includes('vapro-ai-admin')) {
+                if ((!data || !data.success || !data.isPaid) && NEEDS_API_FALLBACK) {
                     try {
                         const fallbackRes = await fetch('https://vapro-ai-admin.onrender.com/api/pay/check-status/' + currentOrderId);
                         const fallbackData = await fallbackRes.json();
@@ -1027,5 +1033,52 @@
             startStatusPolling();
         });
     </script>
+<!-- maintenance-overlay:start -->
+<script>
+(function () {
+    // Maintenance mode (Backoffice > Settings): full-screen closed notice on customer pages.
+    // The main backend is the source of truth for every domain (storefront, payment pages, Render).
+    var host = location.hostname;
+    var base = (host.indexOf('vapro-ai-admin') !== -1 || host === 'localhost' || host === '127.0.0.1') ? '' : 'https://vapro-ai-admin.onrender.com';
+    function show(msg) {
+        var el = document.getElementById('maintenance-overlay');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'maintenance-overlay';
+            el.setAttribute('role', 'alertdialog');
+            el.setAttribute('aria-modal', 'true');
+            el.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;text-align:center;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Thai",sans-serif;';
+            el.innerHTML = '<div style="max-width:420px">' +
+                '<div style="font-size:12px;letter-spacing:.3em;opacity:.6;margin-bottom:18px">VAPOR CLUB</div>' +
+                '<div style="font-size:26px;font-weight:800;line-height:1.3">ร้านปิดปรับปรุงชั่วคราว</div>' +
+                '<div style="font-size:15px;letter-spacing:.12em;opacity:.75;margin-top:6px">CLOSED FOR MAINTENANCE</div>' +
+                '<div style="width:48px;height:1px;background:rgba(255,255,255,.35);margin:22px auto"></div>' +
+                '<p data-msg style="font-size:14px;line-height:1.7;opacity:.85;margin:0"></p></div>';
+            (document.body || document.documentElement).appendChild(el);
+        }
+        el.querySelector('[data-msg]').textContent = msg || 'ขออภัยในความไม่สะดวก เราจะกลับมาให้บริการเร็วๆ นี้ค่ะ';
+        document.documentElement.style.overflow = 'hidden';
+    }
+    function hide() {
+        var el = document.getElementById('maintenance-overlay');
+        if (el) {
+            el.parentNode.removeChild(el);
+            document.documentElement.style.overflow = '';
+        }
+    }
+    function check() {
+        fetch(base + '/api/public/store-status', { cache: 'no-store' })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (d && d.maintenance && d.maintenance.enabled) show(d.maintenance.message);
+                else hide();
+            })
+            .catch(function () {});
+    }
+    check();
+    setInterval(check, 60000);
+})();
+</script>
+<!-- maintenance-overlay:end -->
 </body>
 </html>
