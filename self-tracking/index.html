@@ -6,7 +6,7 @@
     <title>Vapor Club</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
@@ -16,79 +16,167 @@
             -webkit-tap-highlight-color: transparent;
         }
         body {
-            background-color: #0b0f19;
+            background-color: #080a10;
             color: #f3f4f6;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px 16px 40px;
+            padding: 0 0 50px 0;
+            position: relative;
+            overflow-x: hidden;
         }
-        .container {
+
+        /* Hero Banner with KEX feel in Vapor Club Dark Orange Theme */
+        .hero-banner {
             width: 100%;
-            max-width: 500px;
+            background: linear-gradient(180deg, #18110b 0%, #0d0f17 100%);
+            border-bottom: 1px solid rgba(255, 107, 0, 0.2);
+            padding: 40px 16px 36px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 650px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(255, 107, 0, 0.15) 0%, rgba(255, 107, 0, 0) 70%);
+            pointer-events: none;
+        }
+
+        .logo-wrap {
+            text-align: center;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 2;
+        }
+        .store-logo {
+            max-height: 85px;
+            width: auto;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0 4px 12px rgba(255, 107, 0, 0.25));
+        }
+
+        .hero-title {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 6px;
+            position: relative;
+            z-index: 2;
+        }
+        .hero-subtitle {
+            font-size: 13px;
+            color: #94a3b8;
+            text-align: center;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Search Input Box Container (KEX Bar) */
+        .search-container {
+            width: 100%;
+            max-width: 580px;
+            position: relative;
+            z-index: 2;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border-radius: 999px;
+            padding: 5px 6px 5px 20px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 107, 0, 0.3);
+            transition: all 0.25s ease;
+        }
+        .search-bar:focus-within {
+            box-shadow: 0 12px 36px rgba(255, 107, 0, 0.35), 0 0 0 2px #ff6b00;
+        }
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 15px;
+            font-weight: 500;
+            color: #0f172a;
+            padding: 10px 4px;
+        }
+        .search-input::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+        .search-btn {
+            background: #111827;
+            color: #ffffff;
+            border: none;
+            border-radius: 999px;
+            padding: 11px 26px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .search-btn:hover {
+            background: #ff6b00;
+            color: #ffffff;
+        }
+        .search-btn:active {
+            transform: scale(0.97);
+        }
+
+        .search-error {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            font-size: 13px;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-top: 14px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        /* Result Container */
+        .content-area {
+            width: 100%;
+            max-width: 580px;
+            padding: 24px 16px 0;
             display: flex;
             flex-direction: column;
             gap: 16px;
         }
-        .header {
-            text-align: center;
-            padding: 12px 0 8px;
-        }
-        .brand-title {
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            background: linear-gradient(135deg, #60a5fa, #a78bfa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 4px;
-        }
-        .brand-subtitle {
-            font-size: 13px;
-            color: #9ca3af;
+
+        .card {
+            background: #111622;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 22px 20px;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+            animation: slideUp 0.35s ease-out;
         }
 
-        /* Search Card */
-        .card {
-            background: #111827;
-            border: 1px solid #1f2937;
-            border-radius: 18px;
-            padding: 20px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        .search-box {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .search-input {
-            flex: 1;
-            background: #1f2937;
-            border: 1px solid #374151;
-            border-radius: 12px;
-            padding: 12px 14px;
-            color: #fff;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .search-input:focus {
-            border-color: #3b82f6;
-        }
-        .search-btn {
-            background: #2563eb;
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            padding: 0 20px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .search-btn:hover {
-            background: #1d4ed8;
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Order Header Banner */
@@ -96,48 +184,51 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #1f2937;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             padding-bottom: 14px;
             margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .order-id-label {
             font-size: 12px;
-            color: #9ca3af;
+            color: #94a3b8;
         }
         .order-id-val {
             font-size: 18px;
-            font-weight: 700;
+            font-weight: 800;
             color: #f9fafb;
             display: flex;
             align-items: center;
             gap: 8px;
         }
         .copy-pill-btn {
-            background: #1f2937;
-            border: 1px solid #374151;
-            color: #93c5fd;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ff8533;
             border-radius: 6px;
             padding: 3px 8px;
             font-size: 11px;
             cursor: pointer;
-            font-weight: 500;
+            font-weight: 600;
+            transition: background 0.15s;
         }
         .copy-pill-btn:hover {
-            background: #374151;
-            color: #bfdbfe;
+            background: rgba(255, 107, 0, 0.2);
+            color: #ffffff;
         }
 
         /* Arrived Alert Banner */
         .arrived-alert {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.3));
-            border: 1px solid #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.35));
+            border: 1.5px solid #10b981;
             border-radius: 14px;
             padding: 14px;
             text-align: center;
             color: #a7f3d0;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 15px;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             animation: pulse-border 2s infinite;
         }
         @keyframes pulse-border {
@@ -149,18 +240,18 @@
         .stepper {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 22px;
             position: relative;
-            padding-left: 10px;
+            padding-left: 8px;
         }
         .stepper::before {
             content: '';
             position: absolute;
-            left: 23px;
+            left: 21px;
             top: 15px;
             bottom: 25px;
             width: 2px;
-            background: #374151;
+            background: rgba(255, 255, 255, 0.1);
             z-index: 1;
         }
         .step-item {
@@ -174,46 +265,50 @@
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: #1f2937;
-            border: 2px solid #4b5563;
-            color: #9ca3af;
+            background: #181d2a;
+            border: 2px solid #374151;
+            color: #94a3b8;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 800;
             flex-shrink: 0;
             transition: all 0.3s;
         }
         .step-item.active .step-circle {
-            background: #2563eb;
-            border-color: #60a5fa;
-            color: #fff;
-            box-shadow: 0 0 12px rgba(37, 99, 235, 0.6);
+            background: #ff6b00;
+            border-color: #ffa055;
+            color: #ffffff;
+            box-shadow: 0 0 14px rgba(255, 107, 0, 0.6);
         }
         .step-item.completed .step-circle {
             background: #10b981;
             border-color: #34d399;
-            color: #fff;
+            color: #ffffff;
         }
         .step-content {
             flex: 1;
         }
         .step-title {
             font-size: 14px;
-            font-weight: 600;
-            color: #d1d5db;
+            font-weight: 700;
+            color: #94a3b8;
         }
         .step-item.active .step-title {
-            color: #60a5fa;
+            color: #ff8533;
         }
         .step-item.completed .step-title {
             color: #f3f4f6;
         }
         .step-desc {
             font-size: 12px;
-            color: #9ca3af;
+            color: #64748b;
             margin-top: 2px;
+            line-height: 1.4;
+        }
+        .step-item.active .step-desc {
+            color: #cbd5e1;
         }
 
         /* Detail sections */
@@ -221,68 +316,71 @@
             display: flex;
             justify-content: space-between;
             font-size: 13px;
-            padding: 8px 0;
-            border-bottom: 1px solid #1f2937;
+            padding: 9px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
         .info-row:last-child {
             border-bottom: none;
         }
         .info-label {
-            color: #9ca3af;
+            color: #94a3b8;
         }
         .info-value {
             color: #f3f4f6;
             font-weight: 500;
             text-align: right;
-            max-width: 60%;
+            max-width: 62%;
             word-break: break-word;
         }
 
         /* Item list */
         .items-box {
-            background: #1a2234;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 12px;
-            padding: 12px;
+            padding: 12px 14px;
             margin-top: 10px;
         }
         .item-line {
             display: flex;
             justify-content: space-between;
             font-size: 13px;
-            padding: 4px 0;
+            padding: 5px 0;
         }
         .item-name {
             color: #e5e7eb;
         }
         .item-qty {
-            color: #9ca3af;
+            color: #94a3b8;
+            font-weight: 600;
         }
 
         /* Action buttons */
         .action-row {
             display: flex;
             gap: 10px;
-            margin-top: 14px;
+            margin-top: 16px;
         }
         .btn-secondary {
             flex: 1;
-            background: #1f2937;
-            border: 1px solid #374151;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             color: #e5e7eb;
             border-radius: 12px;
-            padding: 11px;
+            padding: 12px;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             text-align: center;
             text-decoration: none;
+            transition: all 0.2s;
         }
         .btn-secondary:hover {
-            background: #374151;
+            background: rgba(255, 255, 255, 0.12);
         }
         .btn-line {
             background: #06c755;
-            color: #fff;
+            color: #ffffff;
             border: none;
         }
         .btn-line:hover {
@@ -295,53 +393,40 @@
             bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
-            background: #1f2937;
-            color: #fff;
-            padding: 10px 18px;
-            border-radius: 20px;
-            border: 1px solid #374151;
+            background: #181d2a;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
             font-size: 13px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
             display: none;
             z-index: 100;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 2px solid #4b5563;
-            border-top-color: #3b82f6;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            vertical-align: middle;
-            margin-right: 6px;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1 class="brand-title">VAPOR CLUB</h1>
-            <p class="brand-subtitle">ระบบติดตามสถานะพัสดุและจัดส่ง (Self-Tracking)</p>
+    <!-- Top Hero Banner with Center Logo & Prominent KEX-style Search Bar -->
+    <header class="hero-banner">
+        <div class="logo-wrap">
+            <img src="/assets/logo.png" alt="Vapor Club" class="store-logo" onerror="this.onerror=null; this.src='/assets/logo_flagship_official.png';">
         </div>
+        <h1 class="hero-title">ติดตามสถานะพัสดุและจัดส่ง</h1>
+        <p class="hero-subtitle">พิมพ์เลขออเดอร์เพื่อตรวจสอบสถานะเรียลไทม์ได้ตลอด 24 ชั่วโมง</p>
 
-        <!-- Search Box Card -->
-        <div class="card">
-            <label style="font-size: 13px; font-weight: 500; color: #d1d5db;">กรอกเลขออเดอร์เพื่อเช็คสถานะ</label>
-            <div class="search-box">
-                <input type="text" id="orderInput" class="search-input" placeholder="เช่น ORD-123456" />
-                <button id="searchBtn" class="search-btn">ค้นหา</button>
+        <div class="search-container">
+            <div class="search-bar">
+                <input type="text" id="orderInput" class="search-input" placeholder="กรอกเลขออเดอร์ เช่น ORD-xxxxxx" autocomplete="off" />
+                <button id="searchBtn" class="search-btn">ติดตาม</button>
             </div>
-            <div id="searchError" style="color: #f87171; font-size: 12px; margin-top: 8px; display: none;"></div>
+            <div id="searchError" class="search-error"></div>
         </div>
+    </header>
 
-        <!-- Order Result Container -->
-        <div id="orderResult" style="display: none; display: flex; flex-direction: column; gap: 16px;">
-            <!-- Main Tracking Card -->
+    <!-- Main Content Area: ONLY displayed once an order ID is searched -->
+    <main class="content-area">
+        <div id="orderResult" style="display: none; flex-direction: column; gap: 16px;">
+            <!-- Stepper Card -->
             <div class="card">
                 <div class="order-header-card">
                     <div>
@@ -352,17 +437,17 @@
                         </div>
                     </div>
                     <div style="text-align: right;">
-                        <div class="order-id-label">สถานะ</div>
-                        <div id="displayStatusText" style="font-size: 14px; font-weight: 600; color: #60a5fa;">-</div>
+                        <div class="order-id-label">สถานะปัจจุบัน</div>
+                        <div id="displayStatusText" style="font-size: 14px; font-weight: 700; color: #ff8533;">-</div>
                     </div>
                 </div>
 
-                <!-- Arrived Alert (Shown if status is ARRIVED) -->
+                <!-- Arrived Alert Banner (Shown if rider arrived) -->
                 <div id="arrivedAlertBanner" class="arrived-alert" style="display: none;">
                     พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ
                 </div>
 
-                <!-- Stepper -->
+                <!-- 5-Step Progress Stepper -->
                 <div class="stepper" id="stepperContainer">
                     <div class="step-item" id="step1">
                         <div class="step-circle">1</div>
@@ -404,14 +489,14 @@
 
             <!-- Details Card -->
             <div class="card">
-                <div style="font-size: 14px; font-weight: 600; color: #f3f4f6; margin-bottom: 10px;">ข้อมูลการจัดส่ง</div>
+                <div style="font-size: 14px; font-weight: 700; color: #f3f4f6; margin-bottom: 12px;">ข้อมูลการจัดส่ง</div>
                 <div class="info-row">
                     <div class="info-label">รูปแบบจัดส่ง</div>
                     <div class="info-value" id="displayDeliveryMethod">-</div>
                 </div>
                 <div class="info-row" id="trackingUrlRow" style="display: none;">
                     <div class="info-label">ลิงก์ติดตามไรเดอร์</div>
-                    <div class="info-value"><a id="trackingUrlLink" href="#" target="_blank" style="color: #60a5fa; text-decoration: underline;">เปิดดูเส้นทางสด</a></div>
+                    <div class="info-value"><a id="trackingUrlLink" href="#" target="_blank" style="color: #ff8533; text-decoration: underline;">เปิดดูเส้นทางสด</a></div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">ผู้รับ</div>
@@ -435,11 +520,11 @@
 
                 <div class="action-row">
                     <button id="copyPageLinkBtn" class="btn-secondary">คัดลอกลิงก์หน้านี้</button>
-                    <a id="contactAdminBtn" href="https://lin.ee/your-line" target="_blank" class="btn-secondary btn-line">ติดต่อแอดมิน LINE</a>
+                    <a id="contactAdminBtn" href="https://line.me/R/ti/p/@vaporclub" target="_blank" class="btn-secondary btn-line">ติดต่อแอดมิน LINE</a>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <div id="toast" class="toast">คัดลอกเรียบร้อยแล้ว</div>
 
@@ -481,13 +566,16 @@
             if (!orderId) return;
             const searchError = document.getElementById('searchError');
             searchError.style.display = 'none';
+            const searchBtn = document.getElementById('searchBtn');
+            searchBtn.textContent = 'กำลังค้นหา...';
+            searchBtn.disabled = true;
             
             try {
                 const res = await fetch(`${API_BASE}/api/public/orders/${encodeURIComponent(orderId)}/tracking`);
                 const data = await res.json();
                 
                 if (!res.ok || !data.success) {
-                    searchError.textContent = data.message || 'ไม่พบเลขออเดอร์นี้ กรุณาตรวจสอบอีกครั้ง';
+                    searchError.textContent = data.message || 'ไม่พบเลขออเดอร์นี้ กรุณาตรวจสอบอีกครั้งหรือติดต่อแอดมิน';
                     searchError.style.display = 'block';
                     document.getElementById('orderResult').style.display = 'none';
                     return;
@@ -497,6 +585,9 @@
             } catch (err) {
                 searchError.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง';
                 searchError.style.display = 'block';
+            } finally {
+                searchBtn.textContent = 'ติดตาม';
+                searchBtn.disabled = false;
             }
         }
 
@@ -539,7 +630,7 @@
                     itemsBox.appendChild(line);
                 });
             } else {
-                itemsBox.innerHTML = '<div style="font-size: 12px; color: #9ca3af;">ไม่มีรายละเอียดสินค้า</div>';
+                itemsBox.innerHTML = '<div style="font-size: 12px; color: #94a3b8;">ไม่มีรายละเอียดสินค้า</div>';
             }
 
             // Stepper state
@@ -569,6 +660,9 @@
                 url.searchParams.set('orderId', currentOrderId);
                 window.history.replaceState({}, '', url);
             }
+
+            // Smooth scroll to results
+            document.getElementById('orderResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
             // Polling if active order
             if (pollTimer) clearInterval(pollTimer);
@@ -606,7 +700,7 @@
             });
         });
 
-        // Initialize from URL query params
+        // Initialize only if URL explicitly has an orderId param
         window.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             const initialId = params.get('orderId') || params.get('order_id') || params.get('id');
