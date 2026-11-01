@@ -36,7 +36,7 @@
             justify-content: center;
             padding: 0 16px;
             position: relative;
-            z-index: 20;
+            z-index: 30;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
         }
         .top-nav-logo {
@@ -46,40 +46,50 @@
             filter: brightness(0) invert(1);
         }
 
-        /* 2. Hero Section (Vibrant Orange with Floating Products) */
+        /* Container for Hero and Products allowing seamless unclipped overlap */
+        .page-content-wrapper {
+            width: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        /* 2. Hero Section (Vibrant Orange) */
         .hero-section {
             width: 100%;
             background: #ff751f;
             position: relative;
-            padding: 38px 16px 42px;
+            padding: 38px 16px 48px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow: hidden;
             border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            z-index: 10;
         }
 
-        /* Floating Products on Left and Right */
+        /* Full Floating Products (Left & Right) with NO clipping - overlapping divider smoothly */
         .floating-vape-left {
             position: absolute;
-            left: 20px;
+            left: 24px;
             top: 25px;
-            width: 185px;
+            width: 190px;
             height: auto;
             pointer-events: none;
-            z-index: 2;
-            filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.2));
+            z-index: 25;
+            filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.22));
             transition: transform 0.3s ease;
         }
         .floating-vape-right {
             position: absolute;
-            right: 20px;
-            top: 25px;
-            width: 185px;
+            right: 24px;
+            top: 35px;
+            width: 195px;
             height: auto;
             pointer-events: none;
-            z-index: 2;
-            filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.2));
+            z-index: 25;
+            filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.22));
             transition: transform 0.3s ease;
         }
 
@@ -89,7 +99,7 @@
             max-width: 580px;
             text-align: center;
             position: relative;
-            z-index: 10;
+            z-index: 20;
         }
         .hero-main-title {
             color: #ffffff;
@@ -171,26 +181,117 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        /* 3. Lower Section (Terracotta-Orange Background) */
+        /* 3. Lower Section (Terracotta-Orange Area) */
         .lower-section {
-            flex: 1;
             width: 100%;
             background: #d36420;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 24px 16px 50px;
+            padding: 30px 16px 50px;
             position: relative;
+            z-index: 15;
+            flex: 1;
         }
 
-        /* Order Result Card (Shown ONLY when an order is searched) */
+        /* 3 Side-by-side LINE Cards (Arranged like user's drawing) */
+        .line-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            width: 100%;
+            max-width: 680px;
+            margin: 10px auto 30px;
+            z-index: 20;
+        }
+        .line-store-card {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+            border: 1.5px solid rgba(255, 255, 255, 0.18);
+            border-radius: 20px;
+            padding: 22px 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            text-decoration: none;
+            color: #ffffff;
+            transition: all 0.25s ease;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+        .line-store-card:hover {
+            background: rgba(0, 0, 0, 0.35);
+            border-color: #06c755;
+            transform: translateY(-5px);
+            box-shadow: 0 14px 32px rgba(6, 199, 85, 0.25);
+        }
+        .line-store-card:active {
+            transform: scale(0.98);
+        }
+        .line-card-icon-wrap {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: #06c755;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 900;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 14px rgba(6, 199, 85, 0.4);
+        }
+        .line-card-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+        .line-card-id-pill {
+            display: inline-block;
+            background: rgba(6, 199, 85, 0.2);
+            border: 1px solid rgba(6, 199, 85, 0.5);
+            color: #a7f3d0;
+            border-radius: 999px;
+            padding: 2px 10px;
+            font-size: 11.5px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .line-card-subdesc {
+            font-size: 11px;
+            color: #fed7aa;
+            margin-bottom: 14px;
+            line-height: 1.4;
+            min-height: 32px;
+        }
+        .line-card-btn-action {
+            width: 100%;
+            background: #06c755;
+            color: #ffffff;
+            font-size: 12.5px;
+            font-weight: 700;
+            padding: 8px 12px;
+            border-radius: 999px;
+            transition: background 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .line-store-card:hover .line-card-btn-action {
+            background: #05b04c;
+        }
+
+        /* Order Result Area (Only shown when an order is searched) */
         .order-result-area {
             width: 100%;
             max-width: 520px;
             display: flex;
             flex-direction: column;
             gap: 16px;
-            margin-bottom: 24px;
+            margin-bottom: 30px;
+            z-index: 20;
         }
         .card {
             background: #121622;
@@ -408,60 +509,7 @@
             background: #05b04c;
         }
 
-        /* 4. Bottom Frame with LINE Direct Links */
-        .bottom-frame-container {
-            width: 100%;
-            margin-top: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 20;
-        }
-
-        /* 3 Direct LINE Quick Action Buttons */
-        .line-quick-bar {
-            width: 100%;
-            max-width: 650px;
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            padding: 0 12px 14px;
-            flex-wrap: wrap;
-        }
-        .line-quick-btn {
-            background: rgba(0, 0, 0, 0.28);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            border-radius: 999px;
-            padding: 7px 16px;
-            font-size: 12.5px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        .line-quick-btn:hover {
-            background: #06c755;
-            border-color: #06c755;
-            transform: translateY(-2px);
-        }
-        .line-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #06c755;
-            box-shadow: 0 0 6px #06c755;
-        }
-        .line-quick-btn:hover .line-dot {
-            background: #ffffff;
-            box-shadow: 0 0 6px #ffffff;
-        }
-
-        /* Footer Text Strip */
+        /* 4. Bottom Footer Bar */
         .footer-bar {
             width: 100%;
             background: #e45400;
@@ -469,157 +517,10 @@
             font-size: 12.5px;
             font-weight: 500;
             text-align: center;
-            padding: 12px 16px;
+            padding: 13px 16px;
             letter-spacing: 0.2px;
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.12);
-            cursor: pointer;
-            user-select: none;
-            transition: background 0.2s;
-        }
-        .footer-bar:hover {
-            background: #d44c00;
-        }
-
-        /* Modal Backdrop & LINE Popup */
-        .modal-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(4px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px 16px;
-            z-index: 999;
-            animation: fadeIn 0.25s ease-out;
-        }
-        .line-popup-card {
-            width: 100%;
-            max-width: 440px;
-            background: #111827;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 24px;
-            padding: 24px 20px 20px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
-            color: #f3f4f6;
-            animation: scaleIn 0.25s ease-out;
-            position: relative;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .popup-close-btn {
-            position: absolute;
-            top: 16px;
-            right: 18px;
-            background: rgba(255, 255, 255, 0.08);
-            border: none;
-            color: #94a3b8;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-        .popup-close-btn:hover {
-            background: rgba(255, 255, 255, 0.16);
-            color: #ffffff;
-        }
-
-        .popup-title {
-            font-size: 18px;
-            font-weight: 800;
-            color: #ffffff;
-            margin-bottom: 4px;
-        }
-        .popup-subtitle {
-            font-size: 12.5px;
-            color: #94a3b8;
-            margin-bottom: 18px;
-        }
-
-        .line-channels-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .line-channel-card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 14px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.2s;
-        }
-        .line-channel-card:hover {
-            background: rgba(6, 199, 85, 0.08);
-            border-color: rgba(6, 199, 85, 0.35);
-            transform: translateY(-2px);
-        }
-        .line-channel-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .line-icon-badge {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            background: #06c755;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 900;
-            flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3);
-        }
-        .channel-name {
-            font-size: 14px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-        .channel-id-tag {
-            font-size: 12px;
-            color: #06c755;
-            font-weight: 600;
-            margin-top: 2px;
-        }
-        .channel-desc {
-            font-size: 11px;
-            color: #94a3b8;
-            margin-top: 2px;
-        }
-        .channel-chat-btn {
-            background: #06c755;
-            color: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 7px 14px;
-            border-radius: 999px;
-            white-space: nowrap;
-            transition: background 0.2s;
-        }
-        .line-channel-card:hover .channel-chat-btn {
-            background: #05b04c;
+            z-index: 25;
         }
 
         /* Toast */
@@ -639,13 +540,19 @@
             z-index: 1000;
         }
 
-        @media (max-width: 900px) {
-            .floating-vape-left, .floating-vape-right {
+        @media (max-width: 960px) {
+            .floating-vape-left {
                 width: 140px;
-                opacity: 0.85;
+                left: 10px;
+                opacity: 0.9;
+            }
+            .floating-vape-right {
+                width: 145px;
+                right: 10px;
+                opacity: 0.9;
             }
         }
-        @media (max-width: 680px) {
+        @media (max-width: 720px) {
             .floating-vape-left, .floating-vape-right {
                 display: none;
             }
@@ -655,14 +562,15 @@
             .hero-sub-title {
                 font-size: 12px;
             }
-            .line-quick-bar {
-                flex-direction: column;
-                align-items: center;
-                gap: 6px;
+            .line-cards-grid {
+                grid-template-columns: 1fr;
+                max-width: 380px;
             }
-            .line-quick-btn {
-                width: 90%;
-                justify-content: center;
+            .line-store-card {
+                padding: 16px 14px;
+            }
+            .line-card-subdesc {
+                min-height: auto;
             }
         }
     </style>
@@ -673,197 +581,160 @@
         <img src="/assets/logo_flagship_official.png" alt="vapor.club" class="top-nav-logo" onerror="this.src='/assets/logo.png'">
     </header>
 
-    <!-- 2. Upper Hero Section (Vibrant Orange with Floating Vapes) -->
-    <section class="hero-section">
-        <!-- Floating Products on Left & Right matching mockup -->
-        <img src="/assets/hero_left_transparent.png" alt="V Plus & Pods" class="floating-vape-left" onerror="this.style.display='none';">
-        <img src="/assets/hero_right_transparent.png" alt="Elfbar & Devices" class="floating-vape-right" onerror="this.style.display='none';">
+    <div class="page-content-wrapper">
+        <!-- Floating Unclipped Products on Left & Right matching mockup -->
+        <img src="/assets/vapes_left_clean.png" alt="V Plus & Pods" class="floating-vape-left" onerror="this.src='/assets/hero_left_transparent.png';">
+        <img src="/assets/vapes_right_clean.png" alt="Elfbar & Devices" class="floating-vape-right" onerror="this.src='/assets/hero_right_transparent.png';">
 
-        <div class="hero-center-box">
-            <h1 class="hero-main-title">ติดตามสถานะพัสดุและจัดส่ง</h1>
-            <p class="hero-sub-title">พิมพ์เลขออเดอร์เพื่อตรวจสอบสถานะเรียลไทม์ได้ตลอด 24 ชั่วโมง</p>
+        <!-- 2. Upper Hero Section (Vibrant Orange) -->
+        <section class="hero-section">
+            <div class="hero-center-box">
+                <h1 class="hero-main-title">ติดตามสถานะพัสดุและจัดส่ง</h1>
+                <p class="hero-sub-title">พิมพ์เลขออเดอร์เพื่อตรวจสอบสถานะเรียลไทม์ได้ตลอด 24 ชั่วโมง</p>
 
-            <div class="search-box-wrapper">
-                <div class="search-pill">
-                    <input type="text" id="orderInput" class="search-input" placeholder="กรอกเลขออเดอร์ เช่น ORD-XXXXXX" autocomplete="off" />
-                    <button id="searchBtn" class="search-btn">ติดตาม</button>
-                </div>
-                <div id="searchError" class="search-error"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 3. Lower Section (Terracotta-Orange Area) -->
-    <main class="lower-section">
-        <!-- Order Result Area (Only shown when an order is searched) -->
-        <div id="orderResult" class="order-result-area" style="display: none;">
-            <div class="card">
-                <div class="order-header-card">
-                    <div>
-                        <div class="order-id-label">เลขออเดอร์</div>
-                        <div class="order-id-val">
-                            <span id="displayOrderId">-</span>
-                            <button id="copyOrderBtn" class="copy-pill-btn">คัดลอกเลข</button>
-                        </div>
+                <div class="search-box-wrapper">
+                    <div class="search-pill">
+                        <input type="text" id="orderInput" class="search-input" placeholder="กรอกเลขออเดอร์ เช่น ORD-XXXXXX" autocomplete="off" />
+                        <button id="searchBtn" class="search-btn">ติดตาม</button>
                     </div>
-                    <div style="text-align: right;">
-                        <div class="order-id-label">สถานะปัจจุบัน</div>
-                        <div id="displayStatusText" style="font-size: 14px; font-weight: 700; color: #ff8533;">-</div>
-                    </div>
-                </div>
-
-                <div id="arrivedAlertBanner" class="arrived-alert" style="display: none;">
-                    พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ
-                </div>
-
-                <div class="stepper" id="stepperContainer">
-                    <div class="step-item" id="step1">
-                        <div class="step-circle">1</div>
-                        <div class="step-content">
-                            <div class="step-title">ได้รับคำสั่งซื้อ</div>
-                            <div class="step-desc">บันทึกข้อมูลและตรวจสอบการชำระเงินเรียบร้อย</div>
-                        </div>
-                    </div>
-                    <div class="step-item" id="step2">
-                        <div class="step-circle">2</div>
-                        <div class="step-content">
-                            <div class="step-title">กำลังจัดเตรียมสินค้า</div>
-                            <div class="step-desc">แอดมินกำลังแพ็คสินค้าและเตรียมเรียกรถจัดส่ง</div>
-                        </div>
-                    </div>
-                    <div class="step-item" id="step3">
-                        <div class="step-circle">3</div>
-                        <div class="step-content">
-                            <div class="step-title">ไรเดอร์กำลังเดินทาง</div>
-                            <div class="step-desc" id="step3Desc">พัสดุถูกรับและกำลังมุ่งหน้าไปหาคุณ (ประมาณ 30-45 นาที)</div>
-                        </div>
-                    </div>
-                    <div class="step-item" id="step4">
-                        <div class="step-circle">4</div>
-                        <div class="step-content">
-                            <div class="step-title">ไรเดอร์ถึงจุดหมายแล้ว</div>
-                            <div class="step-desc">ไรเดอร์มาถึงจุดนัดรับแล้ว กรุณาเตรียมรับสินค้า</div>
-                        </div>
-                    </div>
-                    <div class="step-item" id="step5">
-                        <div class="step-circle">5</div>
-                        <div class="step-content">
-                            <div class="step-title">จัดส่งสำเร็จ</div>
-                            <div class="step-desc">ลูกค้าได้รับสินค้าเรียบร้อยแล้ว ขอบคุณที่ใช้บริการค่ะ</div>
-                        </div>
-                    </div>
+                    <div id="searchError" class="search-error"></div>
                 </div>
             </div>
+        </section>
 
-            <div class="card">
-                <div style="font-size: 14px; font-weight: 700; color: #f3f4f6; margin-bottom: 12px;">ข้อมูลการจัดส่ง</div>
-                <div class="info-row">
-                    <div class="info-label">รูปแบบจัดส่ง</div>
-                    <div class="info-value" id="displayDeliveryMethod">-</div>
-                </div>
-                <div class="info-row" id="trackingUrlRow" style="display: none;">
-                    <div class="info-label">ลิงก์ติดตามไรเดอร์</div>
-                    <div class="info-value"><a id="trackingUrlLink" href="#" target="_blank" style="color: #ff8533; text-decoration: underline;">เปิดดูเส้นทางสด</a></div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">ผู้รับ</div>
-                    <div class="info-value" id="displayRecipientName">-</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">เบอร์ติดต่อ</div>
-                    <div class="info-value" id="displayRecipientPhone">-</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">จุดส่งสินค้า</div>
-                    <div class="info-value" id="displayRecipientAddress">-</div>
+        <!-- 3. Lower Section (Terracotta-Orange Background) -->
+        <main class="lower-section">
+            <!-- Order Result Area (Only shown when an order is searched) -->
+            <div id="orderResult" class="order-result-area" style="display: none;">
+                <div class="card">
+                    <div class="order-header-card">
+                        <div>
+                            <div class="order-id-label">เลขออเดอร์</div>
+                            <div class="order-id-val">
+                                <span id="displayOrderId">-</span>
+                                <button id="copyOrderBtn" class="copy-pill-btn">คัดลอกเลข</button>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="order-id-label">สถานะปัจจุบัน</div>
+                            <div id="displayStatusText" style="font-size: 14px; font-weight: 700; color: #ff8533;">-</div>
+                        </div>
+                    </div>
+
+                    <div id="arrivedAlertBanner" class="arrived-alert" style="display: none;">
+                        พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ
+                    </div>
+
+                    <div class="stepper" id="stepperContainer">
+                        <div class="step-item" id="step1">
+                            <div class="step-circle">1</div>
+                            <div class="step-content">
+                                <div class="step-title">ได้รับคำสั่งซื้อ</div>
+                                <div class="step-desc">บันทึกข้อมูลและตรวจสอบการชำระเงินเรียบร้อย</div>
+                            </div>
+                        </div>
+                        <div class="step-item" id="step2">
+                            <div class="step-circle">2</div>
+                            <div class="step-content">
+                                <div class="step-title">กำลังจัดเตรียมสินค้า</div>
+                                <div class="step-desc">แอดมินกำลังแพ็คสินค้าและเตรียมเรียกรถจัดส่ง</div>
+                            </div>
+                        </div>
+                        <div class="step-item" id="step3">
+                            <div class="step-circle">3</div>
+                            <div class="step-content">
+                                <div class="step-title">ไรเดอร์กำลังเดินทาง</div>
+                                <div class="step-desc" id="step3Desc">พัสดุถูกรับและกำลังมุ่งหน้าไปหาคุณ (ประมาณ 30-45 นาที)</div>
+                            </div>
+                        </div>
+                        <div class="step-item" id="step4">
+                            <div class="step-circle">4</div>
+                            <div class="step-content">
+                                <div class="step-title">ไรเดอร์ถึงจุดหมายแล้ว</div>
+                                <div class="step-desc">ไรเดอร์มาถึงจุดนัดรับแล้ว กรุณาเตรียมรับสินค้า</div>
+                            </div>
+                        </div>
+                        <div class="step-item" id="step5">
+                            <div class="step-circle">5</div>
+                            <div class="step-content">
+                                <div class="step-title">จัดส่งสำเร็จ</div>
+                                <div class="step-desc">ลูกค้าได้รับสินค้าเรียบร้อยแล้ว ขอบคุณที่ใช้บริการค่ะ</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div style="margin-top: 14px;">
-                    <div class="info-label" style="margin-bottom: 6px;">รายการสินค้าที่สั่งซื้อ</div>
-                    <div class="items-box" id="itemsContainer"></div>
-                </div>
+                <div class="card">
+                    <div style="font-size: 14px; font-weight: 700; color: #f3f4f6; margin-bottom: 12px;">ข้อมูลการจัดส่ง</div>
+                    <div class="info-row">
+                        <div class="info-label">รูปแบบจัดส่ง</div>
+                        <div class="info-value" id="displayDeliveryMethod">-</div>
+                    </div>
+                    <div class="info-row" id="trackingUrlRow" style="display: none;">
+                        <div class="info-label">ลิงก์ติดตามไรเดอร์</div>
+                        <div class="info-value"><a id="trackingUrlLink" href="#" target="_blank" style="color: #ff8533; text-decoration: underline;">เปิดดูเส้นทางสด</a></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">ผู้รับ</div>
+                        <div class="info-value" id="displayRecipientName">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">เบอร์ติดต่อ</div>
+                        <div class="info-value" id="displayRecipientPhone">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">จุดส่งสินค้า</div>
+                        <div class="info-value" id="displayRecipientAddress">-</div>
+                    </div>
 
-                <div class="action-row">
-                    <button id="copyPageLinkBtn" class="btn-secondary">คัดลอกลิงก์หน้านี้</button>
-                    <button id="contactAdminBtn" type="button" class="btn-secondary btn-line" onclick="openLinePopup()">ติดต่อแอดมิน LINE</button>
+                    <div style="margin-top: 14px;">
+                        <div class="info-label" style="margin-bottom: 6px;">รายการสินค้าที่สั่งซื้อ</div>
+                        <div class="items-box" id="itemsContainer"></div>
+                    </div>
+
+                    <div class="action-row">
+                        <button id="copyPageLinkBtn" class="btn-secondary">คัดลอกลิงก์หน้านี้</button>
+                        <a href="https://line.me/R/ti/p/@361zkkun" target="_blank" class="btn-secondary btn-line">ติดต่อแอดมิน LINE</a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
 
-    <!-- 4. Bottom Frame with Direct LINE Links & Footer -->
-    <div class="bottom-frame-container">
-        <!-- Direct LINE Quick Action Buttons -->
-        <div class="line-quick-bar">
-            <a href="https://line.me/R/ti/p/@361zkkun" target="_blank" class="line-quick-btn">
-                <span class="line-dot"></span>
-                <span>LINE: @361zkkun (Vapro V2)</span>
-            </a>
-            <a href="https://line.me/R/ti/p/@vaporclub" target="_blank" class="line-quick-btn">
-                <span class="line-dot"></span>
-                <span>LINE: @vaporclub (Vapor Club)</span>
-            </a>
-            <a href="https://line.me/R/ti/p/@mooodcnx" target="_blank" class="line-quick-btn">
-                <span class="line-dot"></span>
-                <span>LINE: @mooodcnx (MOOOD@CNX)</span>
-            </a>
-        </div>
+            <!-- 3 Side-by-side LINE Cards (Arranged as drawn in user's mockup) -->
+            <div class="line-cards-grid">
+                <!-- Card 1: Vapro V2 (@361zkkun) -->
+                <a href="https://line.me/R/ti/p/@361zkkun" target="_blank" class="line-store-card">
+                    <div class="line-card-icon-wrap">L</div>
+                    <div class="line-card-name">Vapor Flagship (Vapro V2)</div>
+                    <div class="line-card-id-pill">@361zkkun</div>
+                    <div class="line-card-subdesc">สั่งด่วน / สอบถามสินค้าและสต็อก</div>
+                    <div class="line-card-btn-action">แชทไลน์นี้</div>
+                </a>
 
-        <!-- Footer Strip (Clickable to open modal) -->
-        <footer class="footer-bar" onclick="openLinePopup()">
-            ติดต่อสอบถาม และ สั่งสินค้าทางไลน์เพื่อรับสิทธิพิเศษมากมาย โปรดยอมรับเงื่อนไขของทางร้านก่อนการสั่งซื้อ
-        </footer>
+                <!-- Card 2: Vapor Club Official (@vaporclub) -->
+                <a href="https://line.me/R/ti/p/@vaporclub" target="_blank" class="line-store-card">
+                    <div class="line-card-icon-wrap">L</div>
+                    <div class="line-card-name">Vapor Club Official</div>
+                    <div class="line-card-id-pill">@vaporclub</div>
+                    <div class="line-card-subdesc">บริการลูกค้า / ติดตามพัสดุและเคลม</div>
+                    <div class="line-card-btn-action">แชทไลน์นี้</div>
+                </a>
+
+                <!-- Card 3: MOOOD@CNX (@mooodcnx) -->
+                <a href="https://line.me/R/ti/p/@mooodcnx" target="_blank" class="line-store-card">
+                    <div class="line-card-icon-wrap">L</div>
+                    <div class="line-card-name">MOOOD@CNX</div>
+                    <div class="line-card-id-pill">@mooodcnx</div>
+                    <div class="line-card-subdesc">สาขาเชียงใหม่ / ส่งด่วนพื้นที่ CNX</div>
+                    <div class="line-card-btn-action">แชทไลน์นี้</div>
+                </a>
+            </div>
+        </main>
     </div>
 
-    <!-- LINE 3 Accounts Popup Modal -->
-    <div id="lineModalBackdrop" class="modal-backdrop" onclick="closeLinePopupOnBackdrop(event)">
-        <div class="line-popup-card">
-            <button class="popup-close-btn" onclick="closeLinePopup()" title="ปิด">&times;</button>
-            <div class="popup-title">ติดต่อแอดมินทาง LINE</div>
-            <div class="popup-subtitle">เลือกช่องทาง LINE ทางการของร้านเพื่อสอบถามหรือแจ้งสถานะได้ตลอด 24 ชม.</div>
-
-            <div class="line-channels-list">
-                <!-- LINE 1: Vapro V2 (@361zkkun) -->
-                <a href="https://line.me/R/ti/p/@361zkkun" target="_blank" class="line-channel-card">
-                    <div class="line-channel-info">
-                        <div class="line-icon-badge">L</div>
-                        <div>
-                            <div class="channel-name">Vapor Flagship (Vapro V2)</div>
-                            <div class="channel-id-tag">LINE ID: @361zkkun</div>
-                            <div class="channel-desc">ช่องทางหลัก สอบถามสินค้าและสั่งซื้อด่วน</div>
-                        </div>
-                    </div>
-                    <div class="channel-chat-btn">แชทเลย</div>
-                </a>
-
-                <!-- LINE 2: Vapor Club Official (@vaporclub) -->
-                <a href="https://line.me/R/ti/p/@vaporclub" target="_blank" class="line-channel-card">
-                    <div class="line-channel-info">
-                        <div class="line-icon-badge">L</div>
-                        <div>
-                            <div class="channel-name">Vapor Club Official</div>
-                            <div class="channel-id-tag">LINE ID: @vaporclub</div>
-                            <div class="channel-desc">ฝ่ายบริการลูกค้า ติดตามพัสดุและเคลมสินค้า</div>
-                        </div>
-                    </div>
-                    <div class="channel-chat-btn">แชทเลย</div>
-                </a>
-
-                <!-- LINE 3: MOOOD@CNX (@mooodcnx) -->
-                <a href="https://line.me/R/ti/p/@mooodcnx" target="_blank" class="line-channel-card">
-                    <div class="line-channel-info">
-                        <div class="line-icon-badge">L</div>
-                        <div>
-                            <div class="channel-name">Vapor Flagship (MOOOD@CNX)</div>
-                            <div class="channel-id-tag">LINE ID: @mooodcnx</div>
-                            <div class="channel-desc">สาขาเชียงใหม่ บริการจัดส่งด่วนพื้นที่เชียงใหม่</div>
-                        </div>
-                    </div>
-                    <div class="channel-chat-btn">แชทเลย</div>
-                </a>
-            </div>
-        </div>
-    </div>
+    <!-- 4. Bottom Footer Strip -->
+    <footer class="footer-bar">
+        ติดต่อสอบถาม และ สั่งสินค้าทางไลน์เพื่อรับสิทธิพิเศษมากมาย โปรดยอมรับเงื่อนไขของทางร้านก่อนการสั่งซื้อ
+    </footer>
 
     <div id="toast" class="toast">คัดลอกเรียบร้อยแล้ว</div>
 
@@ -877,22 +748,6 @@
             toast.textContent = msg;
             toast.style.display = 'block';
             setTimeout(() => { toast.style.display = 'none'; }, 2500);
-        }
-
-        function openLinePopup() {
-            const modal = document.getElementById('lineModalBackdrop');
-            if (modal) modal.style.display = 'flex';
-        }
-
-        function closeLinePopup() {
-            const modal = document.getElementById('lineModalBackdrop');
-            if (modal) modal.style.display = 'none';
-        }
-
-        function closeLinePopupOnBackdrop(e) {
-            if (e.target.id === 'lineModalBackdrop') {
-                closeLinePopup();
-            }
         }
 
         function maskPhone(phone) {
