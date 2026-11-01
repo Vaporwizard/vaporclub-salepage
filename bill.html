@@ -438,7 +438,7 @@
         const currentOrderId = (orderIdFromPath && orderIdFromPath.startsWith('ORD-')) ? orderIdFromPath : (urlParams.get('orderId') || 'ORD-10061');
 
         let countdownTimer = null;
-        let expireTimestamp = Date.now() + 15 * 60 * 1000;
+        let expireTimestamp = Date.now() + 30 * 60 * 1000;
 
         function showToast(message) {
             const toast = document.getElementById('save-toast');
@@ -503,7 +503,7 @@
 
         function startTimer(expiresAt) {
             if (expiresAt) expireTimestamp = new Date(expiresAt).getTime();
-            else expireTimestamp = Date.now() + 15 * 60 * 1000;
+            else expireTimestamp = Date.now() + 30 * 60 * 1000;
 
             if (countdownTimer) clearInterval(countdownTimer);
 

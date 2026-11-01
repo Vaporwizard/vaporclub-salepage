@@ -2477,7 +2477,7 @@
             to { transform: rotate(360deg); }
         }
 
-        /* 21+ Age Verification Gate Modal (Ultra-Luxury Minimalist English) */
+        /* 20+ Age Verification Gate Modal (Ultra-Luxury Minimalist English) */
         .age-gate-overlay {
             position: fixed;
             top: 0;
@@ -3636,27 +3636,27 @@
     </div>
 </div>
 
-<!-- AGE VERIFICATION POPUP (21+) -->
+<!-- AGE VERIFICATION POPUP (20+) -->
 <div id="age-gate-modal" class="age-gate-overlay hidden" style="display:none;">
     <div class="age-gate-card">
         <img src="/assets/logo_vapor_official.png" alt="VAPOR" class="age-gate-logo" style="max-width:140px; height:auto; margin:0 auto 16px; display:block;">
         
-        <div class="age-gate-pill">21+ LEGAL AGE ONLY</div>
+        <div class="age-gate-pill">20+ LEGAL AGE ONLY</div>
         <div class="age-gate-title">AGE VERIFICATION</div>
         <div class="age-gate-sub">PLEASE CONFIRM YOUR AGE</div>
         
         <p class="age-gate-desc" id="age-gate-desc-text">
             This website features electronic vapor products and nicotine. 
-            Access is restricted to adults aged <strong>21 or older</strong>.
+            Access is restricted to adults aged <strong>20 or older</strong>.
         </p>
         
         <div id="age-gate-buttons" class="age-gate-actions">
-            <button class="age-btn-confirm" onclick="confirmAgeOver21()">
-                <span>I AM 21 OR OLDER</span>
+            <button class="age-btn-confirm" onclick="confirmAgeOver20()">
+                <span>I AM 20 OR OLDER</span>
                 <svg class="svg-icon-sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
             </button>
-            <button class="age-btn-deny" onclick="denyAgeUnder21()">
-                <span>I AM UNDER 21</span>
+            <button class="age-btn-deny" onclick="denyAgeUnder20()">
+                <span>I AM UNDER 20</span>
             </button>
         </div>
 
@@ -3666,7 +3666,7 @@
             </div>
             <div class="age-denied-title">ACCESS DENIED</div>
             <p class="age-denied-desc">
-                You must be 21 years of age or older to enter or order from this store.
+                You must be 20 years of age or older to enter or order from this store.
             </p>
             <button class="age-btn-exit" onclick="exitAgeDenied()">EXIT STORE</button>
         </div>
@@ -10796,11 +10796,8 @@
             const isPostal = orderObj.deliveryMethod === 'postal';
             const urlParams = new URLSearchParams(window.location.search);
             const host = (window.location.hostname || '').toLowerCase();
-            const isCloudflareProd = (host === 'vaporclub-th.shop' || host === 'www.vaporclub-th.shop' || host.endsWith('.pages.dev')) &&
-                                     !urlParams.has('token') &&
-                                     urlParams.get('admin') !== '1' &&
-                                     urlParams.get('bypass') !== '1' &&
-                                     urlParams.get('test') !== '1';
+            // On the production domain URL flags can no longer turn a real order into a test order
+            const isCloudflareProd = isProductionStoreHost(host);
             const isTest = !isCloudflareProd;
 
             const payload = {
@@ -10818,6 +10815,7 @@
                 deliveryMethod: orderObj.deliveryMethod,
                 deliveryFee: orderObj.deliveryFee,
                 voucherCode: selectedVoucher,
+                ageConfirmed: isAgeVerified(),
                 discount: orderObj.discount,
                 items: orderObj.items,
                 total: orderObj.total,
@@ -11646,7 +11644,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const host = (window.location.hostname || '').toLowerCase();
         const path = (window.location.pathname || '').toLowerCase();
-        const isStagingTestMode = (
+        const isStagingTestMode = !isProductionStoreHost(host) && (
             urlParams.has('token') ||
             urlParams.get('admin') === '1' ||
             urlParams.get('bypass') === '1' ||
@@ -11797,38 +11795,31 @@
     }
 
     /* ========================================================
-       21+ AGE VERIFICATION GATE
+       20+ AGE VERIFICATION GATE
        ======================================================== */
-    function checkAgeGate() {
-        try {
-            const verified = localStorage.getItem('vapor_age_verified_21');
-            const modal = document.getElementById('age-gate-modal');
-            if (verified === 'true') {
-                if (modal) {
-                    modal.classList.add('hidden');
-                    modal.style.display = 'none';
-                }
-            } else {
-                if (modal) {
-                    modal.classList.remove('hidden');
-                    modal.style.display = 'flex';
-                }
-            }
-        } catch(e) {}
-    }
+    const AGE_VERIFIED_KEY = 'vapor_age_verified_20';
+    const AGE_DENIED_KEY = 'vapor_age_denied';
+    const AGE_DENIAL_MEMORY_MS = 24 * 60 * 60 * 1000;
 
-    function confirmAgeOver21() {
+    // true once the visitor confirmed 20+ (the old 21+ confirmation also counts)
+    function isAgeVerified() {
         try {
-            localStorage.setItem('vapor_age_verified_21', 'true');
-        } catch(e) {}
-        const modal = document.getElementById('age-gate-modal');
-        if (modal) {
-            modal.classList.add('hidden');
-            modal.style.display = 'none';
+            return !!localStorage.getItem(AGE_VERIFIED_KEY) || localStorage.getItem('vapor_age_verified_21') === 'true';
+        } catch(e) {
+            return false;
         }
     }
 
-    function denyAgeUnder21() {
+    function isAgeDeniedRecently() {
+        try {
+            const deniedAt = Number(localStorage.getItem(AGE_DENIED_KEY));
+            return deniedAt > 0 && (Date.now() - deniedAt) < AGE_DENIAL_MEMORY_MS;
+        } catch(e) {
+            return false;
+        }
+    }
+
+    function showAgeDenied() {
         const btnBox = document.getElementById('age-gate-buttons');
         const descText = document.getElementById('age-gate-desc-text');
         const deniedBox = document.getElementById('age-gate-denied');
@@ -11837,8 +11828,51 @@
         if (deniedBox) deniedBox.style.display = 'block';
     }
 
+    function checkAgeGate() {
+        const modal = document.getElementById('age-gate-modal');
+        if (!modal) return;
+        if (isAgeVerified()) {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+            return;
+        }
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        // A recent "under 20" answer is remembered, so reloading does not offer the buttons again
+        if (isAgeDeniedRecently()) showAgeDenied();
+    }
+
+    function confirmAgeOver20() {
+        if (isAgeDeniedRecently()) {
+            showAgeDenied();
+            return;
+        }
+        try {
+            localStorage.setItem(AGE_VERIFIED_KEY, new Date().toISOString());
+        } catch(e) {}
+        const modal = document.getElementById('age-gate-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+        }
+    }
+
+    function denyAgeUnder20() {
+        try {
+            localStorage.removeItem(AGE_VERIFIED_KEY);
+            localStorage.setItem(AGE_DENIED_KEY, String(Date.now()));
+        } catch(e) {}
+        showAgeDenied();
+    }
+
     function exitAgeDenied() {
         window.location.href = 'https://www.google.com';
+    }
+
+    // Production storefront domains: test/bypass URL flags (?token, ?admin, ?bypass, ?test) are ignored there
+    function isProductionStoreHost(host) {
+        const h = String(host || '').toLowerCase();
+        return h === 'vaporclub-th.shop' || h === 'www.vaporclub-th.shop' || h.endsWith('.pages.dev');
     }
 
     /* ========================================================
@@ -11853,7 +11887,7 @@
             // Staging Sandbox / Admin Token Test Mode:
             // Allows testing directly on vapro-ai-admin.onrender.com, selfservice.html, or with ?token=...
             // On production website (e.g. vaporclub-th.shop), this is FALSE unless admin token is passed!
-            const isStagingTestMode = (
+            const isStagingTestMode = !isProductionStoreHost(host) && (
                 urlParams.has('token') ||
                 urlParams.get('admin') === '1' ||
                 urlParams.get('bypass') === '1' ||
