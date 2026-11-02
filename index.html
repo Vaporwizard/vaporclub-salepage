@@ -3121,491 +3121,235 @@
         }
 
         /* ========================================
-           STOREFRONT BIRTHDAY ENVELOPE MODAL (3D INTERACTIVE - WHITE LUXURY EDITION)
+           STOREFRONT BIRTHDAY CARD MODAL (MINIMAL LUXURY)
            ======================================== */
         .birthday-envelope-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             z-index: 100050;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 16px;
-            background: rgba(0, 0, 0, 0.78);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(6, 7, 10, 0.72);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.38s ease;
         }
         .birthday-envelope-overlay.show {
             opacity: 1;
             pointer-events: auto;
         }
+        /* Owner preview must sit above the LINE guard / age gate overlays */
+        .birthday-envelope-overlay.is-demo {
+            z-index: 10000000;
+        }
         .birthday-confetti-canvas {
             position: absolute;
-            top: 0;
-            left: 0;
+            inset: 0;
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 100051;
-        }
-        .birthday-envelope-dialog {
-            position: relative;
-            width: 100%;
-            max-width: 380px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 100052;
-        }
-        .birthday-envelope-close-btn {
-            position: absolute;
-            top: -14px;
-            right: 0;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.35);
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 100055;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            transition: transform 0.15s ease, background 0.15s ease;
-        }
-        .birthday-envelope-close-btn:active {
-            transform: scale(0.9);
-            background: rgba(255, 255, 255, 0.35);
-        }
-        .birthday-stage-3d {
-            perspective: 1200px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            padding: 24px 0 10px;
-        }
-        .birthday-envelope-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 360px;
-            height: 250px;
-            transform-style: preserve-3d;
-            cursor: pointer;
-            user-select: none;
-            -webkit-user-select: none;
-            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: envelopeFloat 3.6s ease-in-out infinite;
-        }
-        @keyframes envelopeFloat {
-            0%, 100% { transform: translateY(0) rotateX(3deg) rotateY(-1.5deg); }
-            50% { transform: translateY(-7px) rotateX(6deg) rotateY(1.5deg); }
-        }
-        .birthday-envelope-wrapper.is-open {
-            animation: none;
-            transform: translateY(0) rotateX(0deg) rotateY(0deg);
-            height: 520px;
-            cursor: default;
-        }
-        .envelope-back-panel {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 250px;
-            background: #ffffff;
-            border-radius: 18px;
-            border: 1.5px solid rgba(212, 175, 55, 0.45);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), 0 0 1px rgba(0, 0, 0, 0.2);
-        }
-        .envelope-pocket-panel {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 185px;
-            background: #ffffff;
-            border-radius: 0 0 18px 18px;
-            border-left: 1.5px solid rgba(212, 175, 55, 0.4);
-            border-right: 1.5px solid rgba(212, 175, 55, 0.4);
-            border-bottom: 1.5px solid rgba(212, 175, 55, 0.4);
-            z-index: 10;
-            overflow: hidden;
-            box-shadow: 0 -4px 22px rgba(0, 0, 0, 0.1);
-            transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
-        }
-        .birthday-envelope-wrapper.is-open .envelope-pocket-panel {
-            transform: translateY(180px);
-            opacity: 0;
-            pointer-events: none;
-        }
-        .envelope-pocket-art {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 100%;
-            pointer-events: none;
-        }
-        .envelope-cut-line-left {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 50%;
-            height: 48px;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-            transform-origin: top left;
-            transform: rotate(18deg);
-        }
-        .envelope-cut-line-right {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 50%;
-            height: 48px;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-            transform-origin: top right;
-            transform: rotate(-18deg);
-        }
-        .envelope-front-details {
-            position: relative;
-            z-index: 2;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 14px 14px;
-            text-align: center;
-        }
-        .envelope-logo-area {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .envelope-cover-logo {
-            max-height: 28px;
-            object-fit: contain;
-            filter: none;
-        }
-        .envelope-recipient-wrap {
-            margin-top: 4px;
-        }
-        .envelope-stamp-label {
-            font-size: 9.5px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            color: #b45309;
-            text-transform: uppercase;
-            margin-bottom: 3px;
-        }
-        .envelope-recipient-line {
-            font-size: 15px;
-            font-weight: 800;
-            color: #1e293b;
-            letter-spacing: 0.3px;
-        }
-        .envelope-tap-cta {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            color: #b45309;
-            font-size: 11.5px;
-            font-weight: 700;
-            animation: tapPulse 1.8s infinite ease-in-out;
-        }
-        @keyframes tapPulse {
-            0%, 100% { transform: scale(1); opacity: 0.9; }
-            50% { transform: scale(1.03); opacity: 1; filter: drop-shadow(0 0 6px rgba(217, 119, 6, 0.4)); }
-        }
-        .envelope-tap-icon-ring {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: rgba(217, 119, 6, 0.12);
-            border: 1px solid rgba(217, 119, 6, 0.35);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .envelope-top-flap {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 125px;
-            transform-origin: top center;
-            transform-style: preserve-3d;
-            z-index: 15;
-            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .birthday-envelope-wrapper.is-open .envelope-top-flap {
-            transform: rotateX(176deg);
             z-index: 1;
         }
-        .envelope-flap-triangle {
+        .bday-card {
+            position: relative;
+            z-index: 2;
             width: 100%;
-            height: 100%;
-            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            max-width: 360px;
+            max-height: calc(100vh - 32px);
+            overflow-y: auto;
             background: #ffffff;
-            border-top: 1.5px solid rgba(212, 175, 55, 0.6);
-            filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.15));
-            transition: background 0.4s ease;
-        }
-        /* Flap interior gold stripes pattern as in Image 4 */
-        .birthday-envelope-wrapper.is-open .envelope-flap-triangle {
-            background: repeating-linear-gradient(45deg, #d4af37 0, #d4af37 9px, #ffffff 9px, #ffffff 18px);
-            box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.18);
-        }
-        .envelope-wax-seal {
-            position: absolute;
-            bottom: -6px;
-            left: 50%;
-            transform: translate(-50%, 0);
-            z-index: 20;
-            transition: transform 0.4s ease, opacity 0.3s ease;
-        }
-        .birthday-envelope-wrapper.is-open .envelope-wax-seal {
-            transform: translate(-50%, 0) scale(0.3);
-            opacity: 0;
-            pointer-events: none;
-        }
-        .wax-seal-outer-rim {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 30%, #fef08a 0%, #f59e0b 50%, #b45309 100%);
-            box-shadow: 0 4px 18px rgba(180, 83, 9, 0.55), inset 0 2px 4px rgba(255, 255, 255, 0.7), inset 0 -2px 6px rgba(0, 0, 0, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid rgba(255, 255, 255, 0.85);
-            animation: sealGlow 2.4s infinite ease-in-out;
-        }
-        @keyframes sealGlow {
-            0%, 100% { box-shadow: 0 4px 18px rgba(180, 83, 9, 0.55); }
-            50% { box-shadow: 0 4px 26px rgba(245, 158, 11, 0.85), 0 0 12px rgba(255, 215, 0, 0.7); }
-        }
-        .wax-seal-inner-circle {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            border: 1px dashed rgba(255, 255, 255, 0.6);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            line-height: 1.1;
-        }
-        .wax-seal-stars {
-            font-size: 7px;
-            color: #ffffff;
-            letter-spacing: 1px;
-            opacity: 0.95;
-        }
-        .wax-seal-title {
-            font-size: 9.5px;
-            font-weight: 900;
-            color: #ffffff;
-            letter-spacing: 0.5px;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-        }
-        .wax-seal-subtitle {
-            font-size: 7.5px;
-            font-weight: 800;
-            color: #fef08a;
-            letter-spacing: 1px;
-        }
-        .birthday-inner-card {
-            position: absolute;
-            top: 6px;
-            left: 8px;
-            right: 8px;
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1.5px solid rgba(212, 175, 55, 0.45);
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
-            padding: 22px 18px 20px;
+            color: #111214;
+            border-radius: 28px;
+            padding: 40px 28px 26px;
             text-align: center;
-            color: #1e293b;
-            z-index: 5;
+            font-family: var(--font-thai);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
             opacity: 0;
-            transform: translateY(20px) scale(0.92);
-            pointer-events: none;
-            transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.3s, opacity 0.5s ease 0.3s, z-index 0.1s step-end;
+            transform: translateY(14px) scale(0.94);
+            transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .birthday-envelope-wrapper.is-open .birthday-inner-card {
+        .birthday-envelope-overlay.show .bday-card {
             opacity: 1;
-            transform: translateY(-85px) scale(1.02);
-            pointer-events: auto;
-            z-index: 50;
-            box-shadow: 0 25px 65px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(212, 175, 55, 0.3);
+            transform: translateY(0) scale(1);
         }
-        .birthday-card-content {
-            position: relative;
-        }
-        .birthday-card-frame-border {
+        .bday-card::before {
+            content: '';
             position: absolute;
-            inset: -12px;
-            border: 1px solid rgba(212, 175, 55, 0.25);
-            border-radius: 12px;
-            pointer-events: none;
+            top: 0;
+            left: 50%;
+            width: 56px;
+            height: 3px;
+            border-radius: 0 0 3px 3px;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, #d4a24c, #ff6b00);
         }
-        .birthday-card-logo-row {
-            margin-bottom: 8px;
+        .bday-close-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: #f3f4f6;
+            color: #6b7280;
             display: flex;
+            align-items: center;
             justify-content: center;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.15s ease;
         }
-        .birthday-card-logo {
-            max-height: 28px;
+        .bday-close-btn:hover { background: #e5e7eb; }
+        .bday-close-btn:active { transform: scale(0.9); }
+        .bday-demo-badge {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            padding: 3px 9px;
+            border-radius: 9999px;
+            background: #fff7ed;
+            color: #c2410c;
+            border: 1px solid #fed7aa;
+            font-family: var(--font-num);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+        }
+        .bday-logo {
+            height: 26px;
+            width: auto;
+            margin: 0 auto 18px;
+            display: block;
             object-fit: contain;
-            filter: none;
-            margin: 0 auto;
         }
-        .birthday-card-script-title {
-            font-family: 'Great Vibes', 'Brush Script MT', cursive;
-            font-size: 40px;
-            font-weight: 400;
-            color: #b45309;
-            line-height: 1.05;
-            margin: 0;
-            text-shadow: 0 1px 2px rgba(180, 83, 9, 0.15);
-        }
-        .birthday-card-script-sub {
-            font-family: 'Playfair Display', serif;
-            font-style: italic;
-            font-size: 16px;
-            font-weight: 600;
-            color: #78350f;
-            margin-top: 2px;
-            margin-bottom: 8px;
-            letter-spacing: 0.3px;
-        }
-        .birthday-card-divider {
-            width: 70%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #d4af37, transparent);
-            margin: 6px auto 12px;
-        }
-        .birthday-card-greeting {
-            font-size: 12.5px;
-            line-height: 1.6;
-            color: #334155;
-            margin: 0 0 14px;
-            font-weight: 500;
-            font-family: 'Prompt', sans-serif;
-        }
-        .birthday-voucher-ticket {
-            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-            border: 1.5px dashed #d97706;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            padding: 10px 12px;
-            margin-bottom: 14px;
-            position: relative;
-            overflow: hidden;
-            text-align: left;
-            box-shadow: 0 2px 8px rgba(217, 119, 6, 0.1);
-        }
-        .birthday-ticket-left {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-width: 75px;
-            padding-right: 10px;
-        }
-        .bday-ticket-label {
+        .bday-eyebrow {
+            font-family: var(--font-num);
             font-size: 10.5px;
             font-weight: 700;
-            color: #b45309;
+            letter-spacing: 0.32em;
+            color: #b08436;
+            text-transform: uppercase;
+            margin-bottom: 10px;
         }
-        .bday-ticket-amt {
-            font-size: 22px;
-            font-weight: 900;
-            color: #92400e;
-            line-height: 1.1;
-        }
-        .bday-ticket-sub {
-            font-size: 9px;
-            font-weight: 800;
-            color: #b45309;
-            letter-spacing: 0.5px;
-        }
-        .birthday-ticket-divider {
-            width: 1px;
-            height: 48px;
-            border-right: 1.5px dashed rgba(217, 119, 6, 0.4);
-            margin: 0 10px 0 2px;
-        }
-        .birthday-ticket-right {
-            flex: 1;
-            min-width: 0;
-        }
-        .bday-ticket-badge {
-            display: inline-block;
-            font-size: 9px;
-            font-weight: 800;
-            background: rgba(217, 119, 6, 0.15);
-            color: #b45309;
-            padding: 1px 6px;
-            border-radius: 4px;
-            letter-spacing: 0.5px;
-            margin-bottom: 3px;
-        }
-        .bday-ticket-code-row {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .bday-ticket-code {
-            font-size: 15px;
-            font-weight: 900;
-            color: #78350f;
-            letter-spacing: 1px;
-            font-family: monospace;
-        }
-        .bday-ticket-desc {
-            font-size: 11.5px;
+        .bday-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-style: italic;
             font-weight: 700;
-            color: #334155;
-            margin-top: 1px;
+            font-size: 38px;
+            line-height: 1.08;
+            letter-spacing: -0.01em;
+            color: #111214;
+            margin: 0;
         }
-        .bday-ticket-terms {
-            font-size: 10px;
-            color: #64748b;
+        .bday-name {
+            margin-top: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #111214;
+            word-break: break-word;
+        }
+        .bday-rule {
+            width: 36px;
+            height: 1px;
+            background: #e5e7eb;
+            margin: 18px auto;
+        }
+        .bday-message {
+            font-size: 13.5px;
+            font-weight: 400;
+            line-height: 1.75;
+            color: #4b5563;
+            margin: 0;
+        }
+        .bday-coupon {
+            margin-top: 22px;
+            border: 1px dashed #d6c29a;
+            background: #fffdf8;
+            border-radius: 18px;
+            padding: 16px 16px 14px;
+        }
+        .bday-coupon-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #9a7b3f;
+            letter-spacing: 0.04em;
+        }
+        .bday-coupon-amount {
+            font-family: var(--font-num);
+            font-size: 30px;
+            font-weight: 800;
+            color: #111214;
+            letter-spacing: -0.02em;
             margin-top: 2px;
         }
-        .birthday-claim-btn {
-            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        .bday-coupon-amount small {
+            font-size: 13px;
+            font-weight: 700;
+            color: #6b7280;
+            margin-left: 4px;
+            letter-spacing: 0.06em;
+        }
+        .bday-coupon-code {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 6px 14px;
+            border-radius: 10px;
+            background: #111214;
             color: #ffffff;
-            font-size: 14.5px;
-            font-weight: 800;
-            padding: 11px 20px;
-            border-radius: 12px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            user-select: all;
+            -webkit-user-select: all;
+        }
+        .bday-coupon-terms {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+        .bday-primary-btn {
+            margin-top: 18px;
+            width: 100%;
+            height: 50px;
             border: none;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(180, 83, 9, 0.35);
+            border-radius: 14px;
+            background: #111214;
+            color: #ffffff;
+            font-family: var(--font-thai);
+            font-size: 14.5px;
+            font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            width: 100%;
-            transition: transform 0.15s ease, filter 0.15s ease;
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.2s ease;
         }
-        .birthday-claim-btn:active {
-            transform: scale(0.98);
-            filter: brightness(0.9);
+        .bday-primary-btn:active { transform: scale(0.98); }
+        .bday-primary-btn.is-done { background: #15803d; }
+        .bday-secondary-btn {
+            margin-top: 8px;
+            width: 100%;
+            height: 40px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-family: var(--font-thai);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .birthday-envelope-overlay,
+            .bday-card {
+                transition: opacity 0.2s ease;
+                transform: none;
+            }
         }
 </style>
 </head>
@@ -5296,127 +5040,41 @@
 </div>
 
 <!-- ==========================================
-     STOREFRONT BIRTHDAY ENVELOPE MODAL (3D INTERACTIVE)
+     STOREFRONT BIRTHDAY CARD MODAL (MINIMAL LUXURY)
      ========================================== -->
 <div id="birthday-envelope-overlay" class="birthday-envelope-overlay" style="display:none;" onclick="handleBirthdayBackdropClick(event)">
-    <!-- Confetti Canvas -->
     <canvas id="birthday-confetti-canvas" class="birthday-confetti-canvas"></canvas>
 
-    <div class="birthday-envelope-dialog" onclick="event.stopPropagation()">
-        <!-- Close Button (X) Top Right -->
-        <button type="button" class="birthday-envelope-close-btn" onclick="closeBirthdayEnvelope(true)" aria-label="ปิด">
+    <div class="bday-card" role="dialog" aria-modal="true" aria-labelledby="birthday-card-title" onclick="event.stopPropagation()">
+        <span id="birthday-demo-badge" class="bday-demo-badge" style="display:none;">PREVIEW</span>
+        <button type="button" class="bday-close-btn" onclick="closeBirthdayEnvelope(true)" aria-label="ปิด">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
         </button>
 
-        <!-- 3D Perspective Stage -->
-        <div class="birthday-stage-3d">
-            <div id="birthday-envelope-wrapper" class="birthday-envelope-wrapper" onclick="openBirthdayEnvelope()">
-                
-                <!-- Back side of envelope (White Paper Stock) -->
-                <div class="envelope-back-panel"></div>
+        <img id="birthday-card-logo" src="/assets/logo_vapor_official.png" alt="VAPOR CLUB" class="bday-logo" onerror="this.style.display='none'">
+        <div class="bday-eyebrow">Vapor Club</div>
+        <h2 class="bday-title" id="birthday-card-title">Happy Birthday</h2>
+        <div class="bday-name" id="birthday-customer-name">คุณลูกค้า</div>
+        <div class="bday-rule"></div>
+        <p class="bday-message" id="birthday-card-greeting">
+            ขอให้มีความสุข สุขภาพแข็งแรง และมีรอยยิ้มในทุกๆ วัน ขอบคุณที่เป็นครอบครัว VAPOR CLUB
+        </p>
 
-                <!-- Inner Birthday Card (Hidden inside, pulls up large when opened) -->
-                <div id="birthday-inner-card" class="birthday-inner-card" onclick="event.stopPropagation()">
-                    <div class="birthday-card-content">
-                        <div class="birthday-card-frame-border"></div>
-
-                        <!-- Brand Logo (Official Flagship Logo) -->
-                        <div class="birthday-card-logo-row">
-                            <img id="birthday-card-logo" src="/assets/logo_vapor_official.png" alt="VAPOR CLUB" class="birthday-card-logo" onerror="this.style.display='none'">
-                        </div>
-
-                        <!-- Calligraphy Script Header (Image 4 Style) -->
-                        <h2 class="birthday-card-script-title" id="birthday-card-title">Happy Birthday!</h2>
-                        <div class="birthday-card-script-sub">to คุณ <span id="birthday-customer-name">ลูกค้า</span></div>
-                        <div class="birthday-card-divider"></div>
-
-                        <!-- Dynamic Greeting text configured from Backoffice Admin -->
-                        <p class="birthday-card-greeting" id="birthday-card-greeting">
-                            ขอให้มีความสุข สุขภาพแข็งแรง รักษาสุขภาพ และมีรอยยิ้มในทุกๆ วัน ขอบคุณที่เป็นครอบครัว VAPOR CLUB
-                        </p>
-
-                        <!-- Birthday Voucher Ticket (Single-use, No expiration) -->
-                        <div class="birthday-voucher-ticket">
-                            <div class="birthday-ticket-left">
-                                <div class="bday-ticket-label">ส่วนลด</div>
-                                <div class="bday-ticket-amt" id="birthday-voucher-amount-display">฿100</div>
-                                <div class="bday-ticket-sub">OFF</div>
-                            </div>
-                            <div class="birthday-ticket-divider"></div>
-                            <div class="birthday-ticket-right">
-                                <div class="bday-ticket-badge">VIP SPECIAL</div>
-                                <div class="bday-ticket-code-row">
-                                    <span class="bday-ticket-code" id="birthday-voucher-code-display">HBD100</span>
-                                </div>
-                                <div class="bday-ticket-desc">คูปองของขวัญวันเกิด</div>
-                                <div class="bday-ticket-terms">ไม่มีวันหมดอายุ • ใช้ได้ 1 ครั้ง</div>
-                            </div>
-                        </div>
-
-                        <!-- Action Button -->
-                        <button type="button" class="birthday-claim-btn" onclick="claimBirthdayVoucher()">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/>
-                                <path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/>
-                                <circle cx="18" cy="16" r="2"/>
-                            </svg>
-                            <span>เก็บคูปอง & ช้อปเลย</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Front Pocket -->
-                <div class="envelope-pocket-panel">
-                    <div class="envelope-pocket-art">
-                        <div class="envelope-cut-line-left"></div>
-                        <div class="envelope-cut-line-right"></div>
-                    </div>
-
-                    <!-- Front Envelope Content -->
-                    <div class="envelope-front-details">
-                        <div class="envelope-logo-area">
-                            <img id="envelope-cover-logo" src="/assets/logo_vapor_official.png" alt="VAPOR CLUB" class="envelope-cover-logo" onerror="this.style.display='none'">
-                        </div>
-
-                        <div class="envelope-recipient-wrap">
-                            <div class="envelope-stamp-label">EXCLUSIVELY FOR YOU</div>
-                            <div class="envelope-recipient-line" id="envelope-front-recipient">
-                                สุขสันต์วันเกิด คุณลูกค้า
-                            </div>
-                        </div>
-
-                        <div class="envelope-tap-cta">
-                            <div class="envelope-tap-icon-ring">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="7 13 12 18 17 13"></polyline>
-                                    <polyline points="7 6 12 11 17 6"></polyline>
-                                </svg>
-                            </div>
-                            <span class="envelope-tap-text">แตะที่ซองจดหมายเพื่อเปิดของขวัญวันเกิด</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Top Flap (Flips open with 3D rotateX) -->
-                <div class="envelope-top-flap">
-                    <div class="envelope-flap-triangle"></div>
-                    <!-- Gold Wax Seal Badge -->
-                    <div class="envelope-wax-seal">
-                        <div class="wax-seal-outer-rim">
-                            <div class="wax-seal-inner-circle">
-                                <span class="wax-seal-stars">★ ★ ★</span>
-                                <span class="wax-seal-title">VAPOR</span>
-                                <span class="wax-seal-subtitle">VIP</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+        <!-- Shown only when an active birthday voucher is configured -->
+        <div id="birthday-coupon-block" class="bday-coupon" style="display:none;">
+            <div class="bday-coupon-label">ของขวัญวันเกิดสำหรับคุณ</div>
+            <div class="bday-coupon-amount"><span id="birthday-voucher-amount-display">฿100</span><small>OFF</small></div>
+            <div class="bday-coupon-code" id="birthday-voucher-code-display">HBDVAPOR</div>
+            <div class="bday-coupon-terms" id="birthday-voucher-terms">ใช้ได้ 1 ครั้ง • ไม่มีวันหมดอายุ</div>
         </div>
+
+        <button type="button" id="birthday-primary-btn" class="bday-primary-btn" onclick="claimBirthdayVoucher()">
+            <span id="birthday-primary-btn-text">คัดลอก & ใช้โค้ด</span>
+        </button>
+        <button type="button" id="birthday-secondary-btn" class="bday-secondary-btn" onclick="closeBirthdayEnvelope(true)" style="display:none;">ไว้ทีหลัง</button>
     </div>
 </div>
 <script>
@@ -5984,11 +5642,23 @@
     }
 
     /* ========================================================
-       STOREFRONT BIRTHDAY ENVELOPE MODAL (3D INTERACTIVE)
+       STOREFRONT BIRTHDAY CARD MODAL (MINIMAL LUXURY)
+       Owner preview: open with ?demo_birthday=1 or ?preview_bday=1 (legacy ?test_hbd=1 / ?force_hbd=1),
+       optionally &bday_voucher=0|1, or call window.previewBirthdayCard(hasVoucher) from devtools.
+       A preview never marks the card as seen, never claims a coupon and never touches the cart.
        ======================================================== */
-    let isBirthdayEnvelopeOpened = false;
     window._isBirthdayPopupActive = false;
     window._pendingPopupBanner = null;
+
+    const BIRTHDAY_DEFAULT_GREETING = 'ขอให้มีความสุข สุขภาพแข็งแรง และมีรอยยิ้มในทุกๆ วัน ขอบคุณที่เป็นครอบครัว VAPOR CLUB';
+    const BIRTHDAY_DEMO_PARAMS = ['demo_birthday', 'preview_bday', 'test_hbd', 'force_hbd'];
+    const BIRTHDAY_DEMO_CODE = 'HBDDEMO';
+
+    let birthdayCardState = null;       // { demo, hasVoucher, code } while the card is open
+    let birthdayCloseTimer = null;
+    let birthdayCheckInFlight = null;
+    let birthdayUrlDemoShown = false;
+    let birthdayConfettiFrame = null;
 
     function getThaiDate() {
         const now = new Date();
@@ -5996,13 +5666,20 @@
         return new Date(utc + (3600000 * 7));
     }
 
-    function isTodayCustomerBirthday() {
+    // { hasVoucher: true | false | null (follow live config) } when the URL asks for a preview
+    function getBirthdayDemoRequest() {
         try {
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('test_hbd') === '1' || urlParams.get('force_hbd') === '1') {
-                return true;
-            }
+            if (!BIRTHDAY_DEMO_PARAMS.some(k => urlParams.get(k) === '1')) return null;
+            const v = urlParams.get('bday_voucher');
+            return { hasVoucher: v === null ? null : v !== '0' };
+        } catch (e) {
+            return null;
+        }
+    }
 
+    function isTodayCustomerBirthday() {
+        try {
             const bdayStr = currentUser && currentUser.birthdate;
             if (!bdayStr || typeof bdayStr !== 'string') return false;
 
@@ -6013,12 +5690,9 @@
             const birthDay = parseInt(parts[2], 10);
 
             const thaiToday = getThaiDate();
-            const currentMonth = thaiToday.getMonth() + 1;
-            const currentDay = thaiToday.getDate();
-
-            return birthMonth === currentMonth && birthDay === currentDay;
+            return birthMonth === thaiToday.getMonth() + 1 && birthDay === thaiToday.getDate();
         } catch (e) {
-            console.error('[Birthday Envelope] Error checking birthdate:', e);
+            console.error('[Birthday Card] Error checking birthdate:', e);
             return false;
         }
     }
@@ -6032,11 +5706,7 @@
 
     function isBirthdayPopupAlreadySeen() {
         try {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('force_hbd') === '1') return false;
-
-            const key = getBirthdayPopupStorageKey();
-            return localStorage.getItem(key) === 'true';
+            return localStorage.getItem(getBirthdayPopupStorageKey()) === 'true';
         } catch (e) {
             return false;
         }
@@ -6044,299 +5714,408 @@
 
     function markBirthdayPopupAsSeen() {
         try {
-            const key = getBirthdayPopupStorageKey();
-            localStorage.setItem(key, 'true');
+            localStorage.setItem(getBirthdayPopupStorageKey(), 'true');
         } catch (e) {}
     }
 
+    async function loadBirthdayConfig() {
+        if (window._cachedBirthdayConfig) return window._cachedBirthdayConfig;
+        const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+        const timer = ctrl ? setTimeout(() => ctrl.abort(), 3000) : null;
+        try {
+            const res = await fetch((window.API_BASE || '') + '/api/selfservice/birthday-config', ctrl ? { signal: ctrl.signal } : undefined);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.success && data.config) window._cachedBirthdayConfig = data.config;
+            }
+        } catch (e) {
+            console.warn('[Birthday Card] Config fetch failed:', e && e.message);
+        } finally {
+            if (timer) clearTimeout(timer);
+        }
+        return window._cachedBirthdayConfig || null;
+    }
+
+    // Live config from the backoffice (Campaigns > Birthday); a voucher counts as active only with a code and a discount
     function getBirthdayRewardConfig() {
         const storeBday = (storeConfig && storeConfig.birthdayReward) || {};
-        const themeBday = themeConfig.birthdayReward || themeConfig.birthday_envelope || {};
-        const backendBday = window._cachedBirthdayConfig || {};
+        const src = window._cachedBirthdayConfig || storeBday;
+        const discountRaw = src.discountAmount !== undefined ? src.discountAmount : src.discount;
+        const discount = Math.max(0, Number(discountRaw) || 0);
+        const couponCode = String(src.couponCode || '').trim().toUpperCase();
 
         return {
-            enabled: backendBday.enabled !== undefined ? backendBday.enabled : true,
-            couponCode: (backendBday.couponCode || themeBday.couponCode || storeBday.couponCode || 'HBDVAPOR').toUpperCase(),
-            discount: Number(backendBday.discountAmount !== undefined ? backendBday.discountAmount : (themeBday.discount || storeBday.discount || 100)),
-            discountType: backendBday.discountType || 'fixed',
-            minSpend: Number(backendBday.minSpend || 0),
-            title: backendBday.greetingTitle || themeBday.title || storeBday.title || 'Happy Birthday!',
-            greeting: backendBday.greetingMessage || themeBday.greeting || storeBday.greeting || 'ขอให้มีความสุข สุขภาพแข็งแรง รักษาสุขภาพ และมีรอยยิ้มในทุกๆ วัน ขอบคุณที่เป็นครอบครัว VAPOR CLUB',
-            logoUrl: backendBday.logoUrl || themeBday.logoUrl || storeBday.logoUrl || '/assets/logo_vapor_official.png'
+            enabled: src.enabled !== false,
+            couponCode,
+            discount,
+            discountType: src.discountType === 'percent' ? 'percent' : 'fixed',
+            minSpend: Math.max(0, Number(src.minSpend) || 0),
+            hasVoucher: Boolean(couponCode) && discount > 0,
+            greeting: src.greetingMessage || src.greeting || BIRTHDAY_DEFAULT_GREETING,
+            logoUrl: src.logoUrl || '/assets/logo_vapor_official.png'
         };
     }
 
-    async function checkAndShowBirthdayEnvelope() {
-        if (!isTodayCustomerBirthday()) return false;
-        if (isBirthdayPopupAlreadySeen()) return false;
-        if (window._isBirthdayPopupActive) return true;
-        // Requirement: Only customers who have previously purchased can receive birthday gift
-        const bdayOrderCount = Number(currentUser.orderCount || 0);
-        const bdayMonthlySpent = Number(currentUser.monthlySpent || 0);
-        const bdayHasOrders = bdayOrderCount > 0 || bdayMonthlySpent > 0 || 
-                              (Array.isArray(currentUser.orders) && currentUser.orders.length > 0) ||
-                              (Array.isArray(currentUser.orderHistory) && currentUser.orderHistory.length > 0);
-        const urlParams = new URLSearchParams(window.location.search);
-        if (!bdayHasOrders && urlParams.get('force_hbd') !== '1') {
-            console.log('[Birthday Envelope] User has no purchase history. Skipping birthday gift.');
-            return false;
-        }
-
-        // Fetch live birthday config from backend API if available
-        if (!window._cachedBirthdayConfig) {
-            try {
-                const res = await fetch((window.API_BASE || '') + '/api/selfservice/birthday-config');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.success && data.config) {
-                        window._cachedBirthdayConfig = data.config;
-                    }
-                }
-            } catch(e) {}
-        }
-
-        const config = getBirthdayRewardConfig();
-        if (config.enabled === false) return false;
-
-        window._currentBirthdayCode = config.couponCode;
-
-        // Ensure coupon is registered in VOUCHER_MASTER
-        if (!VOUCHER_MASTER[config.couponCode]) {
-            VOUCHER_MASTER[config.couponCode] = {
-                code: config.couponCode,
-                discount: config.discount,
-                discountPercent: config.discountType === 'percent' ? config.discount : 0,
-                minSpend: config.minSpend || 0,
-                type: config.discountType === 'percent' ? 'discount_percent' : 'discount_fixed',
-                title: `คูปองของขวัญวันเกิด ${config.discountType === 'percent' ? config.discount + '%' : '฿' + config.discount}`,
-                leftLabel: 'ของขวัญ HBD',
-                leftAmount: config.discountType === 'percent' ? `${config.discount}%` : `฿${config.discount}`,
-                desc: `สุขสันต์วันเกิด! ส่วนลดพิเศษ ${config.discountType === 'percent' ? config.discount + '%' : config.discount + ' บาท'}`,
-                condition: 'ไม่มีวันหมดอายุ • ใช้ได้ 1 ครั้ง',
-                isZoneSpecific: false
-            };
-        }
-
-        // Customer Name Sanitization (prevent "คุณคุณลูกค้า" duplicate prefix)
+    function getBirthdayCustomerName() {
         let rawName = currentUser && (currentUser.name || currentUser.lineDisplayName);
-        if (!rawName || rawName === 'คุณลูกค้า (LINE User)' || rawName === 'ลูกค้า LINE') {
-            rawName = 'ลูกค้า';
-        }
-        const cleanName = rawName.replace(/^คุณ\s*/, '').trim() || 'ลูกค้า';
-
-        // Update Envelope Cover
-        const recipientEl = document.getElementById('envelope-front-recipient');
-        if (recipientEl) {
-            recipientEl.textContent = `สุขสันต์วันเกิด คุณ${cleanName}`;
-        }
-        const coverLogoEl = document.getElementById('envelope-cover-logo');
-        if (coverLogoEl && config.logoUrl) {
-            coverLogoEl.src = config.logoUrl;
-            coverLogoEl.style.display = 'block';
-        }
-
-        // Update Inner Card
-        const cardLogoEl = document.getElementById('birthday-card-logo');
-        if (cardLogoEl && config.logoUrl) {
-            cardLogoEl.src = config.logoUrl;
-            cardLogoEl.style.display = 'block';
-        }
-
-        const cardNameEl = document.getElementById('birthday-customer-name');
-        if (cardNameEl) cardNameEl.textContent = cleanName;
-
-        const greetingEl = document.getElementById('birthday-card-greeting');
-        if (greetingEl) {
-            const rawGreeting = config.greeting || 'ขอให้มีความสุข สุขภาพแข็งแรง รักษาสุขภาพ และมีรอยยิ้มในทุกๆ วัน ขอบคุณที่เป็นครอบครัว VAPOR CLUB';
-            greetingEl.textContent = rawGreeting.replace('{name}', cleanName);
-        }
-
-        const amtDisplayEl = document.getElementById('birthday-voucher-amount-display');
-        if (amtDisplayEl) {
-            amtDisplayEl.textContent = config.discountType === 'percent' ? `${config.discount}%` : `฿${config.discount}`;
-        }
-
-        const codeDisplayEl = document.getElementById('birthday-voucher-code-display');
-        if (codeDisplayEl) codeDisplayEl.textContent = config.couponCode;
-
-        // Reset wrapper state
-        const wrapper = document.getElementById('birthday-envelope-wrapper');
-        if (wrapper) wrapper.classList.remove('is-open');
-        isBirthdayEnvelopeOpened = false;
-
-        // Show overlay with fade-in
-        const overlay = document.getElementById('birthday-envelope-overlay');
-        if (overlay) {
-            window._isBirthdayPopupActive = true;
-            overlay.style.display = 'flex';
-            requestAnimationFrame(() => {
-                overlay.classList.add('show');
-            });
-            return true;
-        }
-        return false;
+        if (!rawName || rawName === 'คุณลูกค้า (LINE User)' || rawName === 'ลูกค้า LINE') return '';
+        // Prevent "คุณคุณ..." duplicate prefix
+        return String(rawName).replace(/^คุณ\s*/, '').trim();
     }
 
-    function openBirthdayEnvelope() {
-        const wrapper = document.getElementById('birthday-envelope-wrapper');
-        if (!wrapper || wrapper.classList.contains('is-open')) return;
+    function formatBirthdayDiscount(config) {
+        return config.discountType === 'percent' ? `${config.discount}%` : `฿${config.discount}`;
+    }
 
-        wrapper.classList.add('is-open');
-        isBirthdayEnvelopeOpened = true;
+    function registerBirthdayVoucher(config) {
+        const code = config.couponCode;
+        if (!code || VOUCHER_MASTER[code]) return;
+        const isPercent = config.discountType === 'percent';
+        VOUCHER_MASTER[code] = {
+            code: code,
+            discount: config.discount,
+            discountPercent: isPercent ? config.discount : 0,
+            minSpend: config.minSpend || 0,
+            type: isPercent ? 'discount_percent' : 'discount_fixed',
+            title: `คูปองของขวัญวันเกิด ${formatBirthdayDiscount(config)}`,
+            leftLabel: 'ของขวัญ HBD',
+            leftAmount: formatBirthdayDiscount(config),
+            desc: `สุขสันต์วันเกิด! ส่วนลดพิเศษ ${isPercent ? config.discount + '%' : config.discount + ' บาท'}`,
+            condition: 'ไม่มีวันหมดอายุ • ใช้ได้ 1 ครั้ง',
+            isZoneSpecific: false
+        };
+    }
+
+    function renderBirthdayCard({ name, config, hasVoucher, demo }) {
+        const overlay = document.getElementById('birthday-envelope-overlay');
+        if (!overlay) return false;
+        if (birthdayCloseTimer) {
+            clearTimeout(birthdayCloseTimer);
+            birthdayCloseTimer = null;
+        }
+
+        const displayName = name || 'ลูกค้า';
+        const logoEl = document.getElementById('birthday-card-logo');
+        if (logoEl && config.logoUrl) {
+            logoEl.src = config.logoUrl;
+            logoEl.style.display = 'block';
+        }
+        const nameEl = document.getElementById('birthday-customer-name');
+        if (nameEl) nameEl.textContent = `คุณ${displayName}`;
+        const greetingEl = document.getElementById('birthday-card-greeting');
+        if (greetingEl) greetingEl.textContent = String(config.greeting || BIRTHDAY_DEFAULT_GREETING).split('{name}').join(displayName);
+
+        const couponEl = document.getElementById('birthday-coupon-block');
+        if (couponEl) couponEl.style.display = hasVoucher ? 'block' : 'none';
+        if (hasVoucher) {
+            const amtEl = document.getElementById('birthday-voucher-amount-display');
+            if (amtEl) amtEl.textContent = formatBirthdayDiscount(config);
+            const codeEl = document.getElementById('birthday-voucher-code-display');
+            if (codeEl) codeEl.textContent = config.couponCode;
+            const termsEl = document.getElementById('birthday-voucher-terms');
+            if (termsEl) {
+                termsEl.textContent = config.minSpend > 0
+                    ? `ขั้นต่ำ ฿${config.minSpend} • ใช้ได้ 1 ครั้ง • ไม่มีวันหมดอายุ`
+                    : 'ใช้ได้ 1 ครั้ง • ไม่มีวันหมดอายุ';
+            }
+        }
+
+        const primaryBtn = document.getElementById('birthday-primary-btn');
+        if (primaryBtn) {
+            primaryBtn.classList.remove('is-done');
+            primaryBtn.disabled = false;
+        }
+        const primaryText = document.getElementById('birthday-primary-btn-text');
+        if (primaryText) primaryText.textContent = hasVoucher ? 'คัดลอก & ใช้โค้ด' : 'เริ่มช้อปเลย';
+        const secondaryBtn = document.getElementById('birthday-secondary-btn');
+        if (secondaryBtn) secondaryBtn.style.display = hasVoucher ? 'block' : 'none';
+        const demoBadge = document.getElementById('birthday-demo-badge');
+        if (demoBadge) demoBadge.style.display = demo ? 'inline-block' : 'none';
+
+        birthdayCardState = { demo: Boolean(demo), hasVoucher: Boolean(hasVoucher), code: hasVoucher ? config.couponCode : null };
+        window._isBirthdayPopupActive = true;
+        overlay.classList.toggle('is-demo', Boolean(demo));
+        overlay.style.display = 'flex';
+        requestAnimationFrame(() => {
+            overlay.classList.add('show');
+        });
+        setTimeout(launchBirthdayConfetti, 260);
+        return true;
+    }
+
+    async function checkAndShowBirthdayEnvelope() {
+        if (window._isBirthdayPopupActive) return true;
+
+        // Owner preview from the URL: shown once per page load, bypasses every eligibility check
+        const demoRequest = getBirthdayDemoRequest();
+        if (demoRequest && !birthdayUrlDemoShown) {
+            birthdayUrlDemoShown = true;
+            return previewBirthdayCard(demoRequest.hasVoucher);
+        }
+
+        if (birthdayCheckInFlight) return birthdayCheckInFlight;
+        birthdayCheckInFlight = (async () => {
+            if (!isTodayCustomerBirthday()) return false;
+            if (isBirthdayPopupAlreadySeen()) return false;
+
+            // Only customers who have purchased before receive the birthday card
+            const bdayHasOrders = Number(currentUser.orderCount || 0) > 0 || Number(currentUser.monthlySpent || 0) > 0 ||
+                                  (Array.isArray(currentUser.orders) && currentUser.orders.length > 0) ||
+                                  (Array.isArray(currentUser.orderHistory) && currentUser.orderHistory.length > 0);
+            if (!bdayHasOrders) {
+                console.log('[Birthday Card] User has no purchase history. Skipping birthday card.');
+                return false;
+            }
+
+            await loadBirthdayConfig();
+            const config = getBirthdayRewardConfig();
+            if (!config.enabled) return false;
+            if (window._isBirthdayPopupActive) return true;
+
+            if (config.hasVoucher) registerBirthdayVoucher(config);
+            return renderBirthdayCard({ name: getBirthdayCustomerName(), config, hasVoucher: config.hasVoucher, demo: false });
+        })();
+        try {
+            return await birthdayCheckInFlight;
+        } catch (e) {
+            console.error('[Birthday Card] Failed to show birthday card:', e);
+            return false;
+        } finally {
+            birthdayCheckInFlight = null;
+        }
+    }
+
+    // Devtools / owner preview. hasVoucher: true = coupon card (demo code if none is active), false = greeting only,
+    // null = whatever customers would see with the live config. Can be called any number of times.
+    async function previewBirthdayCard(hasVoucher = true) {
+        await loadBirthdayConfig();
+        const config = { ...getBirthdayRewardConfig() };
+        const showVoucher = hasVoucher === null ? config.hasVoucher : Boolean(hasVoucher);
+        if (showVoucher && !config.hasVoucher) {
+            Object.assign(config, { couponCode: BIRTHDAY_DEMO_CODE, discount: 100, discountType: 'fixed', minSpend: 0 });
+        }
+        console.info(`[Birthday Card] Preview (voucher: ${showVoucher ? config.couponCode : 'none'}). Closing it does not mark the card as seen.`);
+        return renderBirthdayCard({ name: getBirthdayCustomerName() || 'ลูกค้าทดสอบ', config, hasVoucher: showVoucher, demo: true });
+    }
+
+    // Kept for backward compatibility with the old envelope markup
+    function openBirthdayEnvelope() {
         launchBirthdayConfetti();
     }
 
-    function claimBirthdayVoucher() {
-        const config = getBirthdayRewardConfig();
-        const code = config.couponCode || 'HBD100';
+    async function copyBirthdayCode(code) {
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(code);
+                return true;
+            }
+        } catch (e) {}
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = code;
+            ta.setAttribute('readonly', '');
+            ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+            document.body.appendChild(ta);
+            ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return ok;
+        } catch (e) {
+            return false;
+        }
+    }
 
-        if (!VOUCHER_MASTER[code]) {
-            VOUCHER_MASTER[code] = {
-                code: code,
-                discount: config.discount,
-                discountPercent: 0,
-                minSpend: 0,
-                type: 'discount_fixed',
-                title: `คูปองของขวัญวันเกิด ฿${config.discount}`,
-                leftLabel: 'ของขวัญ HBD',
-                leftAmount: `฿${config.discount}`,
-                desc: `สุขสันต์วันเกิด! ส่วนลดพิเศษ ${config.discount} บาท`,
-                condition: 'ไม่มีวันหมดอายุ • ใช้ได้ 1 ครั้ง',
-                isZoneSpecific: false
-            };
+    function setBirthdayPrimaryDone(label) {
+        const btn = document.getElementById('birthday-primary-btn');
+        if (btn) btn.classList.add('is-done');
+        const text = document.getElementById('birthday-primary-btn-text');
+        if (text) text.textContent = label;
+    }
+
+    async function claimBirthdayVoucher() {
+        const state = birthdayCardState;
+        if (!state) return;
+        if (!state.hasVoucher) {
+            closeBirthdayEnvelope(true);
+            return;
         }
 
-        // Add to wallet if not already present
-        if (!userClaimedVouchers.includes(code)) {
-            userClaimedVouchers.push(code);
-            try {
-                localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers));
-            } catch (e) {}
+        const code = state.code;
+        const copied = await copyBirthdayCode(code);
+
+        if (state.demo) {
+            setBirthdayPrimaryDone(copied ? 'คัดลอกแล้ว • โหมดทดลอง' : 'โหมดทดลอง • ไม่ได้บันทึกคูปอง');
+            return;
         }
 
-        // Auto select into active cart
-        setSelectedVoucher(code);
-        populateCartVoucherSelect();
-        syncVoucherButtonStates();
-        if (typeof updateCartUI === 'function') updateCartUI();
+        const btn = document.getElementById('birthday-primary-btn');
+        if (btn) btn.disabled = true;
 
-        // Sync claim to backend
-        if (currentUser.userId) {
-            fetch((window.API_BASE || '') + '/api/selfservice/claim-coupon', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: currentUser.userId, couponCode: code })
-            }).catch(() => {});
+        try {
+            registerBirthdayVoucher(getBirthdayRewardConfig());
+
+            if (!userClaimedVouchers.includes(code)) {
+                userClaimedVouchers.push(code);
+                try {
+                    localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers));
+                } catch (e) {}
+            }
+
+            setSelectedVoucher(code);
+            populateCartVoucherSelect();
+            syncVoucherButtonStates();
+            if (typeof updateCartUI === 'function') updateCartUI();
+
+            if (currentUser.userId) {
+                fetch((window.API_BASE || '') + '/api/selfservice/claim-coupon', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUser.userId, couponCode: code })
+                }).catch(() => {});
+            }
+        } catch (e) {
+            console.error('[Birthday Card] Failed to apply coupon:', e);
         }
-        // Mark seen so it won't popup again this year
+
         markBirthdayPopupAsSeen();
-
-        showToast(`เก็บคูปองวันเกิด "${code}" เข้ากระเป๋าและเลือกใช้ในตะกร้าให้แล้ว!`);
-        closeBirthdayEnvelope(false);
+        setBirthdayPrimaryDone(copied ? 'คัดลอกแล้ว ✓' : 'เก็บคูปองแล้ว ✓');
+        setTimeout(() => {
+            closeBirthdayEnvelope(false);
+            showToast(`${copied ? 'คัดลอกโค้ด' : 'เก็บคูปอง'} "${code}" และเลือกใช้ในตะกร้าให้แล้ว!`);
+        }, 700);
     }
 
     function closeBirthdayEnvelope(userDismissed) {
         const overlay = document.getElementById('birthday-envelope-overlay');
-        if (userDismissed) {
+        const state = birthdayCardState;
+        // A preview never locks the real customer out
+        if (userDismissed && state && !state.demo) {
             markBirthdayPopupAsSeen();
         }
 
+        const finish = () => {
+            birthdayCloseTimer = null;
+            if (overlay) {
+                overlay.style.display = 'none';
+                overlay.classList.remove('is-demo');
+            }
+            birthdayCardState = null;
+            window._isBirthdayPopupActive = false;
+
+            // If a regular popup banner was waiting, show it now
+            if (window._pendingPopupBanner) {
+                const deferred = window._pendingPopupBanner;
+                window._pendingPopupBanner = null;
+                setTimeout(() => {
+                    showPopupBanner(deferred);
+                }, 400);
+            }
+        };
+
         if (overlay) {
             overlay.classList.remove('show');
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                const wrapper = document.getElementById('birthday-envelope-wrapper');
-                if (wrapper) wrapper.classList.remove('is-open');
-                window._isBirthdayPopupActive = false;
-
-                // If regular banner was waiting, show it now
-                if (window._pendingPopupBanner) {
-                    const deferred = window._pendingPopupBanner;
-                    window._pendingPopupBanner = null;
-                    setTimeout(() => {
-                        showPopupBanner(deferred);
-                    }, 400);
-                }
-            }, 350);
+            if (birthdayCloseTimer) clearTimeout(birthdayCloseTimer);
+            birthdayCloseTimer = setTimeout(finish, 380);
         } else {
-            window._isBirthdayPopupActive = false;
+            finish();
         }
     }
 
     function handleBirthdayBackdropClick(event) {
-        if (event.target && event.target.id === 'birthday-envelope-overlay') {
+        if (event.target && (event.target.id === 'birthday-envelope-overlay' || event.target.id === 'birthday-confetti-canvas')) {
             closeBirthdayEnvelope(true);
         }
     }
 
-    /* Confetti Burst Animation (Pure Canvas, No external dependencies) */
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && window._isBirthdayPopupActive && birthdayCardState) {
+            closeBirthdayEnvelope(true);
+        }
+    });
+
+    /* Subtle confetti (pure canvas, no dependencies); skipped when the user prefers reduced motion */
     function launchBirthdayConfetti() {
+        try {
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        } catch (e) {}
         const canvas = document.getElementById('birthday-confetti-canvas');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
+        if (birthdayConfettiFrame) cancelAnimationFrame(birthdayConfettiFrame);
 
         const dpr = window.devicePixelRatio || 1;
         const width = window.innerWidth;
         const height = window.innerHeight;
         canvas.width = width * dpr;
         canvas.height = height * dpr;
-        ctx.scale(dpr, dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        const colors = ['#ffd700', '#ff6b00', '#ea580c', '#f59e0b', '#ef4444', '#ffffff', '#fbbf24'];
+        const colors = ['#d4a24c', '#e8c77d', '#f5e6c8', '#ff6b00', '#ffffff'];
         const particles = [];
-        const count = 90;
-
-        for (let i = 0; i < count; i++) {
+        for (let i = 0; i < 48; i++) {
             particles.push({
-                x: width * 0.5 + (Math.random() - 0.5) * 80,
-                y: height * 0.5 + (Math.random() - 0.5) * 60,
-                vx: (Math.random() - 0.5) * 16,
-                vy: (Math.random() * -14) - 6,
-                size: Math.random() * 8 + 5,
+                x: Math.random() * width,
+                y: -20 - Math.random() * height * 0.4,
+                vy: 1.4 + Math.random() * 1.8,
+                sway: 0.6 + Math.random() * 1.2,
+                phase: Math.random() * Math.PI * 2,
+                size: 3 + Math.random() * 4,
+                round: Math.random() < 0.35,
                 color: colors[Math.floor(Math.random() * colors.length)],
                 rotation: Math.random() * 360,
-                rotationSpeed: (Math.random() - 0.5) * 12,
-                opacity: 1,
-                drag: 0.96,
-                gravity: 0.35
+                rotationSpeed: (Math.random() - 0.5) * 6
             });
         }
 
         const startTime = Date.now();
-        const duration = 3800;
+        const duration = 3600;
 
         function renderFrame() {
             const elapsed = Date.now() - startTime;
+            ctx.clearRect(0, 0, width, height);
             if (elapsed > duration) {
-                ctx.clearRect(0, 0, width, height);
+                birthdayConfettiFrame = null;
                 return;
             }
-
-            ctx.clearRect(0, 0, width, height);
-            const fade = Math.max(0, 1 - (elapsed / duration));
+            const fade = elapsed < duration - 900 ? 1 : Math.max(0, (duration - elapsed) / 900);
 
             for (let i = 0; i < particles.length; i++) {
                 const p = particles[i];
-                p.vx *= p.drag;
-                p.vy = p.vy * p.drag + p.gravity;
-                p.x += p.vx;
                 p.y += p.vy;
+                p.phase += 0.04;
                 p.rotation += p.rotationSpeed;
+                const x = p.x + Math.sin(p.phase) * p.sway * 8;
 
                 ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.rotate((p.rotation * Math.PI) / 180);
+                ctx.globalAlpha = 0.9 * fade;
                 ctx.fillStyle = p.color;
-                ctx.globalAlpha = p.opacity * fade;
-                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+                ctx.translate(x, p.y);
+                ctx.rotate((p.rotation * Math.PI) / 180);
+                if (p.round) {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+                }
                 ctx.restore();
             }
 
-            requestAnimationFrame(renderFrame);
+            birthdayConfettiFrame = requestAnimationFrame(renderFrame);
         }
 
         renderFrame();
+    }
+
+    // URL preview (?demo_birthday=1 / ?preview_bday=1) renders right after load, without waiting for LIFF login
+    if (getBirthdayDemoRequest()) {
+        const startBirthdayDemo = () => setTimeout(() => { checkAndShowBirthdayEnvelope(); }, 400);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startBirthdayDemo);
+        } else {
+            startBirthdayDemo();
+        }
     }
 
     function showPopupBanner(banner) {
@@ -6451,6 +6230,7 @@
     window.openBirthdayEnvelope = openBirthdayEnvelope;
     window.claimBirthdayVoucher = claimBirthdayVoucher;
     window.closeBirthdayEnvelope = closeBirthdayEnvelope;
+    window.previewBirthdayCard = previewBirthdayCard;
     window.saveCartToStorage = saveCartToStorage;
     window.loadCartFromStorage = loadCartFromStorage;
     window.clearCartFromStorage = clearCartFromStorage;
