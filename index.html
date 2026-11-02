@@ -12993,6 +12993,14 @@
     // Startup Execution
     applyActiveTheme();
     loadCartFromStorage();
+        try {
+            fetch((window.API_BASE || 'https://vapro-ai-admin.onrender.com') + '/api/traffic/hit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ site: 'liff', path: window.location.pathname }),
+                keepalive: true
+            }).catch(() => {});
+        } catch(e) {}
     const isLineAllowed = checkLineAccessGuard();
     updateLanguageMenuBadge();
     if (isLineAllowed) {
