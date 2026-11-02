@@ -10731,11 +10731,22 @@
                 paymentUrl: `https://liff.line.me/${OFFICIAL_LIFF_ID}?orderId=${orderObj.id}`
             };
 
-            const res = await fetch(window.API_BASE + '/api/selfservice/order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            let res;
+            try {
+                res = await fetch(window.API_BASE + '/api/selfservice/order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (netErr) {
+                // Auto-retry once after 1.5s in case of server restart or transient connection glitch
+                await new Promise(r => setTimeout(r, 1500));
+                res = await fetch(window.API_BASE + '/api/selfservice/order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            }
             let data = null;
             try { data = await res.json(); } catch (e) {}
             if (res.ok && data && data.success) {
