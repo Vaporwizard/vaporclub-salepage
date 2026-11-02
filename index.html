@@ -5080,6 +5080,27 @@
 <script>
     const OFFICIAL_LIFF_ID = '2012053274-5NYAioNp';
 
+    // The self-service calls below act on this customer's LINE userId; the server checks the LIFF ID
+    // token (header X-Line-Id-Token) belongs to the same user. One wrapper instead of editing every call.
+    (function attachLineIdToken() {
+        const PROTECTED = /\/api\/selfservice\/(?:profile|address|sync-login|claim-coupon|use-coupon|sync-coupons)(?:[/?]|$)/;
+        const nativeFetch = window.fetch.bind(window);
+        window.fetch = function (input, init) {
+            try {
+                const url = typeof input === 'string' ? input : (input && input.url) || '';
+                const token = PROTECTED.test(url) && window.liff && typeof liff.getIDToken === 'function' ? liff.getIDToken() : null;
+                if (token) {
+                    const headers = new Headers((init && init.headers) || (typeof input !== 'string' && input.headers) || undefined);
+                    headers.set('X-Line-Id-Token', token);
+                    init = { ...(init || {}), headers };
+                }
+            } catch (e) {
+                // LIFF not ready / no openid scope: send the request without the token
+            }
+            return nativeFetch(input, init);
+        };
+    })();
+
     // Safety timeout: Never allow loading overlay to hang for more than 3.5 seconds
     setTimeout(() => {
         const overlay = document.getElementById('liff-connect-overlay');
