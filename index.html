@@ -5646,6 +5646,28 @@
     }, 3500);
 
 
+    // Detect & remember which LINE OA / branch shop the customer entered from (?shop=..., ?channel=..., ?branch=...)
+    function getOriginChannel() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const rawParam = params.get('shop') || params.get('channel') || params.get('branch');
+            if (rawParam) {
+                const norm = rawParam.trim().toLowerCase();
+                let ch = 'vapro';
+                if (norm.includes('moood')) ch = 'moood';
+                else if (norm.includes('vapor')) ch = 'vapor';
+                else if (norm.includes('test')) ch = 'test';
+                else if (norm.includes('vapro')) ch = 'vapro';
+                else ch = norm;
+                try { localStorage.setItem('vapor_origin_channel', ch); } catch(e) {}
+                return ch;
+            }
+            const stored = localStorage.getItem('vapor_origin_channel');
+            if (stored) return stored;
+        } catch(e) {}
+        return 'vapro';
+    }
+
     // Active User State (Default: No fake mock phone or address)
     let currentUser = {
         name: 'คุณลูกค้า (LINE User)',
@@ -11248,8 +11270,9 @@
                 ? { lat: orderObj.lat, lng: orderObj.lng }
                 : (isPostal ? null : (typeof deliveryCoordsForOrder === 'function' ? deliveryCoordsForOrder() : null));
 
+            const originChannel = getOriginChannel();
             const payload = {
-                channelId: isTest ? 'test' : 'vapro',
+                channelId: isTest ? 'test' : originChannel,
                 isTest: isTest,
                 isRealOrder: !isTest,
                 orderId: orderObj.id,
@@ -12255,7 +12278,8 @@
                         body: JSON.stringify({
                             userId: profile.userId,
                             displayName: profile.displayName || '',
-                            pictureUrl: profile.pictureUrl || ''
+                            pictureUrl: profile.pictureUrl || '',
+                            channelId: getOriginChannel()
                         })
                     }).catch(err => console.warn('[LIFF] sync-login background error:', err));
                 } catch (syncErr) {
@@ -12264,7 +12288,7 @@
 
                 // Fetch real member data and orders from backend database
                 try {
-                    const res = await fetch(`${window.API_BASE || ''}/api/selfservice/profile?userId=${encodeURIComponent(profile.userId)}&displayName=${encodeURIComponent(profile.displayName || '')}&pictureUrl=${encodeURIComponent(profile.pictureUrl || '')}`);
+                    const res = await fetch(`${window.API_BASE || ''}/api/selfservice/profile?userId=${encodeURIComponent(profile.userId)}&displayName=${encodeURIComponent(profile.displayName || '')}&pictureUrl=${encodeURIComponent(profile.pictureUrl || '')}&channelId=${encodeURIComponent(getOriginChannel())}`);
                     const data = await res.json();
                     if (data && data.success && data.profile) {
                         if (data.profile.phone) {
