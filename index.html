@@ -3514,84 +3514,120 @@
         .popup-banner-dialog {
             position: relative;
             width: 100%;
-            max-width: 380px;
-            background: #18181b;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            max-width: 410px;
+            max-height: 92vh;
+            background: transparent;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
             display: flex;
             flex-direction: column;
+            align-items: center;
             transform: scale(0.92);
             transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
         }
         .popup-banner-overlay.show .popup-banner-dialog {
             transform: scale(1);
         }
         .popup-banner-close-btn {
             position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 32px;
-            height: 32px;
+            top: 10px;
+            right: 10px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(15, 23, 42, 0.75);
             border: 1px solid rgba(255, 255, 255, 0.25);
             color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 20;
+            z-index: 30;
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.45);
             transition: transform 0.15s ease, background 0.15s ease;
         }
         .popup-banner-close-btn:active {
             transform: scale(0.9);
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(15, 23, 42, 0.95);
         }
         .popup-banner-media {
             width: 100%;
             position: relative;
             overflow: hidden;
-            background: #0f172a;
+            border-radius: 18px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75);
+            background: transparent;
+            touch-action: pan-y;
         }
-        .popup-banner-body {
-            padding: 16px 18px 18px;
+        .popup-banner-slides-track {
             display: flex;
-            flex-direction: column;
-            background: #18181b;
-        }
-        .popup-banner-cta {
             width: 100%;
-            padding: 13px 16px;
-            background: linear-gradient(135deg, #ff6b00 0%, #ea580c 100%);
-            color: #ffffff;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 800;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(255, 107, 0, 0.38);
-            text-align: center;
-            transition: transform 0.15s ease, filter 0.15s ease;
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        .popup-banner-cta:active {
-            transform: scale(0.98);
-            filter: brightness(0.92);
+        .popup-banner-slide {
+            min-width: 100%;
+            max-width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .popup-banner-slide img {
+            width: 100%;
+            height: auto;
+            max-height: calc(86vh - 46px);
+            object-fit: contain;
+            display: block;
+            border-radius: 18px;
+        }
+        .popup-banner-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            z-index: 20;
+            pointer-events: none;
+        }
+        .popup-banner-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.4);
+            transition: all 0.25s ease;
+        }
+        .popup-banner-dot.active {
+            width: 18px;
+            background: #ff7700;
+            box-shadow: 0 0 8px rgba(255, 119, 0, 0.7);
+        }
+        .popup-banner-footer {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: 10px;
         }
         .popup-banner-hide-label {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            margin-top: 14px;
             cursor: pointer;
             user-select: none;
-            color: #94a3b8;
-            font-size: 12px;
+            color: #cbd5e1;
+            font-size: 13px;
             font-weight: 500;
+            background: rgba(0, 0, 0, 0.45);
+            padding: 4px 14px;
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
         }
         .popup-banner-hide-checkbox {
             width: 16px;
@@ -5548,27 +5584,20 @@
             </svg>
         </button>
 
-        <!-- Banner Media Container -->
-        <div id="popup-banner-media" class="popup-banner-media" onclick="handlePopupBannerCta()">
-            <img id="popup-banner-img" src="" alt="Promotion Banner" style="display:none; width:100%; height:auto; max-height:400px; object-fit:cover; border-radius:18px 18px 0 0; cursor:pointer;">
-            <div id="popup-banner-placeholder" style="display:none; padding:32px 20px; text-align:center; cursor:pointer;">
-                <span id="popup-banner-tag" style="font-size:11px; font-weight:800; background:rgba(255,255,255,0.25); padding:3px 10px; border-radius:6px; text-transform:uppercase; color:#ffffff;">PROMO</span>
-                <div id="popup-banner-title" style="font-size:20px; font-weight:900; margin-top:8px; color:#ffffff;"></div>
-                <div id="popup-banner-subtitle" style="font-size:13px; opacity:0.9; margin-top:4px; color:#f1f5f9;"></div>
+        <!-- Banner Media & Carousel Track -->
+        <div id="popup-banner-media" class="popup-banner-media">
+            <div id="popup-banner-slides-track" class="popup-banner-slides-track">
+                <!-- Injected dynamically via renderPopupSlides() -->
             </div>
+            <!-- Slide Indicator Dots -->
+            <div id="popup-banner-dots" class="popup-banner-dots" style="display:none;"></div>
         </div>
 
-        <!-- Modal Content & Action Area -->
-        <div class="popup-banner-body">
-            <!-- CTA Button -->
-            <button type="button" id="popup-banner-cta-btn" class="popup-banner-cta" onclick="handlePopupBannerCta()">
-                <span id="popup-banner-cta-text">ดูรายละเอียดโปรโมชั่น</span>
-            </button>
-
-            <!-- Do Not Show Again Checkbox -->
+        <!-- Minimal Footer with Do Not Show Again -->
+        <div class="popup-banner-footer">
             <label class="popup-banner-hide-label">
                 <input type="checkbox" id="popup-banner-dont-show-cb" class="popup-banner-hide-checkbox">
-                <span>ไม่ต้องแสดงเนื้อหานี้อีก</span>
+                <span>ไม่ต้องแสดงอีกใน 24 ชม.</span>
             </label>
         </div>
     </div>
@@ -6640,50 +6669,134 @@
         renderFrame();
     }
 
-    function showPopupBanner(banner) {
-        if (!banner || !banner.id) return;
-        if (isPopupBannerHidden(banner.id)) return;
+    let activePopupBanners = [];
+    let currentPopupIndex = 0;
+    let popupAutoSlideTimer = null;
+    let popupTouchStartX = 0;
+    let popupTouchEndX = 0;
 
-        // Prioritize birthday popup if active or scheduled today
-        if (window._isBirthdayPopupActive || (isTodayCustomerBirthday() && !isBirthdayPopupAlreadySeen())) {
-            window._pendingPopupBanner = banner;
-            checkAndShowBirthdayEnvelope();
-            return;
+    function renderPopupSlides() {
+        const track = document.getElementById('popup-banner-slides-track');
+        const dotsBox = document.getElementById('popup-banner-dots');
+        if (!track) return;
+        track.innerHTML = '';
+        if (dotsBox) dotsBox.innerHTML = '';
+
+        if (!activePopupBanners || activePopupBanners.length === 0) return;
+
+        activePopupBanners.forEach((b, idx) => {
+            const slide = document.createElement('div');
+            slide.className = 'popup-banner-slide';
+            slide.onclick = () => handlePopupBannerSlideClick(idx);
+
+            const img = document.createElement('img');
+            img.src = b.imageUrl || b.image_url || '';
+            img.alt = b.title || 'Promotion Banner';
+            img.loading = idx === 0 ? 'eager' : 'lazy';
+            slide.appendChild(img);
+            track.appendChild(slide);
+
+            if (dotsBox && activePopupBanners.length > 1) {
+                const dot = document.createElement('span');
+                dot.className = 'popup-banner-dot' + (idx === 0 ? ' active' : '');
+                dotsBox.appendChild(dot);
+            }
+        });
+
+        if (dotsBox) {
+            dotsBox.style.display = activePopupBanners.length > 1 ? 'flex' : 'none';
         }
 
-        currentPopupBanner = banner;
+        currentPopupIndex = 0;
+        goToPopupSlide(0);
+        startPopupAutoSlide();
+        setupPopupTouchSwipe();
+    }
+
+    function goToPopupSlide(index) {
+        if (!activePopupBanners || activePopupBanners.length === 0) return;
+        currentPopupIndex = (index + activePopupBanners.length) % activePopupBanners.length;
+        const track = document.getElementById('popup-banner-slides-track');
+        if (track) {
+            track.style.transform = `translateX(-${currentPopupIndex * 100}%)`;
+        }
+        const dots = document.querySelectorAll('#popup-banner-dots .popup-banner-dot');
+        dots.forEach((d, i) => {
+            d.classList.toggle('active', i === currentPopupIndex);
+        });
+    }
+
+    function startPopupAutoSlide() {
+        stopPopupAutoSlide();
+        if (activePopupBanners.length > 1) {
+            popupAutoSlideTimer = setInterval(() => {
+                goToPopupSlide(currentPopupIndex + 1);
+            }, 2500); // Auto loop every 2.5s
+        }
+    }
+
+    function stopPopupAutoSlide() {
+        if (popupAutoSlideTimer) {
+            clearInterval(popupAutoSlideTimer);
+            popupAutoSlideTimer = null;
+        }
+    }
+
+    function setupPopupTouchSwipe() {
+        const mediaContainer = document.getElementById('popup-banner-media');
+        if (!mediaContainer || mediaContainer._hasSwipeBound) return;
+        mediaContainer._hasSwipeBound = true;
+
+        mediaContainer.addEventListener('touchstart', e => {
+            popupTouchStartX = e.changedTouches[0].screenX;
+            stopPopupAutoSlide();
+        }, { passive: true });
+
+        mediaContainer.addEventListener('touchend', e => {
+            popupTouchEndX = e.changedTouches[0].screenX;
+            const diff = popupTouchStartX - popupTouchEndX;
+            if (diff > 40) {
+                goToPopupSlide(currentPopupIndex + 1);
+            } else if (diff < -40) {
+                goToPopupSlide(currentPopupIndex - 1);
+            }
+            startPopupAutoSlide();
+        }, { passive: true });
+    }
+
+    function handlePopupBannerSlideClick(index) {
+        const banner = activePopupBanners[index] || activePopupBanners[currentPopupIndex];
+        if (!banner) return;
+        const target = banner.cta_link || banner.linkUrl || banner.linkValue || banner.link_value || banner.linkCategory || banner.link || 'all';
+
+        closePopupBanner();
+
+        if (typeof handleBannerClick === 'function') {
+            handleBannerClick(target);
+        } else if (/^https?:\/\//i.test(target)) {
+            window.open(target, '_blank');
+        } else if (typeof goToCategory === 'function') {
+            goToCategory(target);
+        }
+    }
+
+    function showPopupBanner(bannersInput) {
+        let bannersList = [];
+        if (Array.isArray(bannersInput)) {
+            bannersList = bannersInput;
+        } else if (bannersInput && typeof bannersInput === 'object') {
+            bannersList = [bannersInput];
+        }
+        if (bannersList.length === 0) return;
+
+        activePopupBanners = bannersList;
         const modal = document.getElementById('storefront-popup-banner-modal');
         if (!modal) return;
 
-        const imgEl = document.getElementById('popup-banner-img');
-        const placeholderEl = document.getElementById('popup-banner-placeholder');
-        const tagEl = document.getElementById('popup-banner-tag');
-        const titleEl = document.getElementById('popup-banner-title');
-        const subtitleEl = document.getElementById('popup-banner-subtitle');
-        const ctaTextEl = document.getElementById('popup-banner-cta-text');
         const cbEl = document.getElementById('popup-banner-dont-show-cb');
-
         if (cbEl) cbEl.checked = false;
 
-        if (banner.imageUrl) {
-            if (imgEl) {
-                imgEl.src = banner.imageUrl;
-                imgEl.style.display = 'block';
-            }
-            if (placeholderEl) placeholderEl.style.display = 'none';
-        } else {
-            if (imgEl) imgEl.style.display = 'none';
-            if (placeholderEl) {
-                placeholderEl.style.display = 'block';
-                placeholderEl.style.background = banner.bgGradient || 'linear-gradient(135deg, #ea580c 0%, #ff6b00 100%)';
-            }
-            if (tagEl) tagEl.textContent = banner.tag || 'HOT PROMO';
-            if (titleEl) titleEl.textContent = banner.title || '';
-            if (subtitleEl) subtitleEl.textContent = banner.subtitle || '';
-        }
-
-        const ctaLabel = banner.cta_text || banner.ctaText || (banner.title ? banner.title : 'ดูรายละเอียดโปรโมชั่น');
-        if (ctaTextEl) ctaTextEl.textContent = ctaLabel;
+        renderPopupSlides();
 
         modal.style.display = 'flex';
         requestAnimationFrame(() => {
@@ -6692,12 +6805,15 @@
     }
 
     function closePopupBanner() {
+        stopPopupAutoSlide();
         const modal = document.getElementById('storefront-popup-banner-modal');
         const cbEl = document.getElementById('popup-banner-dont-show-cb');
 
-        if (currentPopupBanner && currentPopupBanner.id && cbEl && cbEl.checked) {
+        if (activePopupBanners && activePopupBanners.length > 0 && cbEl && cbEl.checked) {
             try {
-                localStorage.setItem('vapor_hide_popup_' + currentPopupBanner.id, String(Date.now()));
+                activePopupBanners.forEach(b => {
+                    if (b.id) localStorage.setItem('vapor_hide_popup_' + b.id, String(Date.now()));
+                });
             } catch (e) {}
         }
 
@@ -6715,33 +6831,17 @@
         }
     }
 
-    function handlePopupBannerCta() {
-        if (!currentPopupBanner) return;
-        const banner = currentPopupBanner;
-        const target = banner.cta_link || banner.linkUrl || banner.linkValue || banner.linkCategory || banner.link || 'all';
-
-        closePopupBanner();
-
-        if (typeof handleBannerClick === 'function') {
-            handleBannerClick(target);
-        } else if (/^https?:\/\//i.test(target)) {
-            window.open(target, '_blank');
-        } else if (typeof goToCategory === 'function') {
-            goToCategory(target);
-        }
-    }
-
     function checkAndShowPopupBanners(banners) {
         if (!Array.isArray(banners) || banners.length === 0) return;
-        const banner = banners.find(b => (b.placement === 'popup' || b.is_popup === true) && b.active !== false && !isPopupBannerHidden(b.id));
-        if (banner) {
+        const popups = banners.filter(b => (b.placement === 'popup' || b.is_popup === true) && b.active !== false && !isPopupBannerHidden(b.id));
+        if (popups.length > 0) {
             if (window._isBirthdayPopupActive || (isTodayCustomerBirthday() && !isBirthdayPopupAlreadySeen())) {
-                window._pendingPopupBanner = banner;
+                window._pendingPopupBanner = popups;
                 checkAndShowBirthdayEnvelope();
                 return;
             }
             setTimeout(() => {
-                showPopupBanner(banner);
+                showPopupBanner(popups);
             }, 600);
         }
     }
