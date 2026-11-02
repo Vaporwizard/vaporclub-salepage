@@ -6489,7 +6489,7 @@
                     expressEndHour: Number(data.expressEndHour ?? 23),
                     expressClosedMessage: String(data.expressClosedMessage ?? 'พร้อมให้บริการ 9:00 น ในวันพรุ่งนี้')
                 };
-                if (!currentPinnedCoords || (currentPinnedCoords.lat === 18.7877 && currentPinnedCoords.lng === 98.9933)) {
+                if (!hasConfirmedPin()) {
                     expressFee = storeConfig.shippingFeeRider;
                 }
                 postalFee = 40;
@@ -6597,8 +6597,42 @@
     let currentFilterValue = 'all';
     let searchQuery = '';
     let mapInstance = null;
-    let currentPinnedCoords = { lat: 18.7877, lng: 98.9933 };
-    let currentPlaceName = '';
+    // The map opens here (ประตูท่าแพ) when nothing better is known. It is NOT a delivery location:
+    // a rider order needs a pin the customer placed (drag, search, GPS or a saved address).
+    const DEFAULT_MAP_CENTER = { lat: 18.7877, lng: 98.9933 };
+    let currentPinnedCoords = { ...DEFAULT_MAP_CENTER };
+    let currentPinSource = null;        // 'map_drag' | 'search' | 'gps' | 'saved'; null = not placed yet
+    let currentPlaceName = '';          // OSM label of the pin: shown on the map, never merged into the typed address
+    let currentPlaceNameCoords = null;  // the pin that label belongs to
+    let reverseGeocodeSeq = 0;
+
+    function isValidPin(c) {
+        return !!c && Number.isFinite(Number(c.lat)) && Number.isFinite(Number(c.lng)) && Number(c.lat) > 10 && Number(c.lng) > 90;
+    }
+    // ~15 m around the default center (Leaflet re-centering shifts it slightly, e.g. 18.787692, 98.993318)
+    function isDefaultMapCenter(c) {
+        return !isValidPin(c) || (Math.abs(Number(c.lat) - DEFAULT_MAP_CENTER.lat) < 0.00015 && Math.abs(Number(c.lng) - DEFAULT_MAP_CENTER.lng) < 0.00015);
+    }
+    function hasConfirmedPin() {
+        return !!currentPinSource && !isDefaultMapCenter(currentPinnedCoords);
+    }
+    // Short rider-friendly label from an OSM display_name ("Yellow Coworking, ซอย 5, ถนนนิมมานเหมินท์, …")
+    function shortPlaceLabel(name) {
+        return String(name || '').split(',').map(p => p.trim()).filter(p => p && p !== 'ประเทศไทย' && !/^d{5}$/.test(p)).slice(0, 3).join(', ');
+    }
+    // Label of the current pin, only when the reverse geocode answered for this exact pin
+    function currentPinLabel() {
+        const c = currentPlaceNameCoords;
+        if (!c || !currentPlaceName) return '';
+        return (Math.abs(c.lat - currentPinnedCoords.lat) < 1e-6 && Math.abs(c.lng - currentPinnedCoords.lng) < 1e-6) ? shortPlaceLabel(currentPlaceName) : '';
+    }
+    // Where a rider order goes: the selected saved address, else a pin the customer placed; never the default center
+    function deliveryCoordsForOrder() {
+        const saved = currentSavedAddress && currentSavedAddress.coordinates;
+        if (isValidPin(saved) && !isDefaultMapCenter(saved)) return { lat: Number(saved.lat), lng: Number(saved.lng) };
+        if (hasConfirmedPin()) return { lat: currentPinnedCoords.lat, lng: currentPinnedCoords.lng };
+        return null;
+    }
     let currentSavedAddress = null;
     let currentServerOrderId = null;
     let searchDebounceTimer = null;
@@ -8616,10 +8650,11 @@
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
                 updateUserLiveDot(lat, lng);
-                if (!currentPinnedCoords || (currentPinnedCoords.lat === WAREHOUSE_COORDS.lat && currentPinnedCoords.lng === WAREHOUSE_COORDS.lng)) {
+                if (!hasConfirmedPin() || (currentPinnedCoords.lat === WAREHOUSE_COORDS.lat && currentPinnedCoords.lng === WAREHOUSE_COORDS.lng)) {
                     if (mapInstance) {
                         mapInstance.setView([lat, lng], 15);
                     }
+                    currentPinSource = 'gps';
                     onCenterPinMoved(lat, lng);
                 }
             },
@@ -8898,6 +8933,7 @@
         if (input) input.value = name.split(' - ')[0].slice(0, 32);
 
         currentPinnedCoords = { lat, lng };
+        currentPinSource = 'search';
         if (mapInstance) {
             mapInstance.setView([lat, lng], 16);
         }
@@ -8941,6 +8977,9 @@
                     attribution: '&copy; OpenStreetMap'
                 }).addTo(mapInstance);
 
+                mapInstance.on('dragend', function() {
+                    currentPinSource = 'map_drag';
+                });
                 mapInstance.on('moveend', function() {
                     const center = mapInstance.getCenter();
                     onCenterPinMoved(center.lat, center.lng);
@@ -9072,11 +9111,14 @@
             setZoneState(isOutOfZone, fallbackFee);
         });
 
+        const geoSeq = ++reverseGeocodeSeq;
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=th`)
             .then(r => r.json())
             .then(data => {
+                if (geoSeq !== reverseGeocodeSeq) return;
                 if (data && data.display_name) {
                     currentPlaceName = data.display_name;
+                    currentPlaceNameCoords = { lat, lng };
                     const pinAddrEl = document.getElementById('map-pin-address');
                     if (pinAddrEl) pinAddrEl.textContent = currentPlaceName;
                     const subAddr = document.getElementById('member-sub-address');
@@ -9098,6 +9140,7 @@
                 if (mapInstance) {
                     mapInstance.flyTo([lat, lng], 16, { animate: true, duration: 0.8 });
                 }
+                currentPinSource = 'gps';
                 onCenterPinMoved(lat, lng);
             },
             (err) => {
@@ -9114,14 +9157,22 @@
     }
 
     function confirmPinLocation() {
+        // The map starts at a default point; it is never accepted as the delivery pin
+        if (!hasConfirmedPin()) {
+            showToast('กรุณาเลื่อนแผนที่ให้หมุดตรงตำแหน่งจัดส่ง หรือกดปุ่ม GPS / ค้นหาชื่อสถานที่ก่อนยืนยัน');
+            return;
+        }
         const detailInput = document.getElementById('pin-address-detail-input');
         const extra = detailInput ? detailInput.value.trim() : '';
-        const baseAddr = currentPlaceName || `พิกัดจัดส่ง (${currentPinnedCoords.lat.toFixed(4)}, ${currentPinnedCoords.lng.toFixed(4)})`;
-        const finalAddress = extra ? `${extra} ${baseAddr}` : baseAddr;
+        // What the customer typed stays the address; the map's place label goes in its own field
+        const landmark = currentPinLabel();
+        const finalAddress = extra || landmark || `พิกัดจัดส่ง (${currentPinnedCoords.lat.toFixed(5)}, ${currentPinnedCoords.lng.toFixed(5)})`;
 
         currentSavedAddress = {
-            title: extra || (currentPlaceName ? currentPlaceName.split(',')[0].slice(0, 24) : 'ตำแหน่งที่ปักหมุด'),
+            title: extra || (landmark ? landmark.split(',')[0].slice(0, 24) : 'ตำแหน่งที่ปักหมุด'),
             detail: finalAddress,
+            geocodedLandmark: landmark || null,
+            pinSource: currentPinSource,
             note: (currentSavedAddress && currentSavedAddress.note) || '',
             handover: currentHandoverOption || 'leave',
             coordinates: { ...currentPinnedCoords }
@@ -9499,6 +9550,7 @@
         currentSavedAddress = { ...target };
         if (target.coordinates && target.coordinates.lat && target.coordinates.lng) {
             currentPinnedCoords = { ...target.coordinates };
+            currentPinSource = isDefaultMapCenter(currentPinnedCoords) ? null : 'saved';
         }
         if (target.detail) {
             currentUser.address = target.detail;
@@ -9672,17 +9724,22 @@
         currentUser.phone = phone;
         if (note) currentUser.riderNote = note;
 
-        let baseDetail = (currentSavedAddress && currentSavedAddress.detail) || currentPlaceName || `พิกัดจัดส่ง (${currentPinnedCoords.lat.toFixed(4)}, ${currentPinnedCoords.lng.toFixed(4)})`;
+        const prevAddress = currentSavedAddress;
+        const editCoords = deliveryCoordsForOrder();
+        let baseDetail = (prevAddress && prevAddress.detail) || currentPinLabel() || (editCoords ? `พิกัดจัดส่ง (${editCoords.lat.toFixed(5)}, ${editCoords.lng.toFixed(5)})` : '');
         if (detailExtra && !baseDetail.includes(detailExtra)) {
-            baseDetail = `${detailExtra} ${baseDetail}`;
+            baseDetail = baseDetail ? `${detailExtra} ${baseDetail}` : detailExtra;
         }
 
         currentSavedAddress = {
-            title: detailExtra || (currentSavedAddress && currentSavedAddress.title) || 'ที่อยู่จัดส่ง',
+            title: detailExtra || (prevAddress && prevAddress.title) || 'ที่อยู่จัดส่ง',
             detail: baseDetail,
+            geocodedLandmark: (prevAddress && prevAddress.geocodedLandmark) || null,
+            pinSource: (prevAddress && prevAddress.pinSource) || currentPinSource,
             note: note,
             handover: currentHandoverOption || 'leave',
-            coordinates: { ...currentPinnedCoords }
+            // No pin yet -> null, so checkout asks for one instead of using the map's default point
+            coordinates: editCoords
         };
         currentUser.address = baseDetail;
 
@@ -9697,7 +9754,7 @@
                     name: currentUser.name,
                     phone: currentUser.phone,
                     address: baseDetail,
-                    coordinates: currentPinnedCoords
+                    coordinates: currentSavedAddress.coordinates
                 })
             }).catch(() => {});
         }
@@ -9796,6 +9853,7 @@
         currentUser.address = picked.detail;
         if (picked.coordinates && picked.coordinates.lat && picked.coordinates.lng) {
             currentPinnedCoords = { ...picked.coordinates };
+            currentPinSource = isDefaultMapCenter(currentPinnedCoords) ? null : 'saved';
             onCenterPinMoved(currentPinnedCoords.lat, currentPinnedCoords.lng);
         }
 
@@ -10687,6 +10745,13 @@
             return;
         }
 
+        // Rider orders need a pin the customer placed; the map's default point (ประตูท่าแพ) is not one
+        if (shippingMethod !== 'postal' && !deliveryCoordsForOrder()) {
+            showToast('กรุณาปักหมุดตำแหน่งจัดส่งบนแผนที่ก่อนสั่งซื้อ');
+            openMapPinningModal('cart');
+            return;
+        }
+
         const count = cart.reduce((s, i) => s + i.qty, 0);
         const rawSubtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
 
@@ -10739,7 +10804,8 @@
 
         const isPostal = shippingMethod === 'postal';
         const postalData = currentUser.savedPostalAddress || {};
-        const baseAddr = (currentSavedAddress && currentSavedAddress.detail) || currentUser.address || currentPlaceName || `พิกัดจัดส่ง (${currentPinnedCoords.lat.toFixed(4)}, ${currentPinnedCoords.lng.toFixed(4)})`;
+        const deliveryCoords = isPostal ? null : deliveryCoordsForOrder();
+        const baseAddr = (currentSavedAddress && currentSavedAddress.detail) || currentUser.address || currentPinLabel() || (deliveryCoords ? `พิกัดจัดส่ง (${deliveryCoords.lat.toFixed(5)}, ${deliveryCoords.lng.toFixed(5)})` : 'จัดส่งด่วนไรเดอร์');
         const noteText = (currentSavedAddress && currentSavedAddress.note) || currentUser.riderNote || '';
         const finalAddress = isPostal
             ? `${postalData.addressLine || ''} ต.${postalData.subdistrict || ''} อ.${postalData.district || ''} จ.${postalData.province || ''} ${postalData.zipcode || ''}`
@@ -10845,8 +10911,11 @@
                 phone: orderObj.phone,
                 address: orderObj.address,
                 riderNote: orderObj.riderNote || '',
-                lat: isPostal ? null : (currentPinnedCoords ? currentPinnedCoords.lat : null),
-                lng: isPostal ? null : (currentPinnedCoords ? currentPinnedCoords.lng : null),
+                lat: deliveryCoords ? deliveryCoords.lat : null,
+                lng: deliveryCoords ? deliveryCoords.lng : null,
+                // Map label of the pin and how the pin was set, kept apart from the typed address
+                geocodedLandmark: isPostal ? null : ((currentSavedAddress && currentSavedAddress.geocodedLandmark) || null),
+                pinSource: isPostal ? null : ((currentSavedAddress && currentSavedAddress.pinSource) || currentPinSource || null),
                 deliveryMethod: orderObj.deliveryMethod,
                 deliveryFee: orderObj.deliveryFee,
                 voucherCode: selectedVoucher,
@@ -11820,7 +11889,14 @@
                         if (typeof syncVoucherButtonStates === 'function') syncVoucherButtonStates();
                         if (data.profile.address) currentUser.address = data.profile.address;
                         if (data.profile.postalAddress) currentUser.savedPostalAddress = data.profile.postalAddress;
-                        if (data.profile.coordinates) currentPinnedCoords = data.profile.coordinates;
+                        const profilePin = data.profile.coordinates;
+                        if (profilePin) {
+                            const pin = { lat: Number(profilePin.lat ?? profilePin.latitude), lng: Number(profilePin.lng ?? profilePin.longitude) };
+                            if (isValidPin(pin) && !isDefaultMapCenter(pin)) {
+                                currentPinnedCoords = pin;
+                                currentPinSource = 'saved';
+                            }
+                        }
                         currentUser.monthlySpent = data.profile.monthlySpent || 0;
                         currentUser.orderCount = data.profile.orderCount || 0;
                         if (data.profile.orders && data.profile.orders.length > 0) {
