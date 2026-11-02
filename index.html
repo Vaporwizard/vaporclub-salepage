@@ -5671,31 +5671,15 @@
     window._pendingPopupBanner = null;
 
     const BIRTHDAY_DEFAULT_GREETING = 'ขอให้มีความสุข สุขภาพแข็งแรง และมีรอยยิ้มในทุกๆ วัน ขอบคุณที่เป็นครอบครัว VAPOR CLUB';
-    const BIRTHDAY_DEMO_PARAMS = ['demo_birthday', 'preview_bday', 'test_hbd', 'force_hbd'];
-    const BIRTHDAY_DEMO_CODE = 'HBDDEMO';
-
     let birthdayCardState = null;       // { demo, hasVoucher, code } while the card is open
     let birthdayCloseTimer = null;
     let birthdayCheckInFlight = null;
-    let birthdayUrlDemoShown = false;
     let birthdayConfettiFrame = null;
 
     function getThaiDate() {
         const now = new Date();
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
         return new Date(utc + (3600000 * 7));
-    }
-
-    // { hasVoucher: true | false | null (follow live config) } when the URL asks for a preview
-    function getBirthdayDemoRequest() {
-        try {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (!BIRTHDAY_DEMO_PARAMS.some(k => urlParams.get(k) === '1')) return null;
-            const v = urlParams.get('bday_voucher');
-            return { hasVoucher: v === null ? null : v !== '0' };
-        } catch (e) {
-            return null;
-        }
     }
 
     function isTodayCustomerBirthday() {
@@ -5865,13 +5849,6 @@
 
     async function checkAndShowBirthdayEnvelope() {
         if (window._isBirthdayPopupActive) return true;
-
-        // Owner preview from the URL: shown once per page load, bypasses every eligibility check
-        const demoRequest = getBirthdayDemoRequest();
-        if (demoRequest && !birthdayUrlDemoShown) {
-            birthdayUrlDemoShown = true;
-            return previewBirthdayCard(demoRequest.hasVoucher);
-        }
 
         if (birthdayCheckInFlight) return birthdayCheckInFlight;
         birthdayCheckInFlight = (async () => {
@@ -6104,16 +6081,6 @@
         }
 
         renderFrame();
-    }
-
-    // URL preview (?demo_birthday=1 / ?preview_bday=1) renders right after load, without waiting for LIFF login
-    if (getBirthdayDemoRequest()) {
-        const startBirthdayDemo = () => setTimeout(() => { checkAndShowBirthdayEnvelope(); }, 400);
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', startBirthdayDemo);
-        } else {
-            startBirthdayDemo();
-        }
     }
 
     function showPopupBanner(banner) {
