@@ -10634,6 +10634,8 @@
             phone: finalPhone,
             address: finalAddress,
             riderNote: isPostal ? '' : noteText,
+            lat: deliveryCoords ? deliveryCoords.lat : null,
+            lng: deliveryCoords ? deliveryCoords.lng : null,
             items: [...cart],
             subtotal: subtotal,
             deliveryFee: shipping,
@@ -10706,6 +10708,11 @@
             const isCloudflareProd = isProductionStoreHost(host);
             const isTest = !isCloudflareProd;
 
+            // Resolve coordinates safely without throwing ReferenceError
+            const coords = (orderObj && orderObj.lat != null && orderObj.lng != null)
+                ? { lat: orderObj.lat, lng: orderObj.lng }
+                : (isPostal ? null : (typeof deliveryCoordsForOrder === 'function' ? deliveryCoordsForOrder() : null));
+
             const payload = {
                 channelId: isTest ? 'test' : 'vapro',
                 isTest: isTest,
@@ -10716,8 +10723,8 @@
                 phone: orderObj.phone,
                 address: orderObj.address,
                 riderNote: orderObj.riderNote || '',
-                lat: deliveryCoords ? deliveryCoords.lat : null,
-                lng: deliveryCoords ? deliveryCoords.lng : null,
+                lat: coords ? coords.lat : null,
+                lng: coords ? coords.lng : null,
                 // Map label of the pin and how the pin was set, kept apart from the typed address
                 geocodedLandmark: isPostal ? null : ((currentSavedAddress && currentSavedAddress.geocodedLandmark) || null),
                 pinSource: isPostal ? null : ((currentSavedAddress && currentSavedAddress.pinSource) || currentPinSource || null),
@@ -10741,11 +10748,16 @@
             } catch (netErr) {
                 // Auto-retry once after 1.5s in case of server restart or transient connection glitch
                 await new Promise(r => setTimeout(r, 1500));
-                res = await fetch(window.API_BASE + '/api/selfservice/order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                try {
+                    res = await fetch(window.API_BASE + '/api/selfservice/order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } catch (retryErr) {
+                    console.error('[SubmitOrder Retry Error]', retryErr);
+                    return { ok: false, status: 0, error: 'เชื่อมต่อระบบไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้งค่ะ (ยังไม่มีการสร้างคำสั่งซื้อ)' };
+                }
             }
             let data = null;
             try { data = await res.json(); } catch (e) {}
@@ -10759,7 +10771,8 @@
                 error: (data && data.error) || 'ไม่สามารถสร้างคำสั่งซื้อได้ในขณะนี้ กรุณาลองใหม่อีกครั้งค่ะ'
             };
         } catch (e) {
-            return { ok: false, status: 0, error: 'เชื่อมต่อระบบไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้งค่ะ (ยังไม่มีการสร้างคำสั่งซื้อ)' };
+            console.error('[SubmitOrder Fatal Error]', e);
+            return { ok: false, status: 0, error: 'เชื่อมต่อระบบไม่สำเร็จ (' + (e && e.message ? e.message : 'Unknown') + ') กรุณาลองใหม่อีกครั้งค่ะ (ยังไม่มีการสร้างคำสั่งซื้อ)' };
         }
     }
 
