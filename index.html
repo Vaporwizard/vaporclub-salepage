@@ -4,6 +4,268 @@
   <script>
   window.API_BASE = "https://vapro-ai-admin.onrender.com";
 </script>
+  <!-- Storefront language (TH / EN): English dictionary + engine. Thai stays the source text everywhere. -->
+  <script src="/assets/i18n-en.js?v=20261102"></script>
+  <script>
+  /* ========================================================
+     STOREFRONT LANGUAGE (TH / EN)
+     Thai is the source language of the page, its scripts and the API. In English mode the visible
+     DOM (text, placeholder / title / aria-label / alt, button values) and alert() / confirm() messages
+     are translated from I18N.en (assets/i18n-en.js, keyed by the Thai text):
+       1. exact text, 2. "{0}" templates (dynamic parts), 3. known phrases inside longer text, used only
+       when nothing Thai is left (so catalog data such as Thai product names is never half-translated).
+     Values in JS variables and everything sent to the server stay Thai: only what is shown changes.
+     Elements under [data-i18n-skip] are left alone (e.g. the bilingual language picker).
+     ======================================================== */
+  (function () {
+    var LANG_KEY = 'vapor_language';
+    var TRACKING_LANG_KEY = 'vapor_lang'; // self-tracking page uses this key
+    var TH_LETTERS = /[ก-ฺเ-๛]/;
+    var ATTRS = ['placeholder', 'title', 'aria-label', 'alt'];
+    var SKIP_TAGS = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, NOSCRIPT: 1, TITLE: 1 };
+    var TH_MONTHS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    var EN_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    var I18N = { th: {}, en: window.VAPOR_I18N_EN || {} };
+    var exact = new Map();
+    var patterns = [];
+    var phraseRe = null;
+
+    var norm = function (s) { return String(s).replace(/ /g, ' ').replace(/\s+/g, ' ').trim(); };
+    var escRe = function (s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); };
+
+    (function compile() {
+      var phrases = [];
+      Object.keys(I18N.en).forEach(function (th) {
+        var en = I18N.en[th];
+        if (typeof en !== 'string' || !en) return;
+        var key = norm(th);
+        if (/\{\d+\}/.test(key)) {
+          // Adjacent placeholders ("{0}{1}") cannot be told apart in the shown text: capture them as one
+          // when the English keeps them together too
+          key = key.replace(/(?:\{\d+\}){2,}/g, function (run) {
+            if (en.indexOf(run) === -1) return run;
+            var first = run.match(/\{\d+\}/)[0];
+            en = en.split(run).join(first);
+            return first;
+          });
+          var parts = key.split(/\{(\d+)\}/);
+          var src = '^';
+          var order = [];
+          for (var i = 0; i < parts.length; i++) {
+            if (i % 2 === 0) src += escRe(parts[i]);
+            else { src += '([\\s\\S]+?)'; order.push(parts[i]); }
+          }
+          patterns.push({ re: new RegExp(src + '$'), order: order, en: en, len: key.replace(/\{\d+\}/g, '').length });
+        } else {
+          exact.set(key, en);
+          if (key.length >= 2) phrases.push(key);
+        }
+      });
+      patterns.sort(function (a, b) { return b.len - a.len; });
+      phrases.sort(function (a, b) { return b.length - a.length; });
+      if (phrases.length) phraseRe = new RegExp(phrases.map(escRe).join('|'), 'g');
+    })();
+
+    // "2 พ.ย. 2569 14:30 น." -> "2 Nov 2026 14:30"
+    function translateDates(s) {
+      return s
+        .replace(/(ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)(\s*)(\d{4})?/g, function (m, mon, sp, year) {
+          var en = EN_MONTHS[TH_MONTHS.indexOf(mon)];
+          if (!year) return en;
+          var y = Number(year);
+          return en + sp + (y > 2400 ? y - 543 : y);
+        })
+        .replace(/(\d{1,2}[:.]\d{2})\s*น\./g, '$1');
+    }
+
+    function translate(text) {
+      var s = String(text);
+      if (!TH_LETTERS.test(s)) return s;
+      var lead = s.match(/^\s*/)[0];
+      var trail = s.match(/\s*$/)[0];
+      var key = norm(s);
+      var out = exact.get(key);
+      if (out === undefined) {
+        for (var i = 0; i < patterns.length && out === undefined; i++) {
+          var m = key.match(patterns[i].re);
+          if (m) {
+            var p = patterns[i];
+            out = p.en.replace(/\{(\d+)\}/g, function (all, n) {
+              var idx = p.order.indexOf(n);
+              return idx >= 0 ? translate(m[idx + 1]) : all;
+            });
+          }
+        }
+      }
+      if (out === undefined) {
+        var guess = translateDates(key);
+        if (phraseRe) guess = guess.replace(phraseRe, function (ph) { return exact.get(ph); });
+        if (!TH_LETTERS.test(guess)) out = guess.replace(/\s+/g, ' ').trim();
+      }
+      return out === undefined ? s : lead + out + trail;
+    }
+
+    function readLang() {
+      try { var v = localStorage.getItem(LANG_KEY); return v === 'en' || v === 'th' ? v : null; } catch (e) { return null; }
+    }
+    var lang = readLang() || 'th';
+
+    var textRec = new WeakMap(); // text node -> { th, shown }
+    var attrRec = new WeakMap(); // element -> { attr: { th, shown } }
+
+    function skipped(el) {
+      for (var p = el; p && p.nodeType === 1; p = p.parentNode) {
+        if (SKIP_TAGS[p.nodeName] || p.isContentEditable || (p.hasAttribute && p.hasAttribute('data-i18n-skip'))) return true;
+      }
+      return false;
+    }
+
+    function handleText(node) {
+      var parent = node.parentNode;
+      if (!parent || parent.nodeType !== 1 || skipped(parent)) return;
+      var cur = node.nodeValue;
+      var rec = textRec.get(node);
+      if (rec && cur === rec.shown) return; // our own translation
+      if (!TH_LETTERS.test(cur)) { if (rec) textRec.delete(node); return; }
+      var out = translate(cur);
+      textRec.set(node, { th: cur, shown: out });
+      if (out !== cur) node.nodeValue = out;
+    }
+
+    function attrList(el) {
+      var list = ATTRS.slice();
+      if (el.nodeName === 'INPUT' && /^(button|submit|reset)$/i.test(el.type || '')) list.push('value');
+      return list;
+    }
+
+    function handleAttr(el, name) {
+      if (skipped(el)) return;
+      var cur = el.getAttribute(name);
+      var recs = attrRec.get(el) || {};
+      var rec = recs[name];
+      if (cur === null || (rec && cur === rec.shown)) return;
+      if (!TH_LETTERS.test(cur)) { if (rec) delete recs[name]; return; }
+      var out = translate(cur);
+      recs[name] = { th: cur, shown: out };
+      attrRec.set(el, recs);
+      if (out !== cur) el.setAttribute(name, out);
+    }
+
+    function walk(root) {
+      if (!root) return;
+      if (root.nodeType === 3) { handleText(root); return; }
+      if (root.nodeType !== 1 && root.nodeType !== 9 && root.nodeType !== 11) return;
+      if (root.nodeType === 1) {
+        if (skipped(root)) return;
+        attrList(root).forEach(function (a) { if (root.hasAttribute(a)) handleAttr(root, a); });
+      }
+      var tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      for (var n = tw.nextNode(); n; n = tw.nextNode()) handleText(n);
+      if (root.querySelectorAll) {
+        root.querySelectorAll('[placeholder],[title],[aria-label],[alt],input[type=button],input[type=submit]').forEach(function (el) {
+          attrList(el).forEach(function (a) { if (el.hasAttribute(a)) handleAttr(el, a); });
+        });
+      }
+    }
+
+    function restore(root) {
+      var tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      for (var n = tw.nextNode(); n; n = tw.nextNode()) {
+        var rec = textRec.get(n);
+        if (rec) { if (n.nodeValue === rec.shown) n.nodeValue = rec.th; textRec.delete(n); }
+      }
+      root.querySelectorAll('*').forEach(function (el) {
+        var recs = attrRec.get(el);
+        if (!recs) return;
+        Object.keys(recs).forEach(function (a) { if (el.getAttribute(a) === recs[a].shown) el.setAttribute(a, recs[a].th); });
+        attrRec.delete(el);
+      });
+    }
+
+    var observer = new MutationObserver(function (records) {
+      if (lang !== 'en') return;
+      for (var i = 0; i < records.length; i++) {
+        var r = records[i];
+        if (r.type === 'childList') r.addedNodes.forEach(walk);
+        else if (r.type === 'characterData') handleText(r.target);
+        else if (r.type === 'attributes' && attrList(r.target).indexOf(r.attributeName) !== -1) handleAttr(r.target, r.attributeName);
+      }
+    });
+    var observing = false;
+    function observe(on) {
+      if (on && !observing) {
+        observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS.concat(['value']) });
+        observing = true;
+      } else if (!on && observing) {
+        observer.disconnect();
+        observing = false;
+      }
+    }
+
+    function t(key, vars) {
+      var s = lang === 'en' ? translate(key) : String(key);
+      if (vars) s = s.replace(/\{(\w+)\}/g, function (m, k) { return vars[k] !== undefined ? vars[k] : m; });
+      return s;
+    }
+
+    function applyLanguage(next) {
+      lang = next === 'en' ? 'en' : 'th';
+      try {
+        localStorage.setItem(LANG_KEY, lang);
+        localStorage.setItem(TRACKING_LANG_KEY, lang);
+      } catch (e) {}
+      document.documentElement.lang = lang;
+      if (lang === 'en') {
+        observe(true);
+        if (document.body) walk(document.body);
+      } else {
+        observe(false);
+        if (document.body) restore(document.body);
+      }
+      try { window.dispatchEvent(new CustomEvent('vapor:languagechange', { detail: { lang: lang } })); } catch (e) {}
+    }
+
+    // alert / confirm text from scripts and from the server (order, slip, coupon messages)
+    var nativeAlert = window.alert.bind(window);
+    var nativeConfirm = window.confirm.bind(window);
+    window.alert = function (msg) { return nativeAlert(lang === 'en' ? translate(msg === undefined ? '' : String(msg)) : msg); };
+    window.confirm = function (msg) { return nativeConfirm(lang === 'en' ? translate(msg === undefined ? '' : String(msg)) : msg); };
+
+    window.I18N = I18N;
+    window.t = t;
+    window.applyLanguage = applyLanguage;
+    window.getLanguage = function () { return lang; };
+    window.hasChosenLanguage = function () { return readLang() !== null; };
+    window.translateText = translate;
+
+    // English chosen earlier: translate while the page is parsed, then a full pass once it is loaded
+    document.documentElement.lang = lang;
+    if (lang === 'en') {
+      observe(true);
+      document.addEventListener('DOMContentLoaded', function () { walk(document.body); });
+    }
+  })();
+  </script>
+  <style>
+    /* Language picker (first visit + profile menu) */
+    .lang-picker-overlay { position: fixed; inset: 0; z-index: 10000001; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(6, 7, 10, 0.86); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .lang-picker-overlay.show { display: flex; }
+    .lang-picker-card { width: 100%; max-width: 360px; background: #161820; border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 22px; padding: 26px 20px 20px; text-align: center; color: #fff; font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55); position: relative; }
+    .lang-picker-logo { height: 30px; width: auto; margin: 0 auto 14px; display: block; }
+    .lang-picker-title { font-size: 17px; font-weight: 800; margin: 0; }
+    .lang-picker-sub { font-size: 12px; color: #94a3b8; margin: 6px 0 18px; }
+    .lang-picker-option { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 16px; margin-top: 10px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.12); background: #1f222b; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; text-align: left; transition: border-color 0.15s ease, background 0.15s ease; }
+    .lang-picker-option:active { transform: scale(0.99); }
+    .lang-picker-option.active { border-color: #ff6b00; background: rgba(255, 107, 0, 0.12); }
+    .lang-picker-flag { font-size: 22px; line-height: 1; }
+    .lang-picker-name { flex: 1; }
+    .lang-picker-name small { display: block; font-size: 11px; font-weight: 500; color: #94a3b8; margin-top: 2px; }
+    .lang-picker-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.25); display: flex; align-items: center; justify-content: center; font-size: 13px; color: transparent; }
+    .lang-picker-option.active .lang-picker-check { background: #ff6b00; border-color: #ff6b00; color: #fff; }
+    .lang-picker-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(255, 255, 255, 0.08); color: #cbd5e1; font-size: 16px; cursor: pointer; display: none; }
+    .lang-picker-overlay.closable .lang-picker-close { display: block; }
+  </style>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -3355,6 +3617,26 @@
 </head>
 <body>
 
+<!-- LANGUAGE PICKER: first visit (before the 20+ age gate) and Profile > เปลี่ยนภาษา / Language -->
+<div id="lang-picker-overlay" class="lang-picker-overlay" data-i18n-skip role="dialog" aria-modal="true" aria-labelledby="lang-picker-title">
+    <div class="lang-picker-card">
+        <button type="button" class="lang-picker-close" onclick="closeLanguagePicker()" aria-label="Close">✕</button>
+        <img src="/assets/logo_vapor_official.png" alt="VAPOR CLUB" class="lang-picker-logo" onerror="this.style.display='none'">
+        <h2 class="lang-picker-title" id="lang-picker-title">เลือกภาษา · Choose your language</h2>
+        <p class="lang-picker-sub">เปลี่ยนได้ทุกเมื่อที่เมนูโปรไฟล์ · Change it any time in Profile</p>
+        <button type="button" class="lang-picker-option" data-lang="th" onclick="chooseLanguage('th')">
+            <span class="lang-picker-flag">🇹🇭</span>
+            <span class="lang-picker-name">ภาษาไทย<small>Thai</small></span>
+            <span class="lang-picker-check">✓</span>
+        </button>
+        <button type="button" class="lang-picker-option" data-lang="en" onclick="chooseLanguage('en')">
+            <span class="lang-picker-flag">🇬🇧</span>
+            <span class="lang-picker-name">English<small>ภาษาอังกฤษ</small></span>
+            <span class="lang-picker-check">✓</span>
+        </button>
+    </div>
+</div>
+
 <!-- OUTSIDE LINE GUARD OVERLAY (IMAGE 4) -->
 <div id="outside-line-guard-overlay" class="outside-line-guard" style="display:none;">
     <div class="outside-line-card">
@@ -3900,12 +4182,12 @@
                         <div style="display:flex; align-items:center; gap:12px;">
                             <svg class="svg-icon-sm" viewBox="0 0 24 24" style="color:#ff6b00;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                             <div>
-                                <div style="font-size:13.5px; font-weight:800; color:#ffffff;">เปลี่ยนภาษา / Language</div>
-                                <div style="font-size:11px; color:#6b7280; margin-top:2px;">ภาษาไทย (TH) / English (EN)</div>
+                                <div data-i18n-skip style="font-size:13.5px; font-weight:800; color:#ffffff;">เปลี่ยนภาษา / Language</div>
+                                <div data-i18n-skip style="font-size:11px; color:#6b7280; margin-top:2px;">ภาษาไทย (TH) / English (EN)</div>
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:6px;">
-                            <span style="font-size:11px; background:rgba(255,107,0,0.15); color:#ff6b00; font-weight:800; padding:3px 8px; border-radius:6px;">TH</span>
+                            <span id="lang-menu-badge" style="font-size:11px; background:rgba(255,107,0,0.15); color:#ff6b00; font-weight:800; padding:3px 8px; border-radius:6px;">TH</span>
                             <span style="color:#9ca3af; font-size:14px; font-weight:700;">&gt;</span>
                         </div>
                     </div>
@@ -11461,9 +11743,55 @@
         }
     }
 
-    function toggleLanguageUI() {
-        showToast('ระบบรองรับภาษาอังกฤษ (EN) จะเปิดให้ใช้งานเร็วๆ นี้ค่ะ');
+    /* ========================================================
+       LANGUAGE PICKER (TH / EN)
+       First visit: shown before the 20+ age gate (no close button); the age gate opens right after,
+       in the chosen language. Profile > เปลี่ยนภาษา / Language opens it again with the current
+       language ticked. The engine (applyLanguage / t) lives in <head>.
+       ======================================================== */
+    let languagePickerThen = null;
+
+    function openLanguagePicker(opts = {}) {
+        const overlay = document.getElementById('lang-picker-overlay');
+        if (!overlay) {
+            if (typeof opts.then === 'function') opts.then();
+            return;
+        }
+        if (typeof opts.then === 'function') languagePickerThen = opts.then;
+        overlay.classList.toggle('closable', !opts.firstVisit);
+        const current = hasChosenLanguage() ? getLanguage() : null;
+        overlay.querySelectorAll('.lang-picker-option').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === current);
+        });
+        overlay.classList.add('show');
     }
+
+    function closeLanguagePicker() {
+        const overlay = document.getElementById('lang-picker-overlay');
+        if (overlay) overlay.classList.remove('show');
+    }
+
+    function updateLanguageMenuBadge() {
+        const badge = document.getElementById('lang-menu-badge');
+        if (badge) badge.textContent = getLanguage() === 'en' ? 'EN' : 'TH';
+    }
+
+    function chooseLanguage(lang) {
+        applyLanguage(lang);
+        updateLanguageMenuBadge();
+        closeLanguagePicker();
+        const then = languagePickerThen;
+        languagePickerThen = null;
+        if (then) then();
+    }
+
+    function toggleLanguageUI() {
+        openLanguagePicker({ firstVisit: false });
+    }
+
+    window.openLanguagePicker = openLanguagePicker;
+    window.closeLanguagePicker = closeLanguagePicker;
+    window.chooseLanguage = chooseLanguage;
 
     let carouselTimer = null;
 
@@ -11829,6 +12157,11 @@
     }
 
     function checkAgeGate() {
+        // First visit: pick the language first; the age gate then opens in that language
+        if (!hasChosenLanguage()) {
+            openLanguagePicker({ firstVisit: true, then: checkAgeGate });
+            return;
+        }
         const modal = document.getElementById('age-gate-modal');
         if (!modal) return;
         if (isAgeVerified()) {
@@ -12170,12 +12503,15 @@
     applyActiveTheme();
     loadCartFromStorage();
     const isLineAllowed = checkLineAccessGuard();
+    updateLanguageMenuBadge();
     if (isLineAllowed) {
         checkAgeGate();
         updateMemberUI();
         updateCartUI();
         updateOrdersBadges();
         initCampaignCarousel();
+    } else if (!hasChosenLanguage()) {
+        openLanguagePicker({ firstVisit: true });
     }
 
     window.addEventListener('DOMContentLoaded', () => {
