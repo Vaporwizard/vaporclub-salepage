@@ -668,11 +668,13 @@
       if (currentLang === "en") {
         if (isDelivered) eta = "Delivered successfully";
         else if (isArrived) eta = "Driver has arrived at destination";
+        else if (o.status === "READY_DISPATCH") eta = "Rider booked, waiting for pickup";
         else if (o.deliveryType === "EXPRESS") eta = "Approx. 30-45 mins";
         else eta = "1-2 business days";
       } else {
         if (isDelivered) eta = "จัดส่งสำเร็จเรียบร้อยแล้ว";
         else if (isArrived) eta = "พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ";
+        else if (o.status === "READY_DISPATCH") eta = "เรียกไรเดอร์แล้ว กำลังรอไรเดอร์มารับสินค้า";
         else if (o.deliveryType === "EXPRESS") eta = "ประมาณ 30-45 นาที";
         else eta = o.statusDesc || "กำลังดำเนินการจัดส่ง";
       }
@@ -712,6 +714,13 @@
           time: o.batchTime ? evDict.time_batch.replace("{batch}", o.batchTime) : (currentLang === 'en' ? "In transit" : "กำลังเดินทาง")
         });
       }
+      if (o.status === "READY_DISPATCH") {
+        events.push({
+          title: currentLang === 'en' ? "Rider booked, waiting for pickup" : "ร้านเรียกไรเดอร์แล้ว กำลังรอไรเดอร์มารับสินค้า",
+          loc: evDict.loc_wh,
+          time: currentLang === 'en' ? "Waiting for rider" : "รอไรเดอร์"
+        });
+      }
       if (rawStep >= 2) {
         events.push({
           title: evDict.packed,
@@ -732,8 +741,6 @@
       let trackingCell = "";
       if (o.trackingNo) {
         trackingCell = `${o.trackingNo}<button class="copy-btn" data-copy="${o.trackingNo}" title="${t('copy_tracking_title')}">${svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', 16)}</button>`;
-      } else if (o.riderTrackingUrl) {
-        trackingCell = `<a href="${o.riderTrackingUrl}" target="_blank" style="color:var(--brand); text-decoration:underline; font-weight:600;">${t('meta_live_gps')}</a>`;
       } else {
         trackingCell = `<span style="color:var(--muted);font-weight:500">${t('meta_direct_rider')}</span>`;
       }
