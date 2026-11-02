@@ -10648,7 +10648,8 @@
         const noteText = (currentSavedAddress && currentSavedAddress.note) || currentUser.riderNote || '';
         const finalAddress = isPostal
             ? `${postalData.addressLine || ''} ต.${postalData.subdistrict || ''} อ.${postalData.district || ''} จ.${postalData.province || ''} ${postalData.zipcode || ''}`
-            : baseAddr + (noteText ? ` (หมายเหตุไรเดอร์: ${noteText})` : '');
+            // The rider note travels in its own riderNote field; the address stays exactly as typed
+            : baseAddr;
         const finalName = isPostal ? (postalData.name || currentUser.name || 'คุณลูกค้า') : (currentUser.name || 'คุณลูกค้า');
         const finalPhone = isPostal ? (postalData.phone || currentUser.phone || '') : (currentUser.phone || '');
 
