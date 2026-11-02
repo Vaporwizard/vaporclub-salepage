@@ -581,7 +581,11 @@
                         return;
                     }
                     renderOrder(data.order, data.qrDataUrl);
-                    startTimer(data.expiresAt);
+                    if (data.order.slipPendingReview) {
+                        showPendingReview();
+                    } else {
+                        startTimer(data.expiresAt);
+                    }
                 } else {
                     loadRetryCount++;
                     if (loadRetryCount <= MAX_LOAD_RETRIES) {
@@ -959,7 +963,9 @@
                     } catch (fbErr) {}
                 }
 
-                if (data && data.success) {
+                if (data && data.pendingReview) {
+                    showPendingReview(data.message);
+                } else if (data && data.success) {
                     if (statusEl) {
                         statusEl.style.color = '#16a34a';
                         statusEl.textContent = '[OK] Transfer verified! Payment completed.';
@@ -989,6 +995,21 @@
         }
 
         let statusPollInterval = null;
+
+        // Slip received but the bank check (EasySlip) was down: staff confirm it by hand. The bill stays
+        // open (no countdown); the status poll switches to the success view once they confirm.
+        function showPendingReview(message) {
+            if (countdownTimer) clearInterval(countdownTimer);
+            const confirmBtn = document.getElementById('btn-confirm-slip');
+            const triggerBtn = document.getElementById('btn-trigger-upload');
+            const statusEl = document.getElementById('slip-upload-status');
+            if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = 'Slip received · ได้รับสลิปแล้ว'; }
+            if (triggerBtn) triggerBtn.style.display = 'none';
+            if (statusEl) {
+                statusEl.style.color = '#d97706';
+                statusEl.textContent = message || 'ร้านได้รับสลิปแล้ว แอดมินจะตรวจยอดและยืนยันให้เร็วที่สุดค่ะ (Slip received — the shop will confirm your payment shortly.)';
+            }
+        }
 
         function showSuccessView() {
             if (statusPollInterval) clearInterval(statusPollInterval);

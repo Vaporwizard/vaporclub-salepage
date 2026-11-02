@@ -10944,6 +10944,25 @@
                 renderOrders();
                 openOrderTrackingModal(targetOrderId);
                 return;
+            } else if (data && data.pendingReview) {
+                // Slip received, but the bank check was down: staff confirm it. The order stays open.
+                try {
+                    const orders = getStoredOrders();
+                    const found = orders.find(o => o.id === targetOrderId);
+                    if (found) {
+                        found.slipPendingReview = true;
+                        found.statusText = 'รอแอดมินตรวจสลิป';
+                        localStorage.setItem('vapor_customer_orders', JSON.stringify(orders));
+                    }
+                } catch(e) {}
+                alert(data.message || 'ร้านได้รับสลิปแล้ว แอดมินจะตรวจยอดและยืนยันให้เร็วที่สุดค่ะ');
+                closeAllSheets();
+                cart = [];
+                clearCartFromStorage();
+                updateCartUI();
+                renderOrders();
+                openOrderTrackingModal(targetOrderId);
+                return;
             } else {
                 alert(data?.error || 'ไม่สามารถตรวจสอบสลิปได้ กรุณาตรวจสอบรูปสลิปอีกครั้งนะคะ');
                 return;
@@ -11009,7 +11028,7 @@
         allOrders.forEach(o => {
             const isWaitingPay = o.status === 'WAITING_PAYMENT';
             let isExpired = ['CANCELLED', 'FAILED', 'EXPIRED'].includes(o.status);
-            if (isWaitingPay && o.createdAt) {
+            if (isWaitingPay && o.createdAt && !o.slipPendingReview) {
                 const ageMinutes = (Date.now() - new Date(o.createdAt).getTime()) / (1000 * 60);
                 if (ageMinutes > 30) isExpired = true;
             }
@@ -11054,7 +11073,7 @@
         const filtered = allOrders.filter(o => {
             const isWaitingPay = o.status === 'WAITING_PAYMENT';
             let isExpired = ['CANCELLED', 'FAILED', 'EXPIRED'].includes(o.status);
-            if (isWaitingPay && o.createdAt) {
+            if (isWaitingPay && o.createdAt && !o.slipPendingReview) {
                 const ageMinutes = (Date.now() - new Date(o.createdAt).getTime()) / (1000 * 60);
                 if (ageMinutes > 30) isExpired = true;
             }
@@ -11083,7 +11102,7 @@
         container.innerHTML = filtered.map(o => {
             const isWaitingPay = o.status === 'WAITING_PAYMENT';
             let isExpired = ['CANCELLED', 'FAILED', 'EXPIRED'].includes(o.status);
-            if (isWaitingPay && o.createdAt) {
+            if (isWaitingPay && o.createdAt && !o.slipPendingReview) {
                 const ageMinutes = (Date.now() - new Date(o.createdAt).getTime()) / (1000 * 60);
                 if (ageMinutes > 30) isExpired = true;
             }
@@ -11096,6 +11115,9 @@
             if (isExpired) {
                 statusColor = '#ef4444';
                 statusText = (o.status === 'EXPIRED' || (isWaitingPay && !isPendingDeliver)) ? 'เกินกำหนดชำระ / ยกเลิก' : 'ยกเลิกแล้ว';
+            } else if (isWaitingPay && o.slipPendingReview) {
+                statusColor = '#d97706';
+                statusText = 'รอแอดมินตรวจสลิป';
             } else if (isWaitingPay) {
                 statusColor = '#d97706';
                 statusText = 'รอชำระเงิน';
@@ -11296,12 +11318,13 @@
 
             if (status === 'WAITING_PAYMENT') {
                 if (pill) {
-                    pill.textContent = 'รอชำระเงิน';
+                    pill.textContent = ord.slipPendingReview ? 'รอแอดมินตรวจสลิป' : 'รอชำระเงิน';
                     pill.style.background = 'rgba(255, 107, 0, 0.15)';
                     pill.style.color = '#ff6b00';
                 }
                 if (s1) s1.classList.add('active');
-                if (s1Action) s1Action.style.display = 'block';
+                // Slip already sent: no "pay now" button while staff check it
+                if (s1Action) s1Action.style.display = ord.slipPendingReview ? 'none' : 'block';
                 if (s2Desc) s2Desc.textContent = 'แอดมินคลังกำลังแพ็คและตรวจสอบสินค้า';
                 if (s3Desc) s3Desc.textContent = isPostal ? 'รอส่งมอบขนส่ง Flash Express / EMS' : 'รอไรเดอร์เข้ารับพัสดุ';
                 if (s4Title) s4Title.textContent = isPostal ? 'ส่งมอบพัสดุแล้ว' : 'ไรเดอร์รับพัสดุแล้ว';
