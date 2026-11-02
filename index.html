@@ -5072,7 +5072,7 @@
         </div>
 
         <button type="button" id="birthday-primary-btn" class="bday-primary-btn" onclick="claimBirthdayVoucher()">
-            <span id="birthday-primary-btn-text">คัดลอก & ใช้โค้ด</span>
+            <span id="birthday-primary-btn-text">เก็บโค้ด</span>
         </button>
         <button type="button" id="birthday-secondary-btn" class="bday-secondary-btn" onclick="closeBirthdayEnvelope(true)" style="display:none;">ไว้ทีหลัง</button>
     </div>
@@ -5846,7 +5846,7 @@
             primaryBtn.disabled = false;
         }
         const primaryText = document.getElementById('birthday-primary-btn-text');
-        if (primaryText) primaryText.textContent = hasVoucher ? 'คัดลอก & ใช้โค้ด' : 'เริ่มช้อปเลย';
+        if (primaryText) primaryText.textContent = hasVoucher ? 'เก็บโค้ด' : 'เริ่มช้อปเลย';
         const secondaryBtn = document.getElementById('birthday-secondary-btn');
         if (secondaryBtn) secondaryBtn.style.display = hasVoucher ? 'block' : 'none';
         const demoBadge = document.getElementById('birthday-demo-badge');
@@ -5923,28 +5923,6 @@
         launchBirthdayConfetti();
     }
 
-    async function copyBirthdayCode(code) {
-        try {
-            if (navigator.clipboard && window.isSecureContext) {
-                await navigator.clipboard.writeText(code);
-                return true;
-            }
-        } catch (e) {}
-        try {
-            const ta = document.createElement('textarea');
-            ta.value = code;
-            ta.setAttribute('readonly', '');
-            ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
-            document.body.appendChild(ta);
-            ta.select();
-            const ok = document.execCommand('copy');
-            document.body.removeChild(ta);
-            return ok;
-        } catch (e) {
-            return false;
-        }
-    }
-
     function setBirthdayPrimaryDone(label) {
         const btn = document.getElementById('birthday-primary-btn');
         if (btn) btn.classList.add('is-done');
@@ -5952,7 +5930,8 @@
         if (text) text.textContent = label;
     }
 
-    async function claimBirthdayVoucher() {
+    // "เก็บโค้ด": puts the birthday coupon in the customer's coupon wallet and selects it in the cart
+    function claimBirthdayVoucher() {
         const state = birthdayCardState;
         if (!state) return;
         if (!state.hasVoucher) {
@@ -5961,10 +5940,9 @@
         }
 
         const code = state.code;
-        const copied = await copyBirthdayCode(code);
 
         if (state.demo) {
-            setBirthdayPrimaryDone(copied ? 'คัดลอกแล้ว • โหมดทดลอง' : 'โหมดทดลอง • ไม่ได้บันทึกคูปอง');
+            setBirthdayPrimaryDone('เก็บโค้ดแล้ว • โหมดทดลอง (ไม่ได้บันทึกจริง)');
             return;
         }
 
@@ -5998,10 +5976,10 @@
         }
 
         markBirthdayPopupAsSeen();
-        setBirthdayPrimaryDone(copied ? 'คัดลอกแล้ว ✓' : 'เก็บคูปองแล้ว ✓');
+        setBirthdayPrimaryDone('เก็บโค้ดแล้ว ✓');
         setTimeout(() => {
             closeBirthdayEnvelope(false);
-            showToast(`${copied ? 'คัดลอกโค้ด' : 'เก็บคูปอง'} "${code}" และเลือกใช้ในตะกร้าให้แล้ว!`);
+            showToast(`เก็บโค้ด "${code}" เข้ากระเป๋าคูปองและเลือกใช้ในตะกร้าให้แล้ว!`);
         }, 700);
     }
 
