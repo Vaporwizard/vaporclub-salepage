@@ -6416,6 +6416,12 @@
     function hasConfirmedPin() {
         return !!currentPinSource && !isDefaultMapCenter(currentPinnedCoords);
     }
+    // GPS may move the pin only while the customer has not chosen one: no pin yet, the map's default
+    // point, or a pin that came from GPS itself. A dragged, searched or saved-address pin stays put
+    // (customers often order to an office / hotel, not where they are standing).
+    function gpsMayMovePin() {
+        return !currentPinSource || currentPinSource === 'gps' || isDefaultMapCenter(currentPinnedCoords);
+    }
     // Short rider-friendly label from an OSM display_name ("Yellow Coworking, ซอย 5, ถนนนิมมานเหมินท์, …")
     function shortPlaceLabel(name) {
         return String(name || '').split(',').map(p => p.trim()).filter(p => p && p !== 'ประเทศไทย' && !/^d{5}$/.test(p)).slice(0, 3).join(', ');
@@ -8450,7 +8456,7 @@
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
                 updateUserLiveDot(lat, lng);
-                if (currentPinSource !== 'map_drag') {
+                if (gpsMayMovePin()) {
                     if (mapInstance) {
                         mapInstance.setView([lat, lng], 16);
                     }
@@ -8487,7 +8493,7 @@
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
                 userRealCoords = { lat, lng };
-                if (!currentPinSource || currentPinSource === 'gps' || isDefaultMapCenter(currentPinnedCoords)) {
+                if (gpsMayMovePin()) {
                     currentPinnedCoords = { lat, lng };
                     currentPinSource = 'gps';
                 }
@@ -8786,13 +8792,13 @@
         }
 
         // If userRealCoords is already available, jump to it immediately so map opens directly on customer's real location
-        if (userRealCoords && (currentPinSource !== 'map_drag' || isDefaultMapCenter(currentPinnedCoords))) {
+        if (userRealCoords && gpsMayMovePin()) {
             currentPinnedCoords = { lat: userRealCoords.lat, lng: userRealCoords.lng };
             currentPinSource = 'gps';
         }
 
         setTimeout(() => {
-            const initialTarget = (userRealCoords && (currentPinSource !== 'map_drag' || isDefaultMapCenter(currentPinnedCoords)))
+            const initialTarget = (userRealCoords && gpsMayMovePin())
                 ? [userRealCoords.lat, userRealCoords.lng]
                 : [currentPinnedCoords.lat, currentPinnedCoords.lng];
 
@@ -8830,7 +8836,7 @@
                         const lng = pos.coords.longitude;
                         userRealCoords = { lat, lng };
                         updateUserLiveDot(lat, lng);
-                        if (currentPinSource !== 'map_drag') {
+                        if (gpsMayMovePin()) {
                             if (mapInstance) {
                                 mapInstance.flyTo([lat, lng], 16, { animate: true, duration: 0.6 });
                             }
