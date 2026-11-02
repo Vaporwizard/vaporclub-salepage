@@ -4093,23 +4093,23 @@
         <div class="section-subtitle">กดเก็บโค้ดเพื่อนำไปใช้ลดราคาตอนชำระเงินในตะกร้าได้ทันที</div>
 
         <div class="voucher-scroll-track" id="home-voucher-track">
-            <!-- Voucher 1: NEW10 (Public) -->
+            <!-- Voucher 1: NEW50 (Public) -->
             <div class="voucher-ticket">
                 <div class="ticket-left">
                     <div class="ticket-cutout-top"></div>
                     <div class="ticket-cutout-bottom"></div>
                     <span style="font-size:11px; color:var(--text-dim); font-weight:700;">ลดค่าส่ง</span>
-                    <span style="font-size:18px; font-weight:900; color:var(--primary-green); font-family:var(--font-num);">10%</span>
+                    <span style="font-size:18px; font-weight:900; color:var(--primary-green); font-family:var(--font-num);">50%</span>
                 </div>
                 <div class="ticket-right">
                     <div>
-                        <span class="ticket-code-tag">NEW10</span>
-                        <div class="ticket-title">ส่วนลดค่าส่งลูกค้าใหม่ 10%</div>
-                        <div class="ticket-desc">ลดค่าจัดส่ง 10% สำหรับลูกค้าใหม่</div>
+                        <span class="ticket-code-tag">NEW50</span>
+                        <div class="ticket-title">ส่วนลดค่าส่งลูกค้าใหม่ 50%</div>
+                        <div class="ticket-desc">ลดค่าจัดส่ง 50% สำหรับลูกค้าใหม่</div>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
                         <span style="font-size:9.5px; color:var(--text-dim);">จำกัด 1 สิทธิ์</span>
-                        <button class="ticket-claim-btn" id="btn-voucher-NEW10" onclick="claimVoucherDirect('NEW10', 0, 0, 'ส่วนลดค่าส่งลูกค้าใหม่ 10%')">เก็บโค้ด</button>
+                        <button class="ticket-claim-btn" id="btn-voucher-NEW50" onclick="claimVoucherDirect('NEW50', 0, 0, 'ส่วนลดค่าส่งลูกค้าใหม่ 50%')">เก็บโค้ด</button>
                     </div>
                 </div>
             </div>
@@ -4335,17 +4335,17 @@
                         <div class="ticket-cutout-top"></div>
                         <div class="ticket-cutout-bottom"></div>
                         <span style="font-size:11px; color:var(--text-dim); font-weight:700;">ลดค่าส่ง</span>
-                        <span style="font-size:19px; font-weight:900; color:var(--primary-green); font-family:var(--font-num);">10%</span>
+                        <span style="font-size:19px; font-weight:900; color:var(--primary-green); font-family:var(--font-num);">50%</span>
                     </div>
                     <div class="ticket-right">
                         <div>
-                            <span class="ticket-code-tag">NEW10</span>
-                            <div class="ticket-title">ส่วนลดค่าส่งลูกค้าใหม่ 10%</div>
-                            <div class="ticket-desc">ลดค่าจัดส่ง 10% สำหรับลูกค้าใหม่</div>
+                            <span class="ticket-code-tag">NEW50</span>
+                            <div class="ticket-title">ส่วนลดค่าส่งลูกค้าใหม่ 50%</div>
+                            <div class="ticket-desc">ลดค่าจัดส่ง 50% สำหรับลูกค้าใหม่</div>
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
                             <span style="font-size:9.5px; color:var(--text-dim);">จำกัด 1 สิทธิ์ต่อท่าน</span>
-                            <button class="ticket-claim-btn" id="btn-deal-NEW10" onclick="claimVoucherDirect('NEW10', 0, 0, 'ส่วนลดค่าส่งลูกค้าใหม่ 10%')">เก็บโค้ด</button>
+                            <button class="ticket-claim-btn" id="btn-deal-NEW50" onclick="claimVoucherDirect('NEW50', 0, 0, 'ส่วนลดค่าส่งลูกค้าใหม่ 50%')">เก็บโค้ด</button>
                         </div>
                     </div>
                 </div>
@@ -7066,7 +7066,7 @@
         const cat = String(v.targetCategory || v.target || '').toUpperCase();
         if (['DELIVERY', 'POSTAL', 'ALL_DELIVERY'].includes(cat)) return true;
         const text = `${v.code || ''} ${v.title || ''} ${v.desc || ''} ${v.name || ''}`.toLowerCase();
-        return /ค่าส่ง|จัดส่ง|delivery|shipping|พัสดุ/i.test(text) || ['CBP50', 'MP7Y20', 'NEW10'].includes(String(v.code || '').toUpperCase());
+        return /ค่าส่ง|จัดส่ง|delivery|shipping|พัสดุ/i.test(text) || ['CBP50', 'MP7Y20', 'NEW10', 'NEW50'].includes(String(v.code || '').toUpperCase());
     }
 
     function calculateVoucherDiscount(v, subtotal, shipping, shippingMethod) {
@@ -7182,9 +7182,16 @@
     try {
         const savedVoucher = localStorage.getItem('vapor_selected_voucher');
         if (savedVoucher && typeof savedVoucher === 'string') {
-            const trimmed = savedVoucher.trim();
+            let trimmed = savedVoucher.trim();
+            if (trimmed === 'NEW10') trimmed = 'NEW50';
             if (trimmed && trimmed !== 'null' && trimmed !== 'undefined' && trimmed !== 'POD4FOR500' && trimmed !== 'FREEPOSTAL') {
                 selectedVoucher = trimmed;
+            }
+        }
+        if (Array.isArray(userClaimedVouchers)) {
+            if (userClaimedVouchers.includes('NEW10') && !userClaimedVouchers.includes('NEW50')) {
+                userClaimedVouchers.push('NEW50');
+                localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers));
             }
         }
     } catch(e) {}
@@ -7214,16 +7221,29 @@
             condition: 'ไม่มีวันหมดอายุ • ใช้ได้ 1 ครั้ง',
             isZoneSpecific: false
         },
-        'NEW10': {
-            code: 'NEW10',
+        'NEW50': {
+            code: 'NEW50',
             discount: 0,
-            discountPercent: 10,
+            discountPercent: 50,
             minSpend: 0,
             type: 'shipping_express_percent',
-            title: 'ส่วนลดค่าส่งลูกค้าใหม่ 10%',
+            title: 'ส่วนลดค่าส่งลูกค้าใหม่ 50%',
             leftLabel: 'ลดค่าส่ง',
-            leftAmount: '10%',
-            desc: 'ลดค่าจัดส่ง 10% สำหรับลูกค้าใหม่',
+            leftAmount: '50%',
+            desc: 'ลดค่าจัดส่ง 50% สำหรับลูกค้าใหม่',
+            condition: 'จำกัด 1 สิทธิ์ต่อท่าน',
+            isZoneSpecific: false
+        },
+        'NEW10': {
+            code: 'NEW50',
+            discount: 0,
+            discountPercent: 50,
+            minSpend: 0,
+            type: 'shipping_express_percent',
+            title: 'ส่วนลดค่าส่งลูกค้าใหม่ 50%',
+            leftLabel: 'ลดค่าส่ง',
+            leftAmount: '50%',
+            desc: 'ลดค่าจัดส่ง 50% สำหรับลูกค้าใหม่ (อัปเกรดเป็น 50%)',
             condition: 'จำกัด 1 สิทธิ์ต่อท่าน',
             isZoneSpecific: false
         },
@@ -8374,7 +8394,7 @@
             const isDelivery = isPostal || isAllDelivery || rawCat === 'DELIVERY' ||
                                /ค่าส่ง|จัดส่ง|delivery|shipping/i.test(p.name || '') ||
                                /ค่าส่ง|จัดส่ง|delivery|shipping/i.test(p.description || '') ||
-                               ['CBP50', 'MP7Y20', 'NEW10'].includes(code);
+                               ['CBP50', 'MP7Y20', 'NEW10', 'NEW50'].includes(code);
 
             const isPercent = p.pricingRule?.type === 'PERCENT' || (isDelivery && Number(p.pricingRule?.discountValue) > 0 && Number(p.pricingRule?.discountValue) <= 100);
             const discountVal = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
@@ -8428,10 +8448,99 @@
                 triggerType: p.triggerType
             };
         });
+        renderHomeVoucherTrack(promos);
         renderDynamicDealsTab(promos);
         syncVoucherButtonStates();
         populateCartVoucherSelect();
         updateCartUI();
+    }
+
+    function renderHomeVoucherTrack(promos) {
+        const track = document.getElementById('home-voucher-track');
+        if (!track) return;
+        const activeList = Array.isArray(promos) ? promos.filter(p => p.active !== false) : [];
+        if (activeList.length === 0) return;
+
+        let html = '';
+        const collectibles = activeList.filter(p => 
+            p.triggerType === 'COLLECTIBLE' || 
+            p.isCollectible || 
+            (p.code && (p.code.toUpperCase().startsWith('NEW') || p.code.toUpperCase() === 'NEW50' || p.code.toUpperCase() === 'NEW10')) || 
+            p.id === 'promo_code_newbie10_delivery'
+        );
+
+        collectibles.forEach(p => {
+            const code = (p.code || '').trim().toUpperCase();
+            const v = VOUCHER_MASTER[code] || {
+                code,
+                discount: p.pricingRule?.discountValue || 0,
+                discountPercent: (p.pricingRule?.type === 'PERCENT' || Number(p.pricingRule?.discountValue) <= 100) ? Number(p.pricingRule?.discountValue || 50) : 0,
+                minSpend: p.minSubtotal || 0,
+                title: p.name || 'ส่วนลดค่าส่งลูกค้าใหม่ 50%',
+                leftLabel: 'ลดค่าส่ง',
+                leftAmount: p.pricingRule?.discountValue ? `${p.pricingRule.discountValue}%` : '50%',
+                desc: p.description || 'ลดค่าจัดส่งสำหรับลูกค้าใหม่',
+                condition: 'จำกัด 1 สิทธิ์'
+            };
+            const isClaimed = userClaimedVouchers.includes(code);
+            html += `
+                <div class="voucher-ticket">
+                    <div class="ticket-left">
+                        <div class="ticket-cutout-top"></div>
+                        <div class="ticket-cutout-bottom"></div>
+                        <span style="font-size:11px; color:var(--text-dim); font-weight:700;">${v.leftLabel || 'ลดค่าส่ง'}</span>
+                        <span style="font-size:18px; font-weight:900; color:var(--primary-green); font-family:var(--font-num);">${v.leftAmount || '50%'}</span>
+                    </div>
+                    <div class="ticket-right">
+                        <div>
+                            <span class="ticket-code-tag">${code}</span>
+                            <div class="ticket-title">${v.title || code}</div>
+                            <div class="ticket-desc">${v.desc || ''}</div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                            <span style="font-size:9.5px; color:var(--text-dim);">${v.condition || 'จำกัด 1 สิทธิ์'}</span>
+                            <button class="ticket-claim-btn ${isClaimed ? 'claimed' : ''}" id="btn-voucher-${code}" onclick="claimVoucherDirect('${code}', ${v.discount || 0}, ${v.minSpend || 0}, '${(v.title || '').replace(/'/g, "\'")}')" ${isClaimed ? 'disabled' : ''}>
+                                ${isClaimed ? 'เก็บแล้ว' : 'เก็บโค้ด'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        const autos = activeList.filter(p => p.triggerType === 'AUTO' || (!p.code && !p.isCollectible));
+        autos.forEach(p => {
+            const isPercent = p.pricingRule?.type === 'PERCENT';
+            const val = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
+            const isBundle = p.pricingRule?.type === 'BUNDLE_FIXED_PRICE';
+            const leftTag = isBundle ? 'โปรเซ็ต' : (isPercent ? 'ส่วนลด' : 'โปรโมชั่น');
+            const leftVal = isBundle ? `฿${p.pricingRule?.discountValue || 60}` : (isPercent ? `${val}%` : `฿${val}`);
+            html += `
+                <div class="voucher-ticket">
+                    <div class="ticket-left">
+                        <div class="ticket-cutout-top"></div>
+                        <div class="ticket-cutout-bottom"></div>
+                        <span style="font-size:11px; color:var(--text-dim); font-weight:700;">${leftTag}</span>
+                        <span style="font-size:18px; font-weight:900; color:var(--primary-lime); font-family:var(--font-num);">${leftVal}</span>
+                    </div>
+                    <div class="ticket-right">
+                        <div>
+                            <span class="ticket-code-tag" style="background:rgba(255,107,0,0.15); color:#ff6b00; border:1px solid rgba(255,107,0,0.3);">โปรโมชั่นอัตโนมัติ</span>
+                            <div class="ticket-title">${p.name || 'โปรโมชั่นพิเศษ'}</div>
+                            <div class="ticket-desc">${p.description || ''}</div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                            <span style="font-size:9.5px; color:var(--text-dim);">ลดอัตโนมัติในระบบ</span>
+                            <span style="font-size:10.5px; font-weight:800; color:var(--primary-green-dark);">มีผลในตะกร้า</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        if (html) {
+            track.innerHTML = html;
+        }
     }
 
     function renderDynamicDealsTab(promos) {
@@ -8442,7 +8551,12 @@
         const activeList = Array.isArray(promos) ? promos.filter(p => p.active !== false) : [];
 
         // 1. Collectible vouchers
-        const collectibles = activeList.filter(p => p.triggerType === 'COLLECTIBLE' || p.isCollectible || (p.code && p.code.toUpperCase() === 'NEW10'));
+        const collectibles = activeList.filter(p => 
+            p.triggerType === 'COLLECTIBLE' || 
+            p.isCollectible || 
+            (p.code && (p.code.toUpperCase().startsWith('NEW') || p.code.toUpperCase() === 'NEW50' || p.code.toUpperCase() === 'NEW10')) || 
+            p.id === 'promo_code_newbie10_delivery'
+        );
         collectibles.forEach(p => {
             const code = (p.code || '').trim().toUpperCase();
             const v = VOUCHER_MASTER[code] || {
