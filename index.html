@@ -565,13 +565,30 @@
             padding: 0;
         }
 
-        html, body {
-            width: 100vw;
-            min-height: 100vh;
-            min-height: 100dvh;
+        html {
+            width: 100%;
+            min-height: 100%;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: var(--font-thai);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            width: 100%;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            overflow-y: visible;
+            position: relative;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y pinch-zoom;
             background-color: var(--bg-page);
             color: var(--text-main);
             font-family: var(--font-thai);
@@ -579,7 +596,7 @@
         }
 
         .app-shell {
-            width: 100vw;
+            width: 100%;
             max-width: 520px;
             min-height: 100vh;
             min-height: 100dvh;
@@ -590,6 +607,18 @@
             flex-direction: column;
             padding-bottom: calc(76px + var(--safe-bottom));
             box-shadow: none;
+            touch-action: pan-y pinch-zoom;
+        }
+
+        /* Overlay Pointer Events Guard for iOS / iPadOS WebKit */
+        .popup-banner-overlay:not(.show),
+        .age-gate-overlay.hidden,
+        .modal-backdrop-overlay:not(.open),
+        .lang-picker-overlay:not(.show),
+        .birthday-envelope-overlay:not(.show) {
+            display: none !important;
+            pointer-events: none !important;
+            visibility: hidden !important;
         }
 
         /* SVG Icons */
