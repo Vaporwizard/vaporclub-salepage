@@ -5735,6 +5735,8 @@
         birthdate: '',
         address: '',
         monthlySpent: 0,
+        memberTier: 'eco',
+        manualMemberTier: null,
         orderCount: 0,
         riderNote: '',
         savedPostalAddress: null
@@ -7309,8 +7311,25 @@
     /* ========================================================
        MEMBERSHIP TIER STATUS TUBE ONLY (NO 4-TIER TABLE)
        ======================================================== */
-    function calculateMemberTier(monthlySpend) {
-        if (monthlySpend >= 5000) {
+    const VOUCHER_TIER_RANKS = { eco: 0, silver: 1, gold: 2, platinum: 3 };
+    const VOUCHER_TIER_LABELS = { eco: 'Eco Member', silver: 'Silver Member', gold: 'Gold VIP', platinum: 'Platinum Supreme' };
+
+    function isUserEligibleForVoucherTier(v, userTier) {
+        if (!v) return false;
+        const minTier = String(v.minTier || v.targetTier || v.min_tier || 'all').toLowerCase();
+        if (!minTier || minTier === 'all' || minTier === 'eco') return true;
+        const uTier = String(userTier || currentUser.memberTier || 'eco').toLowerCase();
+        const uRank = VOUCHER_TIER_RANKS[uTier] || 0;
+        const reqRank = VOUCHER_TIER_RANKS[minTier] || 0;
+        return uRank >= reqRank;
+    }
+
+    function calculateMemberTier(monthlySpend, overrideTier) {
+        const effectiveTier = (overrideTier && ['eco', 'silver', 'gold', 'platinum'].includes(String(overrideTier).toLowerCase()))
+            ? String(overrideTier).toLowerCase()
+            : null;
+
+        if (effectiveTier === 'platinum' || (!effectiveTier && monthlySpend >= 5000)) {
             return {
                 tier: 'platinum',
                 badgeName: 'Platinum Supreme',
@@ -7318,11 +7337,11 @@
                 cardClass: 'tier-platinum',
                 progressColor: '#c084fc',
                 progressPct: 100,
-                hint: 'ระดับสูงสุด Platinum Supreme รับสิทธิ์พิเศษเต็มรูปแบบ',
+                hint: effectiveTier ? 'ได้รับสิทธิ์ระดับสูงสุด Platinum Supreme จากทางร้าน' : 'ระดับสูงสุด Platinum Supreme รับสิทธิ์พิเศษเต็มรูปแบบ',
                 nextTierLabel: 'Max Level'
             };
-        } else if (monthlySpend >= 2000) {
-            const needed = 5000 - monthlySpend;
+        } else if (effectiveTier === 'gold' || (!effectiveTier && monthlySpend >= 2000)) {
+            const needed = Math.max(0, 5000 - monthlySpend);
             const pct = Math.min(100, Math.round((monthlySpend / 5000) * 100));
             return {
                 tier: 'gold',
@@ -7330,12 +7349,12 @@
                 pillClass: 'pill-gold',
                 cardClass: 'tier-gold',
                 progressColor: '#f59e0b',
-                progressPct: pct,
-                hint: `ขาดอีก ฿${needed} เพื่อเลื่อนเป็น Platinum (เกณฑ์ 5,000 บ./เดือน)`,
+                progressPct: effectiveTier ? Math.max(pct, 50) : pct,
+                hint: effectiveTier ? `ได้รับสิทธิ์ระดับ Gold VIP จากทางร้าน (ยอดเดือนนี้ ฿${monthlySpend})` : `ขาดอีก ฿${needed} เพื่อเลื่อนเป็น Platinum (เกณฑ์ 5,000 บ./เดือน)`,
                 nextTierLabel: 'Platinum 5,000.-'
             };
-        } else if (monthlySpend >= 1000) {
-            const needed = 2000 - monthlySpend;
+        } else if (effectiveTier === 'silver' || (!effectiveTier && monthlySpend >= 1000)) {
+            const needed = Math.max(0, 2000 - monthlySpend);
             const pct = Math.min(100, Math.round((monthlySpend / 2000) * 100));
             return {
                 tier: 'silver',
@@ -7343,12 +7362,12 @@
                 pillClass: 'pill-silver',
                 cardClass: 'tier-silver',
                 progressColor: '#e2e8f0',
-                progressPct: pct,
-                hint: `ขาดอีก ฿${needed} เพื่อเลื่อนเป็น Gold (เกณฑ์ 2,000 บ./เดือน)`,
+                progressPct: effectiveTier ? Math.max(pct, 50) : pct,
+                hint: effectiveTier ? `ได้รับสิทธิ์ระดับ Silver Member จากทางร้าน (ยอดเดือนนี้ ฿${monthlySpend})` : `ขาดอีก ฿${needed} เพื่อเลื่อนเป็น Gold (เกณฑ์ 2,000 บ./เดือน)`,
                 nextTierLabel: 'Gold 2,000.-'
             };
         } else {
-            const needed = 1000 - monthlySpend;
+            const needed = Math.max(0, 1000 - monthlySpend);
             const pct = Math.min(100, Math.round((monthlySpend / 1000) * 100));
             return {
                 tier: 'eco',
@@ -7364,7 +7383,7 @@
     }
 
     function updateMemberUI() {
-        const tierInfo = calculateMemberTier(currentUser.monthlySpent);
+        const tierInfo = calculateMemberTier(currentUser.monthlySpent, currentUser.memberTier);
 
         // Home Card Mini Strip
         const homeUserName = document.getElementById('home-user-name');
@@ -8491,12 +8510,14 @@
         if (activeList.length === 0) return;
 
         let html = '';
-        const collectibles = activeList.filter(p => 
-            p.triggerType === 'COLLECTIBLE' || 
-            p.isCollectible || 
-            (p.code && (p.code.toUpperCase().startsWith('NEW') || p.code.toUpperCase() === 'NEW50' || p.code.toUpperCase() === 'NEW10')) || 
-            p.id === 'promo_code_newbie10_delivery'
-        );
+        const collectibles = activeList.filter(p => {
+            const isColl = p.triggerType === 'COLLECTIBLE' || 
+                p.isCollectible || 
+                (p.code && (p.code.toUpperCase().startsWith('NEW') || p.code.toUpperCase() === 'NEW50' || p.code.toUpperCase() === 'NEW10')) || 
+                p.id === 'promo_code_newbie10_delivery';
+            if (!isColl) return false;
+            return isUserEligibleForVoucherTier(p, currentUser.memberTier);
+        });
 
         collectibles.forEach(p => {
             const code = (p.code || '').trim().toUpperCase();
@@ -8580,12 +8601,14 @@
         const activeList = Array.isArray(promos) ? promos.filter(p => p.active !== false) : [];
 
         // 1. Collectible vouchers
-        const collectibles = activeList.filter(p => 
-            p.triggerType === 'COLLECTIBLE' || 
-            p.isCollectible || 
-            (p.code && (p.code.toUpperCase().startsWith('NEW') || p.code.toUpperCase() === 'NEW50' || p.code.toUpperCase() === 'NEW10')) || 
-            p.id === 'promo_code_newbie10_delivery'
-        );
+        const collectibles = activeList.filter(p => {
+            const isColl = p.triggerType === 'COLLECTIBLE' || 
+                p.isCollectible || 
+                (p.code && (p.code.toUpperCase().startsWith('NEW') || p.code.toUpperCase() === 'NEW50' || p.code.toUpperCase() === 'NEW10')) || 
+                p.id === 'promo_code_newbie10_delivery';
+            if (!isColl) return false;
+            return isUserEligibleForVoucherTier(p, currentUser.memberTier);
+        });
         collectibles.forEach(p => {
             const code = (p.code || '').trim().toUpperCase();
             const v = VOUCHER_MASTER[code] || {
@@ -10614,6 +10637,15 @@
     }
 
     function selectVoucherFromPicker(code) {
+        if (code && VOUCHER_MASTER[code]) {
+            const v = VOUCHER_MASTER[code];
+            if (!isUserEligibleForVoucherTier(v, currentUser.memberTier)) {
+                const reqTier = String(v.minTier || v.targetTier || 'silver').toLowerCase();
+                const reqLabel = VOUCHER_TIER_LABELS[reqTier] || reqTier;
+                showToast(`โค้ดนี้สำหรับสมาชิกระดับ ${reqLabel} ขึ้นไปเท่านั้น`);
+                return;
+            }
+        }
         if (code && VOUCHER_MASTER[code] && VOUCHER_MASTER[code].isZoneSpecific) {
             if (shippingMethod !== 'express') {
                 showToast(`โค้ดส่วนลด "${code}" ใช้ได้เฉพาะบริการส่งด่วนไรเดอร์เท่านั้น`);
@@ -12593,6 +12625,8 @@
                             }
                         }
                         currentUser.monthlySpent = data.profile.monthlySpent || 0;
+                        currentUser.memberTier = data.profile.memberTier || data.profile.tier || 'eco';
+                        currentUser.manualMemberTier = data.profile.manualMemberTier || null;
                         currentUser.orderCount = data.profile.orderCount || 0;
                         if (data.profile.orders && data.profile.orders.length > 0) {
                             try {
