@@ -8476,6 +8476,8 @@
 
             VOUCHER_MASTER[code] = {
                 code: code,
+                isPrivate: Boolean(p.isPrivate || p.targetSegment === 'private'),
+                targetCustomerIds: Array.isArray(p.targetCustomerIds) ? p.targetCustomerIds : [],
                 product_ids: Array.isArray(p.product_ids) ? p.product_ids.map(String) : (Array.isArray(p.productIds) ? p.productIds.map(String) : []),
                 discount: isPercent ? 0 : discountVal,
                 discountPercent: isPercent ? discountVal : 0,
@@ -8506,7 +8508,7 @@
     function renderHomeVoucherTrack(promos) {
         const track = document.getElementById('home-voucher-track');
         if (!track) return;
-        const activeList = Array.isArray(promos) ? promos.filter(p => p.active !== false) : [];
+        const activeList = Array.isArray(promos) ? promos.filter(p => p.active !== false && p.targetSegment !== 'private' && !p.isPrivate) : [];
         if (activeList.length === 0) return;
 
         let html = '';
@@ -8598,7 +8600,7 @@
         if (!container) return;
 
         let html = '';
-        const activeList = Array.isArray(promos) ? promos.filter(p => p.active !== false) : [];
+        const activeList = Array.isArray(promos) ? promos.filter(p => p.active !== false && p.targetSegment !== 'private' && !p.isPrivate) : [];
 
         // 1. Collectible vouchers
         const collectibles = activeList.filter(p => {
