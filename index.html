@@ -7089,6 +7089,17 @@
         }
     } catch(e) {}
 
+    let userUsedVouchers = [];
+    try {
+        const storedUsed = localStorage.getItem('vapor_used_vouchers');
+        if (storedUsed) {
+            const parsedUsed = JSON.parse(storedUsed);
+            if (Array.isArray(parsedUsed)) {
+                userUsedVouchers = parsedUsed.filter(c => typeof c === 'string' && c.trim());
+            }
+        }
+    } catch(e) {}
+
     function isDeliveryVoucher(v) {
         if (!v) return false;
         if (v.type === 'shipping_express' || v.type === 'shipping_express_fixed' || v.type === 'shipping_express_percent') return true;
@@ -7629,16 +7640,23 @@
     }
 
     function syncVoucherButtonStates() {
-        const allCodes = Array.from(new Set([...Object.keys(VOUCHER_MASTER), ...(userClaimedVouchers || [])]));
+        const allCodes = Array.from(new Set([...Object.keys(VOUCHER_MASTER), ...(userClaimedVouchers || []), ...(userUsedVouchers || [])]));
+        const myOrders = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
+        const hasPriorOrders = Array.isArray(myOrders) && myOrders.length > 0;
         allCodes.forEach(code => {
             const isClaimed = userClaimedVouchers.includes(code);
+            const isUsed = userUsedVouchers.includes(code) || (['NEW50', 'NEW10'].includes(code) && hasPriorOrders);
             const targets = [
                 document.getElementById(`btn-voucher-${code}`),
                 document.getElementById(`btn-deal-${code}`)
             ];
             targets.forEach(b => {
                 if (b) {
-                    if (isClaimed) {
+                    if (isUsed) {
+                        b.textContent = 'ใช้สิทธิ์แล้ว';
+                        b.classList.add('claimed');
+                        b.disabled = true;
+                    } else if (isClaimed) {
                         b.textContent = 'เก็บแล้ว';
                         b.classList.add('claimed');
                         b.disabled = true;
@@ -7758,6 +7776,14 @@
     }
 
     function claimVoucherDirect(code, discount, minSpend, desc) {
+        const myOrders = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
+        const hasPriorOrders = Array.isArray(myOrders) && myOrders.length > 0;
+        if (userUsedVouchers.includes(code) || (['NEW50', 'NEW10'].includes(code) && hasPriorOrders)) {
+            showToast(`คุณเคยใช้สิทธิ์โค้ดส่วนลด "${code}" ไปแล้วค่ะ`);
+            syncVoucherButtonStates();
+            return;
+        }
+
         if (!userClaimedVouchers.includes(code)) {
             userClaimedVouchers.push(code);
             try {
@@ -7783,11 +7809,18 @@
     /* Reusable Image 3 Ticket HTML Generator */
     function renderVoucherTicketHtml(v, mode = 'claim') {
         const isClaimed = userClaimedVouchers.includes(v.code);
+        const myOrders = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
+        const hasPriorOrders = Array.isArray(myOrders) && myOrders.length > 0;
+        const isUsed = userUsedVouchers.includes(v.code) || (['NEW50', 'NEW10'].includes(v.code) && hasPriorOrders);
         const isSelected = selectedVoucher === v.code;
         
         let actionBtnHtml = '';
         if (mode === 'claim') {
-            actionBtnHtml = `<button class="ticket-claim-btn ${isClaimed ? 'claimed' : ''}" id="btn-deal-${v.code}" onclick="claimVoucherDirect('${v.code}', ${v.discount}, ${v.minSpend}, '${v.title}')" ${isClaimed ? 'disabled' : ''}>${isClaimed ? 'เก็บแล้ว' : 'เก็บโค้ด'}</button>`;
+            if (isUsed) {
+                actionBtnHtml = `<button class="ticket-claim-btn claimed" id="btn-deal-${v.code}" disabled>ใช้สิทธิ์แล้ว</button>`;
+            } else {
+                actionBtnHtml = `<button class="ticket-claim-btn ${isClaimed ? 'claimed' : ''}" id="btn-deal-${v.code}" onclick="claimVoucherDirect('${v.code}', ${v.discount}, ${v.minSpend}, '${v.title}')" ${isClaimed ? 'disabled' : ''}>${isClaimed ? 'เก็บแล้ว' : 'เก็บโค้ด'}</button>`;
+            }
         } else if (mode === 'use') {
             actionBtnHtml = `<button type="button" class="ticket-claim-btn" style="background:#ff6b00; padding:6px 16px;" onclick="useVoucherFromModal('${v.code}')">ใช้</button>`;
         } else if (mode === 'cart_picker') {
@@ -11513,10 +11546,14 @@
         // Clear active cart now that the server has the order
         cart = [];
         clearCartFromStorage();
-        if (selectedVoucher && (selectedVoucher === 'HBD100' || selectedVoucher.startsWith('HBD'))) {
+        if (selectedVoucher) {
             const usedCode = selectedVoucher;
-            userClaimedVouchers = userClaimedVouchers.filter(c => c !== selectedVoucher);
+            userClaimedVouchers = userClaimedVouchers.filter(c => c !== usedCode);
             try { localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers)); } catch(e) {}
+            if (!userUsedVouchers.includes(usedCode)) {
+                userUsedVouchers.push(usedCode);
+                try { localStorage.setItem('vapor_used_vouchers', JSON.stringify(userUsedVouchers)); } catch(e) {}
+            }
             if (currentUser.userId && usedCode) {
                 fetch((window.API_BASE || '') + '/api/selfservice/use-coupon', {
                     method: 'POST',
@@ -11526,6 +11563,7 @@
             }
         }
         setSelectedVoucher(null);
+        syncVoucherButtonStates();
         updateCartUI();
         renderOrders();
 
@@ -12613,6 +12651,10 @@
                                 localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers));
                                 localStorage.setItem('vapor_vouchers_synced_v2', 'true');
                             } catch(e) {}
+                        }
+                        if (Array.isArray(data.profile.usedCoupons)) {
+                            userUsedVouchers = Array.from(new Set([...userUsedVouchers, ...data.profile.usedCoupons]));
+                            try { localStorage.setItem('vapor_used_vouchers', JSON.stringify(userUsedVouchers)); } catch(e) {}
                         }
                         if (typeof populateCartVoucherSelect === 'function') populateCartVoucherSelect();
                         if (typeof syncVoucherButtonStates === 'function') syncVoucherButtonStates();
