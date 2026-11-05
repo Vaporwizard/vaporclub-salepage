@@ -4822,10 +4822,7 @@
             <span>ยอดรวมสินค้า</span>
             <span id="cart-subtotal" style="font-weight:700; font-family:var(--font-num); color:var(--text-main);">฿0</span>
         </div>
-        <div id="cart-bundle-discount-row" style="display:none; justify-content:space-between; margin-bottom:4px; color:var(--primary-green-dark); font-weight:800;">
-            <span id="cart-bundle-name-label">โปรหัวพอต 4 หัว 500 บาท</span>
-            <span id="cart-bundle-discount-val" style="font-family:var(--font-num);">-฿0</span>
-        </div>
+        <!-- bundle discount row removed -->
         <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:var(--text-muted);">
             <span>ค่าจัดส่ง</span>
             <span id="cart-shipping-fee" style="font-weight:700; font-family:var(--font-num); color:var(--text-main);">฿0</span>
@@ -9034,17 +9031,7 @@
 
         if (document.getElementById('cart-subtotal')) document.getElementById('cart-subtotal').textContent = `฿${rawSubtotal}`;
 
-        // Pod Bundle Discount Row
-        const bundleRow = document.getElementById('cart-bundle-discount-row');
-        if (bundleRow) {
-            if (bundleDiscount > 0) {
-                bundleRow.style.display = 'flex';
-                document.getElementById('cart-bundle-name-label').textContent = `โปรหัวพอต 4 หัว 500 บาท (${fullBundles} ชุด)`;
-                document.getElementById('cart-bundle-discount-val').textContent = `-฿${bundleDiscount}`;
-            } else {
-                bundleRow.style.display = 'none';
-            }
-        }
+
 
         // Free Shipping Banner / Notice
         const freeShipBanner = document.getElementById('cart-free-shipping-banner');
@@ -11140,11 +11127,7 @@
                 <span>${it.name} (${it.flavor}) x${it.qty}</span>
                 <span style="font-weight:700; font-family:var(--font-num);">฿${it.price * it.qty}</span>
             </div>
-        `).join('') + (bundleDiscount > 0 ? `
-            <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--primary-green-dark); font-weight:800; margin-top:2px;">
-                <span>โปร 4 หัว 500 บาท</span>
-                <span>-฿${bundleDiscount}</span>
-            </div>` : '') + `
+        `).join('') + `
             <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-muted); margin-top:4px;">
                 <span>ค่าจัดส่ง</span>
                 <span>${shipping === 0 ? 'ฟรี (0 บาท)' : `฿${shipping}`}</span>
