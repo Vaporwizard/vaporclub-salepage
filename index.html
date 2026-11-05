@@ -4340,25 +4340,6 @@
 
             <div id="deals-tickets-container">
                 <!-- Dynamically populated from active promotions API -->
-                <div class="voucher-ticket-full">
-                    <div class="ticket-left">
-                        <div class="ticket-cutout-top"></div>
-                        <div class="ticket-cutout-bottom"></div>
-                        <span style="font-size:11px; color:var(--text-dim); font-weight:700;">ลดค่าส่ง</span>
-                        <span style="font-size:19px; font-weight:900; color:var(--primary-green); font-family:var(--font-num);">50%</span>
-                    </div>
-                    <div class="ticket-right">
-                        <div>
-                            <span class="ticket-code-tag">NEW50</span>
-                            <div class="ticket-title">ส่วนลดค่าส่งลูกค้าใหม่ 50%</div>
-                            <div class="ticket-desc">ลดค่าจัดส่ง 50% สำหรับลูกค้าใหม่</div>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                            <span style="font-size:9.5px; color:var(--text-dim);">จำกัด 1 สิทธิ์ต่อท่าน</span>
-                            <button class="ticket-claim-btn" id="btn-deal-NEW50" onclick="claimVoucherDirect('NEW50', 0, 0, 'ส่วนลดค่าส่งลูกค้าใหม่ 50%')">เก็บโค้ด</button>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -7078,6 +7059,60 @@
         }
     } catch(e) {}
 
+    function isVoucherUsedByCustomer(code, promo) {
+        const c = String(code || promo?.code || '').trim().toUpperCase();
+        const pId = String(promo?.id || '').trim();
+        if (!c && !pId) return false;
+
+        // 1. Check userUsedVouchers array (from localStorage and API profile)
+        if (Array.isArray(userUsedVouchers)) {
+            if (c && userUsedVouchers.some(u => String(u).trim().toUpperCase() === c)) return true;
+            if (pId && userUsedVouchers.some(u => String(u).trim() === pId)) return true;
+        }
+
+        // 2. Check customer orders history
+        const myOrders = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
+        const hasPriorOrders = Array.isArray(myOrders) && myOrders.length > 0;
+
+        // New customer vouchers (NEW50, NEW10, etc.) cannot be used if customer has prior orders
+        if (['NEW50', 'NEW10'].includes(c) || pId === 'promo_code_newbie10_delivery') {
+            if (hasPriorOrders) return true;
+        }
+
+        if (Array.isArray(myOrders)) {
+            const foundInOrder = myOrders.some(o => {
+                const dc = String(o.discountCode || o.applied_coupon || o.coupon_code || o.discount_code || '').trim().toUpperCase();
+                if (c && dc === c) return true;
+                if (Array.isArray(o.vouchers) && c && o.vouchers.map(v => String(v).trim().toUpperCase()).includes(c)) return true;
+                return false;
+            });
+            if (foundInOrder) return true;
+        }
+
+        return false;
+    }
+
+    function isPromoAllowedForCustomer(p) {
+        if (!p || p.active === false) return false;
+        const now = Date.now();
+        if (p.startDate) {
+            const s = new Date(p.startDate).getTime();
+            if (!isNaN(s) && now < s) return false;
+        }
+        if (p.endDate) {
+            const e = new Date(p.endDate).getTime();
+            if (!isNaN(e) && now > e) return false;
+        }
+        if (p.isPrivate || p.targetSegment === 'private') {
+            const allowedIds = Array.isArray(p.targetCustomerIds) ? p.targetCustomerIds : (Array.isArray(p.target_customer_ids) ? p.target_customer_ids : []);
+            const myUserId = (typeof currentUser !== 'undefined' && currentUser && currentUser.userId) ? currentUser.userId : '';
+            if (!myUserId || !allowedIds.includes(myUserId)) {
+                return false;
+            }
+        }
+        return isUserEligibleForVoucherTier(p, typeof currentUser !== 'undefined' && currentUser ? currentUser.memberTier : 'eco');
+    }
+
     function isDeliveryVoucher(v) {
         if (!v) return false;
         if (v.type === 'shipping_express' || v.type === 'shipping_express_fixed' || v.type === 'shipping_express_percent') return true;
@@ -7619,11 +7654,9 @@
 
     function syncVoucherButtonStates() {
         const allCodes = Array.from(new Set([...Object.keys(VOUCHER_MASTER), ...(userClaimedVouchers || []), ...(userUsedVouchers || [])]));
-        const myOrders = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
-        const hasPriorOrders = Array.isArray(myOrders) && myOrders.length > 0;
         allCodes.forEach(code => {
             const isClaimed = userClaimedVouchers.includes(code);
-            const isUsed = userUsedVouchers.includes(code) || (['NEW50', 'NEW10'].includes(code) && hasPriorOrders);
+            const isUsed = isVoucherUsedByCustomer(code);
             const targets = [
                 document.getElementById(`btn-voucher-${code}`),
                 document.getElementById(`btn-deal-${code}`)
@@ -7631,6 +7664,8 @@
             targets.forEach(b => {
                 if (b) {
                     if (isUsed) {
+                        const ticket = b.closest('.voucher-ticket') || b.closest('.voucher-ticket-full');
+                        if (ticket) ticket.style.display = 'none';
                         b.textContent = 'ใช้สิทธิ์แล้ว';
                         b.classList.add('claimed');
                         b.disabled = true;
@@ -7754,9 +7789,7 @@
     }
 
     function claimVoucherDirect(code, discount, minSpend, desc) {
-        const myOrders = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
-        const hasPriorOrders = Array.isArray(myOrders) && myOrders.length > 0;
-        if (userUsedVouchers.includes(code) || (['NEW50', 'NEW10'].includes(code) && hasPriorOrders)) {
+        if (isVoucherUsedByCustomer(code)) {
             showToast(`คุณเคยใช้สิทธิ์โค้ดส่วนลด "${code}" ไปแล้วค่ะ`);
             syncVoucherButtonStates();
             return;
@@ -7787,18 +7820,15 @@
     /* Reusable Image 3 Ticket HTML Generator */
     function renderVoucherTicketHtml(v, mode = 'claim') {
         const isClaimed = userClaimedVouchers.includes(v.code);
-        const myOrders = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
-        const hasPriorOrders = Array.isArray(myOrders) && myOrders.length > 0;
-        const isUsed = userUsedVouchers.includes(v.code) || (['NEW50', 'NEW10'].includes(v.code) && hasPriorOrders);
+        const isUsed = isVoucherUsedByCustomer(v.code, v);
+        if (isUsed && (mode === 'claim' || mode === 'cart_picker' || mode === 'use')) {
+            return '';
+        }
         const isSelected = selectedVoucher === v.code;
         
         let actionBtnHtml = '';
         if (mode === 'claim') {
-            if (isUsed) {
-                actionBtnHtml = `<button class="ticket-claim-btn claimed" id="btn-deal-${v.code}" disabled>ใช้สิทธิ์แล้ว</button>`;
-            } else {
-                actionBtnHtml = `<button class="ticket-claim-btn ${isClaimed ? 'claimed' : ''}" id="btn-deal-${v.code}" onclick="claimVoucherDirect('${v.code}', ${v.discount}, ${v.minSpend}, '${v.title}')" ${isClaimed ? 'disabled' : ''}>${isClaimed ? 'เก็บแล้ว' : 'เก็บโค้ด'}</button>`;
-            }
+            actionBtnHtml = `<button class="ticket-claim-btn ${isClaimed ? 'claimed' : ''}" id="btn-deal-${v.code}" onclick="claimVoucherDirect('${v.code}', ${v.discount}, ${v.minSpend}, '${v.title}')" ${isClaimed ? 'disabled' : ''}>${isClaimed ? 'เก็บแล้ว' : 'เก็บโค้ด'}</button>`;
         } else if (mode === 'use') {
             actionBtnHtml = `<button type="button" class="ticket-claim-btn" style="background:#ff6b00; padding:6px 16px;" onclick="useVoucherFromModal('${v.code}')">ใช้</button>`;
         } else if (mode === 'cart_picker') {
@@ -7829,10 +7859,14 @@
     }
 
     function populateCartVoucherSelect() {
+        if (selectedVoucher && isVoucherUsedByCustomer(selectedVoucher)) {
+            setSelectedVoucher(null);
+        }
+        const availableClaimed = (userClaimedVouchers || []).filter(code => !isVoucherUsedByCustomer(code));
         const sel = document.getElementById('cart-voucher-select');
         if (sel) {
             let optionsHtml = '<option value="">-- ไม่ใช้โค้ดส่วนลด --</option>';
-            userClaimedVouchers.forEach(code => {
+            availableClaimed.forEach(code => {
                 const v = VOUCHER_MASTER[code];
                 const title = v ? v.title : `โค้ดส่วนลด ${code}`;
                 optionsHtml += `<option value="${code}" ${selectedVoucher === code ? 'selected' : ''}>${code} - ${title}</option>`;
@@ -7882,13 +7916,13 @@
             }
         } else {
             if (badgeEl) {
-                const count = userClaimedVouchers.length;
+                const count = availableClaimed.length;
                 badgeEl.textContent = count > 0 ? `${count} โค้ด` : 'ไม่มี';
                 badgeEl.style.background = '#f1f5f9';
                 badgeEl.style.color = '#64748b';
             }
             if (titleEl) {
-                titleEl.textContent = userClaimedVouchers.length > 0 ? 'แตะเพื่อเลือกโค้ดส่วนลด' : 'ยังไม่มีโค้ดส่วนลด';
+                titleEl.textContent = availableClaimed.length > 0 ? 'แตะเพื่อเลือกโค้ดส่วนลด' : 'ยังไม่มีโค้ดส่วนลด';
                 titleEl.style.color = 'var(--text-muted)';
             }
             if (discEl) {
@@ -8442,6 +8476,7 @@
     function syncCampaignsToVouchers(promos) {
         if (!Array.isArray(promos)) return;
         window.__promotionsLoaded = true;
+        window.__LATEST_PROMOTIONS = promos;
         promos.forEach(p => {
             if (!p || p.active === false) return;
             const code = (p.code || '').trim().toUpperCase();
@@ -8475,7 +8510,7 @@
                 finalTarget = 'DELIVERY';
             } else if (p.pricingRule?.type === 'BUNDLE_FIXED_PRICE') {
                 vType = 'bundle';
-                leftLbl = 'เหมาแพ็ก';
+                leftLbl = 'โปรเซ็ต';
                 finalTarget = 'ALL';
             } else if (isPercent) {
                 vType = 'discount_percent';
@@ -8519,31 +8554,30 @@
     function renderHomeVoucherTrack(promos) {
         const track = document.getElementById('home-voucher-track');
         if (!track) return;
-        const activeList = Array.isArray(promos) ? promos.filter(p => p.active !== false && p.targetSegment !== 'private' && !p.isPrivate) : [];
-        if (activeList.length === 0) return;
+        const activeList = Array.isArray(promos) ? promos.filter(p => isPromoAllowedForCustomer(p) && !isVoucherUsedByCustomer(p.code, p)) : [];
+        if (activeList.length === 0) {
+            track.innerHTML = '';
+            return;
+        }
 
         let html = '';
-        const collectibles = activeList.filter(p => {
-            const isColl = p.triggerType === 'COLLECTIBLE' || 
-                p.isCollectible || 
-                (p.code && (p.code.toUpperCase().startsWith('NEW') || p.code.toUpperCase() === 'NEW50' || p.code.toUpperCase() === 'NEW10')) || 
-                p.id === 'promo_code_newbie10_delivery';
-            if (!isColl) return false;
-            return isUserEligibleForVoucherTier(p, currentUser.memberTier);
-        });
-
+        const collectibles = activeList.filter(p => (p.code || '').trim());
         collectibles.forEach(p => {
             const code = (p.code || '').trim().toUpperCase();
+            const isPercent = p.pricingRule?.type === 'PERCENT' || (Number(p.pricingRule?.discountValue) > 0 && Number(p.pricingRule?.discountValue) <= 100 && p.pricingRule?.type !== 'FIXED_DISCOUNT' && p.pricingRule?.type !== 'BUNDLE_FIXED_PRICE');
+            const isBundle = p.pricingRule?.type === 'BUNDLE_FIXED_PRICE';
+            const val = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
+
             const v = VOUCHER_MASTER[code] || {
                 code,
-                discount: p.pricingRule?.discountValue || 0,
-                discountPercent: (p.pricingRule?.type === 'PERCENT' || Number(p.pricingRule?.discountValue) <= 100) ? Number(p.pricingRule?.discountValue || 50) : 0,
+                discount: isPercent ? 0 : val,
+                discountPercent: isPercent ? val : 0,
                 minSpend: p.minSubtotal || 0,
-                title: p.name || 'ส่วนลดค่าส่งลูกค้าใหม่ 50%',
-                leftLabel: 'ลดค่าส่ง',
-                leftAmount: p.pricingRule?.discountValue ? `${p.pricingRule.discountValue}%` : '50%',
-                desc: p.description || 'ลดค่าจัดส่งสำหรับลูกค้าใหม่',
-                condition: 'จำกัด 1 สิทธิ์'
+                title: p.name || `โค้ดส่วนลด ${code}`,
+                leftLabel: isBundle ? 'โปรเซ็ต' : (isPercent ? 'ส่วนลด' : 'ลดทันที'),
+                leftAmount: isBundle ? `฿${p.pricingRule?.bundlePrice || val}` : (isPercent ? `${val}%` : `฿${val}`),
+                desc: p.description || '',
+                condition: p.minQty ? `สั่งซื้อครบ ${p.minQty} ชิ้น` : (p.minSubtotal ? `ขั้นต่ำ ฿${p.minSubtotal}` : 'จำกัด 1 สิทธิ์')
             };
             const isClaimed = userClaimedVouchers.includes(code);
             html += `
@@ -8551,8 +8585,8 @@
                     <div class="ticket-left">
                         <div class="ticket-cutout-top"></div>
                         <div class="ticket-cutout-bottom"></div>
-                        <span style="font-size:11px; color:var(--text-dim); font-weight:700;">${v.leftLabel || 'ลดค่าส่ง'}</span>
-                        <span style="font-size:18px; font-weight:900; color:var(--primary-green); font-family:var(--font-num);">${v.leftAmount || '50%'}</span>
+                        <span style="font-size:11px; color:var(--text-dim); font-weight:700;">${v.leftLabel || 'ส่วนลด'}</span>
+                        <span style="font-size:18px; font-weight:900; color:var(--primary-green); font-family:var(--font-num);">${v.leftAmount || '฿0'}</span>
                     </div>
                     <div class="ticket-right">
                         <div>
@@ -8562,7 +8596,7 @@
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
                             <span style="font-size:9.5px; color:var(--text-dim);">${v.condition || 'จำกัด 1 สิทธิ์'}</span>
-                            <button class="ticket-claim-btn ${isClaimed ? 'claimed' : ''}" id="btn-voucher-${code}" onclick="claimVoucherDirect('${code}', ${v.discount || 0}, ${v.minSpend || 0}, '${(v.title || '').replace(/'/g, "\'")}')" ${isClaimed ? 'disabled' : ''}>
+                            <button class="ticket-claim-btn ${isClaimed ? 'claimed' : ''}" id="btn-voucher-${code}" onclick="claimVoucherDirect('${code}', ${v.discount || 0}, ${v.minSpend || 0}, '${(v.title || '').replace(/'/g, "\\'")}')" ${isClaimed ? 'disabled' : ''}>
                                 ${isClaimed ? 'เก็บแล้ว' : 'เก็บโค้ด'}
                             </button>
                         </div>
@@ -8571,13 +8605,13 @@
             `;
         });
 
-        const autos = activeList.filter(p => p.triggerType === 'AUTO' || (!p.code && !p.isCollectible));
+        const autos = activeList.filter(p => !((p.code || '').trim()));
         autos.forEach(p => {
             const isPercent = p.pricingRule?.type === 'PERCENT';
             const val = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
             const isBundle = p.pricingRule?.type === 'BUNDLE_FIXED_PRICE';
             const leftTag = isBundle ? 'โปรเซ็ต' : (isPercent ? 'ส่วนลด' : 'โปรโมชั่น');
-            const leftVal = isBundle ? `฿${p.pricingRule?.discountValue || 60}` : (isPercent ? `${val}%` : `฿${val}`);
+            const leftVal = isBundle ? `฿${p.pricingRule?.bundlePrice || p.pricingRule?.discountValue || 0}` : (isPercent ? `${val}%` : `฿${val}`);
             html += `
                 <div class="voucher-ticket">
                     <div class="ticket-left">
@@ -8601,9 +8635,7 @@
             `;
         });
 
-        if (html) {
-            track.innerHTML = html;
-        }
+        track.innerHTML = html;
     }
 
     function renderDynamicDealsTab(promos) {
@@ -8611,28 +8643,26 @@
         if (!container) return;
 
         let html = '';
-        const activeList = Array.isArray(promos) ? promos.filter(p => p.active !== false && p.targetSegment !== 'private' && !p.isPrivate) : [];
+        const activeList = Array.isArray(promos) ? promos.filter(p => isPromoAllowedForCustomer(p) && !isVoucherUsedByCustomer(p.code, p)) : [];
 
-        // 1. Collectible vouchers
-        const collectibles = activeList.filter(p => {
-            const isColl = p.triggerType === 'COLLECTIBLE' || 
-                p.isCollectible || 
-                (p.code && (p.code.toUpperCase().startsWith('NEW') || p.code.toUpperCase() === 'NEW50' || p.code.toUpperCase() === 'NEW10')) || 
-                p.id === 'promo_code_newbie10_delivery';
-            if (!isColl) return false;
-            return isUserEligibleForVoucherTier(p, currentUser.memberTier);
-        });
+        // 1. Collectible / Code-based vouchers
+        const collectibles = activeList.filter(p => (p.code || '').trim());
         collectibles.forEach(p => {
             const code = (p.code || '').trim().toUpperCase();
+            const isPercent = p.pricingRule?.type === 'PERCENT' || (Number(p.pricingRule?.discountValue) > 0 && Number(p.pricingRule?.discountValue) <= 100 && p.pricingRule?.type !== 'FIXED_DISCOUNT' && p.pricingRule?.type !== 'BUNDLE_FIXED_PRICE');
+            const isBundle = p.pricingRule?.type === 'BUNDLE_FIXED_PRICE';
+            const val = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
+
             const v = VOUCHER_MASTER[code] || {
                 code,
-                discount: p.pricingRule?.discountValue || 0,
+                discount: isPercent ? 0 : val,
+                discountPercent: isPercent ? val : 0,
                 minSpend: p.minSubtotal || 0,
-                title: p.name,
-                leftLabel: 'ลดทันที',
-                leftAmount: `฿${p.pricingRule?.discountValue || 0}`,
-                desc: p.description,
-                condition: p.minSubtotal ? `ขั้นต่ำ ฿${p.minSubtotal}` : 'ไม่มีขั้นต่ำ'
+                title: p.name || `โค้ดส่วนลด ${code}`,
+                leftLabel: isBundle ? 'โปรเซ็ต' : (isPercent ? 'ส่วนลด' : 'ลดทันที'),
+                leftAmount: isBundle ? `฿${p.pricingRule?.bundlePrice || val}` : (isPercent ? `${val}%` : `฿${val}`),
+                desc: p.description || '',
+                condition: p.minQty ? `สั่งซื้อครบ ${p.minQty} ชิ้น` : (p.minSubtotal ? `ขั้นต่ำ ฿${p.minSubtotal}` : 'ไม่มีขั้นต่ำ')
             };
             const isClaimed = userClaimedVouchers.includes(code);
             html += `
@@ -8651,7 +8681,7 @@
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
                             <span style="font-size:9.5px; color:var(--text-dim);">${v.condition || 'ไม่มีขั้นต่ำ'}</span>
-                            <button class="ticket-claim-btn ${isClaimed ? 'claimed' : ''}" id="btn-deal-${code}" onclick="claimVoucherDirect('${code}', ${v.discount || 0}, ${v.minSpend || 0}, '${(v.title || '').replace(/'/g, "\\'")}')">
+                            <button class="ticket-claim-btn ${isClaimed ? 'claimed' : ''}" id="btn-deal-${code}" onclick="claimVoucherDirect('${code}', ${v.discount || 0}, ${v.minSpend || 0}, '${(v.title || '').replace(/'/g, "\\'")}')" ${isClaimed ? 'disabled' : ''}>
                                 ${isClaimed ? 'เก็บแล้ว' : 'เก็บโค้ด'}
                             </button>
                         </div>
@@ -8661,17 +8691,20 @@
         });
 
         // 2. Auto discounts
-        const autos = activeList.filter(p => p.triggerType === 'AUTO' || (!p.code && !p.isCollectible));
+        const autos = activeList.filter(p => !((p.code || '').trim()));
         autos.forEach(p => {
             const isPercent = p.pricingRule?.type === 'PERCENT';
             const val = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
+            const isBundle = p.pricingRule?.type === 'BUNDLE_FIXED_PRICE';
+            const leftTag = isBundle ? 'โปรเซ็ต' : (isPercent ? 'ส่วนลด' : 'โปรโมชั่น');
+            const leftVal = isBundle ? `฿${p.pricingRule?.bundlePrice || p.pricingRule?.discountValue || 0}` : (isPercent ? `${val}%` : `฿${val}`);
             html += `
                 <div class="voucher-ticket-full">
                     <div class="ticket-left">
                         <div class="ticket-cutout-top"></div>
                         <div class="ticket-cutout-bottom"></div>
-                        <span style="font-size:11px; color:var(--text-dim); font-weight:700;">โปรโมชั่น</span>
-                        <span style="font-size:19px; font-weight:900; color:var(--primary-lime); font-family:var(--font-num);">${isPercent ? `${val}%` : `฿${val}`}</span>
+                        <span style="font-size:11px; color:var(--text-dim); font-weight:700;">${leftTag}</span>
+                        <span style="font-size:19px; font-weight:900; color:var(--primary-lime); font-family:var(--font-num);">${leftVal}</span>
                     </div>
                     <div class="ticket-right">
                         <div>
@@ -8690,7 +8723,15 @@
 
         if (html) {
             container.innerHTML = html;
+        } else {
+            container.innerHTML = `
+                <div style="text-align:center; padding:36px 16px;">
+                    <div style="font-size:14px; font-weight:800; color:#ffffff;">ยังไม่มีโค้ดส่วนลดที่ใช้ได้ในขณะนี้</div>
+                    <div style="font-size:11.5px; color:#6b7280; margin-top:4px;">โปรโมชั่นที่คุณใช้สิทธิ์ไปแล้วจะถูกซ่อนโดยอัตโนมัติ</div>
+                </div>
+            `;
         }
+    }
     }
 
     function openProductDetail(prodId) {
@@ -10526,7 +10567,7 @@
         const container = document.getElementById('my-vouchers-list-container');
         if (!container) return;
 
-        const claimedList = (userClaimedVouchers || []).filter(code => typeof code === 'string' && code.trim() && code !== 'POD4FOR500' && code !== 'FREEPOSTAL');
+        const claimedList = (userClaimedVouchers || []).filter(code => typeof code === 'string' && code.trim() && code !== 'POD4FOR500' && code !== 'FREEPOSTAL' && !isVoucherUsedByCustomer(code));
         if (claimedList.length === 0) {
             container.innerHTML = `
                 <div style="text-align:center; padding:36px 16px;">
@@ -10607,7 +10648,7 @@
             </div>
         `;
 
-        const claimedList = (userClaimedVouchers || []).filter(code => typeof code === 'string' && code.trim() && code !== 'POD4FOR500' && code !== 'FREEPOSTAL');
+        const claimedList = (userClaimedVouchers || []).filter(code => typeof code === 'string' && code.trim() && code !== 'POD4FOR500' && code !== 'FREEPOSTAL' && !isVoucherUsedByCustomer(code));
         if (claimedList.length === 0) {
             html += `
                 <div style="text-align:center; padding:32px 16px;">
@@ -12620,8 +12661,12 @@
                             userUsedVouchers = Array.from(new Set([...userUsedVouchers, ...data.profile.usedCoupons]));
                             try { localStorage.setItem('vapor_used_vouchers', JSON.stringify(userUsedVouchers)); } catch(e) {}
                         }
-                        if (typeof populateCartVoucherSelect === 'function') populateCartVoucherSelect();
-                        if (typeof syncVoucherButtonStates === 'function') syncVoucherButtonStates();
+                        if (Array.isArray(window.__LATEST_PROMOTIONS) && typeof syncCampaignsToVouchers === 'function') {
+                            syncCampaignsToVouchers(window.__LATEST_PROMOTIONS);
+                        } else {
+                            if (typeof populateCartVoucherSelect === 'function') populateCartVoucherSelect();
+                            if (typeof syncVoucherButtonStates === 'function') syncVoucherButtonStates();
+                        }
                         if (data.profile.address) currentUser.address = data.profile.address;
                         if (data.profile.postalAddress) currentUser.savedPostalAddress = data.profile.postalAddress;
                         const profilePin = data.profile.coordinates;
