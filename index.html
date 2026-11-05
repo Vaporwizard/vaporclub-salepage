@@ -4143,26 +4143,7 @@
                 </div>
             </div>
 
-            <!-- Deal: โปร 4 หัว 500 บาท (โปรโมชั่นอัตโนมัติ) -->
-            <div class="voucher-ticket">
-                <div class="ticket-left">
-                    <div class="ticket-cutout-top"></div>
-                    <div class="ticket-cutout-bottom"></div>
-                    <span style="font-size:11px; color:var(--text-dim); font-weight:700;">โปรเซ็ต</span>
-                    <span style="font-size:18px; font-weight:900; color:var(--primary-lime); font-family:var(--font-num);">฿60</span>
-                </div>
-                <div class="ticket-right">
-                    <div>
-                        <span class="ticket-code-tag" style="background:rgba(255,107,0,0.15); color:#ff6b00; border:1px solid rgba(255,107,0,0.3);">โปรโมชั่นอัตโนมัติ</span>
-                        <div class="ticket-title">โปร 4 หัว 500 บาท (ลด ฿60)</div>
-                        <div class="ticket-desc">หัวพอต MOOOD 3ML และ INFY PLUS คละได้</div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                        <span style="font-size:9.5px; color:var(--text-dim);">ลดอัตโนมัติในระบบ</span>
-                        <span style="font-size:10.5px; font-weight:800; color:var(--primary-green-dark);">มีผลในตะกร้า</span>
-                    </div>
-                </div>
-            </div>
+
         </div>
 
         <!-- 4. 3 RECOMMENDED PRODUCTS (BUTTON SAYS: "เลือกสินค้า") -->
@@ -7716,7 +7697,7 @@
         }
 
         if (code === 'POD4FOR500') {
-            showToast('โปร 4 หัว 500 บาท ระบบคิดส่วนลดให้อัตโนมัติในตะกร้าแล้ว ไม่ต้องกรอกโค้ด');
+            showToast('ไม่มีโปรโมชั่นนี้ในระบบแล้ว');
             inputEl.value = '';
             return;
         }
@@ -8977,9 +8958,9 @@
             return n.includes('moood') || n.includes('infy') || n.includes('marbo zero') || n.includes('relx') || n.includes('jues') || (it.price >= 130 && it.price <= 150);
         }).reduce((s, i) => s + i.qty, 0);
 
-        const fullBundles = Math.floor(podCount / 4);
-        const bundleDiscount = fullBundles * 60;
-        const subtotal = Math.max(0, rawSubtotal - bundleDiscount);
+        const fullBundles = 0;
+        const bundleDiscount = 0;
+        const subtotal = rawSubtotal;
 
         const headerBadge = document.getElementById('header-cart-badge');
         if (headerBadge) {
@@ -11121,9 +11102,9 @@
             return n.includes('moood') || n.includes('infy') || n.includes('marbo zero') || n.includes('relx') || n.includes('jues') || (it.price >= 130 && it.price <= 150);
         }).reduce((s, i) => s + i.qty, 0);
 
-        const fullBundles = Math.floor(podCount / 4);
-        const bundleDiscount = fullBundles * 60;
-        const subtotal = Math.max(0, rawSubtotal - bundleDiscount);
+        const fullBundles = 0;
+        const bundleDiscount = 0;
+        const subtotal = rawSubtotal;
 
         let baseShipping = (count === 0) ? 0 : (shippingMethod === 'postal'
             ? postalFee
@@ -11432,9 +11413,9 @@
             return n.includes('moood') || n.includes('infy') || n.includes('marbo zero') || n.includes('relx') || n.includes('jues') || (it.price >= 130 && it.price <= 150);
         }).reduce((s, i) => s + i.qty, 0);
 
-        const fullBundles = Math.floor(podCount / 4);
-        const bundleDiscount = fullBundles * 60;
-        const subtotal = Math.max(0, rawSubtotal - bundleDiscount);
+        const fullBundles = 0;
+        const bundleDiscount = 0;
+        const subtotal = rawSubtotal;
 
         const shipping = (count === 0) ? 0 : (shippingMethod === 'postal'
             ? postalFee
