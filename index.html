@@ -6379,7 +6379,10 @@
             leftAmount: formatBirthdayDiscount(config),
             desc: `สุขสันต์วันเกิด! ส่วนลดพิเศษ ${isPercent ? config.discount + '%' : config.discount + ' บาท'}`,
             condition: 'ไม่มีวันหมดอายุ • ใช้ได้ 1 ครั้ง',
-            isZoneSpecific: false
+            isZoneSpecific: false,
+            isCollectible: true,
+            triggerType: 'COLLECTIBLE',
+            targetCategory: 'ALL'
         };
     }
 
@@ -7130,6 +7133,198 @@
         return isUserEligibleForVoucherTier(p, typeof currentUser !== 'undefined' && currentUser ? currentUser.memberTier : 'eco');
     }
 
+    function matchItemCategory(itemName = '', targetCategory = 'ALL') {
+        if (!targetCategory || targetCategory === 'ALL') return true;
+        const lower = String(itemName || '').toLowerCase();
+        const isSwitch = /(switch|m switch|looma|สวิต|สวิตช์|^mst\b|^mst-)/i.test(lower);
+        const isDisposable = /(9k|10k|14k|15k|16k|9000|10000|14000|15000|16000|disposable|ใช้แล้วทิ้ง|v\s*plus|vplus|elfbar|infybox|^vp\b|^vp16)/i.test(lower) && !isSwitch;
+        const isDevice = /(device|เครื่อง|ตัวเครื่อง|พอตไฟฟ้า|kit|mod)/i.test(lower);
+        const isPod = /(หัวพอต|หัวพอด|หัว|pod|moood|infy|marbo zero|relx|^md\b|^md-|^if\b|^if-|^mb\b|^mb-)/i.test(lower) && !isDisposable && !isSwitch && !isDevice;
+
+        switch (String(targetCategory).toUpperCase()) {
+            case 'POD': return isPod;
+            case 'DISPOSABLE': return isDisposable;
+            case 'SWITCH': return isSwitch;
+            case 'DEVICE': return isDevice;
+            case 'DELIVERY':
+            case 'POSTAL':
+            case 'ALL_DELIVERY':
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    function calculateDeliveryFee(method = shippingMethod, subtotalAmount = 0, itemCount = 1) {
+        if (itemCount === 0) return 0;
+        const base = method === 'postal' ? (Number(postalFee) || 40) : (Number(expressFee) || 50);
+        const freeShippingThreshold = Number(storeConfig?.freeShippingMin) || 0;
+        if (freeShippingThreshold > 0 && subtotalAmount >= freeShippingThreshold) {
+            return 0;
+        }
+        return base;
+    }
+
+    function calculateAutoPromotions(cartItems = cart, rawSubtotal = 0, baseShipping = 0, method = shippingMethod) {
+        let autoProductDiscount = 0;
+        let autoDeliveryDiscount = 0;
+        const autoDescriptions = [];
+        const promos = Array.isArray(window.__LATEST_PROMOTIONS)
+            ? window.__LATEST_PROMOTIONS.filter(p => isPromoAllowedForCustomer(p) && !isVoucherUsedByCustomer(p.code, p))
+            : [];
+        const autoPromos = promos.filter(p => p.triggerType === 'AUTO' || (!p.triggerType && !(p.code || '').trim()));
+
+        for (const promo of autoPromos) {
+            const rule = promo.pricingRule || {};
+            const ruleType = rule.type;
+            const targetCat = String(promo.targetCategory || promo.target_category || 'ALL').toUpperCase();
+            const isDeliveryTarget = ['DELIVERY', 'POSTAL', 'ALL_DELIVERY'].includes(targetCat) ||
+                                     /ค่าส่ง|จัดส่ง|delivery|shipping/i.test(promo.name || '');
+
+            if (ruleType === 'BUNDLE_FIXED_PRICE') {
+                const bQty = Number(rule.bundleQty || promo.bundleQty || 4);
+                const bPrice = Number(rule.bundlePrice || promo.bundlePrice || 500);
+                const eligibleItems = cartItems.filter(it => matchItemCategory(it.name, targetCat) && (!Array.isArray(promo.brandFilter) || promo.brandFilter.length === 0 || promo.brandFilter.some(b => String(it.name || '').toLowerCase().includes(String(b).toLowerCase()))));
+                const totalCount = eligibleItems.reduce((sum, it) => sum + (it.qty || 1), 0);
+                if (totalCount >= bQty && bPrice > 0) {
+                    const fullBundles = Math.floor(totalCount / bQty);
+                    const bundledUnits = fullBundles * bQty;
+                    const totalVal = eligibleItems.reduce((val, it) => val + ((it.price || 0) * (it.qty || 1)), 0);
+                    const avgPrice = totalCount > 0 ? (totalVal / totalCount) : (bPrice / bQty);
+                    const stdCost = avgPrice * bundledUnits;
+                    const promoCost = fullBundles * bPrice;
+                    const bDisc = Math.max(0, Math.round(stdCost - promoCost));
+                    if (bDisc > 0) {
+                        autoProductDiscount += bDisc;
+                        autoDescriptions.push(`โปรเซ็ต ${bQty} ชิ้น ฿${bPrice} (-฿${bDisc})`);
+                    }
+                }
+            } else if (ruleType === 'PERCENT') {
+                const pct = Number(rule.discountValue || 0);
+                if (isDeliveryTarget) {
+                    const isPostalOnly = targetCat === 'POSTAL' || (/พัสดุ|ems/i.test(promo.name || '') && !/ด่วน|ไรเดอร์|grab/i.test(promo.name || ''));
+                    const isExpressOnly = targetCat === 'DELIVERY' || (/ด่วน|ไรเดอร์|grab/i.test(promo.name || '') && !/พัสดุ|ems/i.test(promo.name || ''));
+                    if (isPostalOnly && method !== 'postal') continue;
+                    if (isExpressOnly && method !== 'express') continue;
+                    if (baseShipping > 0 && pct > 0) {
+                        const dDisc = Math.round(baseShipping * (pct / 100));
+                        if (dDisc > 0) {
+                            autoDeliveryDiscount += dDisc;
+                            autoDescriptions.push(`${promo.name || 'ลดค่าส่ง'} ${pct}% (-฿${dDisc})`);
+                        }
+                    }
+                } else {
+                    if (!promo.minSubtotal || rawSubtotal >= promo.minSubtotal) {
+                        let eligibleSub = rawSubtotal;
+                        if (targetCat !== 'ALL') {
+                            eligibleSub = cartItems.filter(it => matchItemCategory(it.name, targetCat)).reduce((s, it) => s + ((it.price || 0) * (it.qty || 1)), 0);
+                        }
+                        if (eligibleSub > 0 && pct > 0) {
+                            const pDisc = Math.round(eligibleSub * (pct / 100));
+                            if (pDisc > 0) {
+                                autoProductDiscount += pDisc;
+                                autoDescriptions.push(`${promo.name || 'ส่วนลด'} ${pct}% (-฿${pDisc})`);
+                            }
+                        }
+                    }
+                }
+            } else if (ruleType === 'FIXED_DISCOUNT') {
+                const val = Number(rule.discountValue || 0);
+                if (isDeliveryTarget) {
+                    const isPostalOnly = targetCat === 'POSTAL' || (/พัสดุ|ems/i.test(promo.name || '') && !/ด่วน|ไรเดอร์|grab/i.test(promo.name || ''));
+                    const isExpressOnly = targetCat === 'DELIVERY' || (/ด่วน|ไรเดอร์|grab/i.test(promo.name || '') && !/พัสดุ|ems/i.test(promo.name || ''));
+                    if (isPostalOnly && method !== 'postal') continue;
+                    if (isExpressOnly && method !== 'express') continue;
+                    if (baseShipping > 0 && val > 0) {
+                        const dDisc = Math.min(baseShipping, val);
+                        if (dDisc > 0) {
+                            autoDeliveryDiscount += dDisc;
+                            autoDescriptions.push(`${promo.name || 'ลดค่าส่ง'} (-฿${dDisc})`);
+                        }
+                    }
+                } else {
+                    if ((!promo.minSubtotal || rawSubtotal >= promo.minSubtotal) && val > 0) {
+                        const pDisc = Math.min(rawSubtotal, val);
+                        if (pDisc > 0) {
+                            autoProductDiscount += pDisc;
+                            autoDescriptions.push(`${promo.name || 'ส่วนลด'} (-฿${pDisc})`);
+                        }
+                    }
+                }
+            }
+        }
+
+        return {
+            autoProductDiscount: Math.min(rawSubtotal, autoProductDiscount),
+            autoDeliveryDiscount: Math.min(baseShipping, autoDeliveryDiscount),
+            autoDescriptions
+        };
+    }
+
+    function calculateCartTotals(cartItems = cart, selectedCode = selectedVoucher, method = shippingMethod) {
+        const count = Array.isArray(cartItems) ? cartItems.reduce((s, i) => s + (i.qty || 1), 0) : 0;
+        const rawSubtotal = Array.isArray(cartItems) ? cartItems.reduce((s, i) => s + ((i.price || 0) * (i.qty || 1)), 0) : 0;
+        const baseShipping = calculateDeliveryFee(method, rawSubtotal, count);
+
+        // 1. Calculate Auto Promotions
+        const auto = calculateAutoPromotions(cartItems, rawSubtotal, baseShipping, method);
+        let autoProdDisc = auto.autoProductDiscount;
+        let autoDelivDisc = auto.autoDeliveryDiscount;
+        const descriptions = [...auto.autoDescriptions];
+
+        // 2. Calculate Selected Voucher Code Discount (if any)
+        let voucherProdDisc = 0;
+        let voucherDelivDisc = 0;
+        let voucherDesc = '';
+        if (selectedCode && VOUCHER_MASTER[selectedCode]) {
+            const v = VOUCHER_MASTER[selectedCode];
+            const remainingShipping = Math.max(0, baseShipping - autoDelivDisc);
+            const remainingSubtotal = Math.max(0, rawSubtotal - autoProdDisc);
+            const calc = calculateVoucherDiscount(v, remainingSubtotal, remainingShipping, method);
+            if (isDeliveryVoucher(v)) {
+                voucherDelivDisc = Math.min(remainingShipping, calc.discount);
+            } else {
+                voucherProdDisc = Math.min(remainingSubtotal, calc.discount);
+            }
+            if (calc.discountDesc) {
+                voucherDesc = calc.discountDesc;
+                descriptions.push(calc.discountDesc);
+            }
+        }
+
+        const totalProductDiscount = Math.min(rawSubtotal, autoProdDisc + voucherProdDisc);
+        const totalDeliveryDiscount = Math.min(baseShipping, autoDelivDisc + voucherDelivDisc);
+        const totalDiscount = totalProductDiscount + totalDeliveryDiscount;
+
+        const finalSubtotal = Math.max(0, rawSubtotal - totalProductDiscount);
+        const finalShipping = Math.max(0, baseShipping - totalDeliveryDiscount);
+        const finalTotal = count === 0 ? 0 : Math.max(0, finalSubtotal + finalShipping);
+
+        return {
+            count,
+            rawSubtotal,
+            subtotal: finalSubtotal,
+            baseShipping,
+            shipping: finalShipping,
+            autoProductDiscount: autoProdDisc,
+            autoDeliveryDiscount: autoDelivDisc,
+            voucherProductDiscount: voucherProdDisc,
+            voucherDeliveryDiscount: voucherDelivDisc,
+            totalProductDiscount,
+            totalDeliveryDiscount,
+            discount: totalDiscount,
+            discountDesc: descriptions.join(' + '),
+            finalTotal,
+            total: finalTotal
+        };
+    }
+
+    function applyVoucher(code) {
+        setSelectedVoucher(code || null);
+        populateCartVoucherSelect();
+        updateCartUI();
+    }
+
     function isDeliveryVoucher(v) {
         if (!v) return false;
         if (v.type === 'shipping_express' || v.type === 'shipping_express_fixed' || v.type === 'shipping_express_percent') return true;
@@ -7148,6 +7343,9 @@
         let discountDesc = '';
 
         let eligibleItems = (typeof cart !== 'undefined' && Array.isArray(cart)) ? cart : [];
+        if (v.targetCategory && !['ALL', 'DELIVERY', 'POSTAL', 'ALL_DELIVERY'].includes(String(v.targetCategory).toUpperCase())) {
+            eligibleItems = eligibleItems.filter(it => matchItemCategory(it.name, v.targetCategory));
+        }
         const hasProductFilter = Array.isArray(v.product_ids) && v.product_ids.length > 0;
 
         if (hasProductFilter) {
@@ -7179,8 +7377,8 @@
         if (isDelivery) {
             // Delivery discount ONLY applies to shipping fee, NEVER subtotal!
             const cat = String(v.targetCategory || v.target || '').toUpperCase();
-            const isPostalOnly = cat === 'POSTAL' || v.type === 'shipping_postal_fixed' || v.type === 'shipping_postal_percent' || (/พัสดุ|ems/i.test(v.title || '') && !/ด่วน|ไรเดอร์|grab/i.test(v.title || ''));
-            const isExpressOnly = cat === 'DELIVERY' || v.type === 'shipping_express_fixed' || v.type === 'shipping_express_percent' || (/ด่วน|ไรเดอร์|grab/i.test(v.title || '') && !/พัสดุ|ems/i.test(v.title || ''));
+            const isPostalOnly = cat === 'POSTAL' || (cat !== 'ALL_DELIVERY' && (v.type === 'shipping_postal_fixed' || v.type === 'shipping_postal_percent' || (/พัสดุ|ems/i.test(v.title || '') && !/ด่วน|ไรเดอร์|grab/i.test(v.title || ''))));
+            const isExpressOnly = cat === 'DELIVERY' || (cat !== 'ALL_DELIVERY' && (v.type === 'shipping_express_fixed' || v.type === 'shipping_express_percent' || (/ด่วน|ไรเดอร์|grab/i.test(v.title || '') && !/พัสดุ|ems/i.test(v.title || ''))));
 
             if (isPostalOnly) {
                 if (shippingMethod === 'postal' && shipping > 0) {
@@ -7211,7 +7409,7 @@
             } else {
                 // ALL_DELIVERY: applies to whatever shipping method is selected!
                 if (shipping > 0) {
-                    if (v.discountPercent > 0) {
+                    if (v.discountPercent > 0 || v.type === 'shipping_delivery_percent') {
                         const pct = v.discountPercent || v.discount || 0;
                         discount = Math.round(shipping * (pct / 100));
                         discountDesc = `ส่วนลดค่าส่ง ${pct}% (${v.code})`;
@@ -7236,7 +7434,7 @@
         } else {
             // Product discount ONLY applies to subtotal!
             if (subtotal >= (v.minSpend || 0)) {
-                const targetSub = hasProductFilter ? eligibleSubtotal : subtotal;
+                const targetSub = (hasProductFilter || (v.targetCategory && v.targetCategory !== 'ALL')) ? eligibleSubtotal : subtotal;
                 if (v.discountPercent > 0 || v.type === 'discount_percent') {
                     const pct = v.discountPercent || v.discount || 0;
                     discount = Math.round(targetSub * (pct / 100));
@@ -7304,7 +7502,10 @@
             leftAmount: '50%',
             desc: 'ลดค่าจัดส่ง 50% สำหรับลูกค้าใหม่',
             condition: 'จำกัด 1 สิทธิ์ต่อท่าน',
-            isZoneSpecific: false
+            isZoneSpecific: false,
+            isCollectible: true,
+            triggerType: 'COLLECTIBLE',
+            targetCategory: 'DELIVERY'
         },
         'NEW10': {
             code: 'NEW50',
@@ -7331,6 +7532,9 @@
             desc: 'ลดค่าจัดส่ง 50% (โซน CBP, เซ็นทรัลเฟสติวัล, กงสุลอเมริกา)',
             condition: 'กรอกโค้ดเพื่อใช้งาน',
             isZoneSpecific: true,
+            isCollectible: false,
+            triggerType: 'CODE',
+            targetCategory: 'DELIVERY',
             zoneKeywords: ['cbp', 'business park', 'บิสสิเนสพาร์ค', 'เซ็นทรัลเฟส', 'เซนเฟส', 'กงสุล']
         },
         'MP7Y20': {
@@ -7345,6 +7549,9 @@
             desc: 'ลดค่าจัดส่ง 20% (เฉพาะโซนมายเพลส)',
             condition: 'กรอกโค้ดเพื่อใช้งาน',
             isZoneSpecific: true,
+            isCollectible: false,
+            triggerType: 'CODE',
+            targetCategory: 'DELIVERY',
             zoneKeywords: ['my place', 'มายเพลส']
         }
     };
@@ -8512,7 +8719,7 @@
 
             let vType = 'discount_fixed';
             let leftLbl = 'ลดทันที';
-            let finalTarget = 'ALL';
+            let finalTarget = rawCat || 'ALL';
             if (isPostal) {
                 vType = isPercent ? 'shipping_postal_percent' : 'shipping_postal_fixed';
                 leftLbl = 'ลดส่งพัสดุ';
@@ -8557,8 +8764,8 @@
                 condition: p.minQty ? `สั่งซื้อครบ ${p.minQty} ชิ้นขึ้นไป` : (p.minSubtotal ? `ขั้นต่ำ ฿${p.minSubtotal}` : 'ไม่มีขั้นต่ำ'),
                 isZoneSpecific: isZone,
                 zoneKeywords: p.zoneKeywords || existing.zoneKeywords || [],
-                isCollectible: p.triggerType === 'COLLECTIBLE' || !!p.isCollectible,
-                triggerType: p.triggerType
+                isCollectible: (p.triggerType === 'COLLECTIBLE' || !!p.isCollectible) && p.triggerType !== 'CODE',
+                triggerType: p.triggerType || (p.code ? 'CODE' : 'AUTO')
             };
         });
         renderHomeVoucherTrack(promos);
@@ -8578,7 +8785,14 @@
         }
 
         let html = '';
-        const collectibles = activeList.filter(p => (p.code || '').trim());
+        // 1. Collectible vouchers (ONLY triggerType === 'COLLECTIBLE' or isCollectible === true, NOT 'CODE' or 'AUTO')
+        const collectibles = activeList.filter(p => {
+            const code = (p.code || '').trim().toUpperCase();
+            if (!code) return false;
+            if (p.triggerType === 'CODE') return false; // STRICT: Trigger type CODE is hidden from claim buttons!
+            if (p.triggerType === 'AUTO') return false;
+            return p.triggerType === 'COLLECTIBLE' || p.isCollectible === true;
+        });
         collectibles.forEach(p => {
             const code = (p.code || '').trim().toUpperCase();
             const isPercent = p.pricingRule?.type === 'PERCENT' || (Number(p.pricingRule?.discountValue) > 0 && Number(p.pricingRule?.discountValue) <= 100 && p.pricingRule?.type !== 'FIXED_DISCOUNT' && p.pricingRule?.type !== 'BUNDLE_FIXED_PRICE');
@@ -8622,7 +8836,8 @@
             `;
         });
 
-        const autos = activeList.filter(p => !((p.code || '').trim()));
+        // 2. Auto discounts
+        const autos = activeList.filter(p => p.triggerType === 'AUTO' || (!p.triggerType && !(p.code || '').trim()));
         autos.forEach(p => {
             const isPercent = p.pricingRule?.type === 'PERCENT';
             const val = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
@@ -8662,8 +8877,14 @@
         let html = '';
         const activeList = Array.isArray(promos) ? promos.filter(p => isPromoAllowedForCustomer(p) && !isVoucherUsedByCustomer(p.code, p)) : [];
 
-        // 1. Collectible / Code-based vouchers
-        const collectibles = activeList.filter(p => (p.code || '').trim());
+        // 1. Collectible vouchers (ONLY triggerType === 'COLLECTIBLE' or isCollectible === true, NOT 'CODE' or 'AUTO')
+        const collectibles = activeList.filter(p => {
+            const code = (p.code || '').trim().toUpperCase();
+            if (!code) return false;
+            if (p.triggerType === 'CODE') return false; // STRICT: Trigger type CODE is hidden from claim buttons!
+            if (p.triggerType === 'AUTO') return false;
+            return p.triggerType === 'COLLECTIBLE' || p.isCollectible === true;
+        });
         collectibles.forEach(p => {
             const code = (p.code || '').trim().toUpperCase();
             const isPercent = p.pricingRule?.type === 'PERCENT' || (Number(p.pricingRule?.discountValue) > 0 && Number(p.pricingRule?.discountValue) <= 100 && p.pricingRule?.type !== 'FIXED_DISCOUNT' && p.pricingRule?.type !== 'BUNDLE_FIXED_PRICE');
@@ -8708,7 +8929,7 @@
         });
 
         // 2. Auto discounts
-        const autos = activeList.filter(p => !((p.code || '').trim()));
+        const autos = activeList.filter(p => p.triggerType === 'AUTO' || (!p.triggerType && !(p.code || '').trim()));
         autos.forEach(p => {
             const isPercent = p.pricingRule?.type === 'PERCENT';
             const val = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
@@ -9066,25 +9287,14 @@
             }
         }
 
-        // Delivery fee based strictly on chosen method and active vouchers
-        let baseShipping = shippingMethod === 'postal'
-            ? postalFee
-            : expressFee;
-
-        // Dynamic Free Shipping Threshold from Store Settings
-        const freeShippingThreshold = Number(storeConfig?.freeShippingMin) || 0;
-        const isFreeShipping = freeShippingThreshold > 0 && subtotal >= freeShippingThreshold;
-        let shipping = isFreeShipping ? 0 : baseShipping;
-
-        let discount = 0;
-        let discountDesc = '';
-        if (selectedVoucher && VOUCHER_MASTER[selectedVoucher]) {
-            const calc = calculateVoucherDiscount(VOUCHER_MASTER[selectedVoucher], subtotal, shipping, shippingMethod);
-            discount = calc.discount;
-            discountDesc = calc.discountDesc;
-        }
-
-        const total = Math.max(0, subtotal + (count > 0 ? shipping : 0) - discount);
+        // Centralized cart calculation with Auto Promos and Selected Voucher
+        const totals = calculateCartTotals();
+        const baseShipping = totals.baseShipping;
+        const shipping = totals.shipping;
+        const discount = totals.discount;
+        const discountDesc = totals.discountDesc;
+        const total = totals.total;
+        const isFreeShipping = (Number(storeConfig?.freeShippingMin) || 0) > 0 && rawSubtotal >= (Number(storeConfig?.freeShippingMin) || 0);
 
         if (document.getElementById('cart-subtotal')) document.getElementById('cart-subtotal').textContent = `฿${rawSubtotal}`;
 
@@ -11153,17 +11363,11 @@
         let baseShipping = (count === 0) ? 0 : (shippingMethod === 'postal'
             ? postalFee
             : expressFee);
-        const freeShippingThreshold = Number(storeConfig?.freeShippingMin) || 0;
-        const isFreeShipping = freeShippingThreshold > 0 && subtotal >= freeShippingThreshold;
-        const shipping = isFreeShipping ? 0 : baseShipping;
-
-        let discount = 0;
-        if (selectedVoucher && VOUCHER_MASTER[selectedVoucher]) {
-            const calc = calculateVoucherDiscount(VOUCHER_MASTER[selectedVoucher], subtotal, shipping, shippingMethod);
-            discount = calc.discount;
-        }
-
-        const total = (count === 0) ? 0 : Math.max(0, subtotal + shipping - discount);
+        const totals = calculateCartTotals();
+        const shipping = totals.shipping;
+        const discount = totals.discount;
+        const discountDesc = totals.discountDesc;
+        const total = totals.total;
 
         if (shippingMethod === 'express') {
             const finalAddr = (currentSavedAddress && currentSavedAddress.detail) || currentUser.address || currentPlaceName || 'เชียงใหม่';
@@ -11191,7 +11395,7 @@
             </div>
             ${discount > 0 ? `
             <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--primary-green-dark); font-weight:800; margin-top:2px;">
-                <span>ส่วนลดคูปอง (${selectedVoucher})</span>
+                <span>${discountDesc || (selectedVoucher ? `ส่วนลด (${selectedVoucher})` : 'ส่วนลดโปรโมชั่น')}</span>
                 <span>-฿${discount}</span>
             </div>` : ''}
         `;
@@ -11490,7 +11694,9 @@
             discount = calc.discount;
         }
 
-        const total = (count === 0) ? 0 : Math.max(0, subtotal + shipping - discount);
+        const totals = calculateCartTotals();
+        discount = totals.discount;
+        const total = totals.total;
         const randId = 'ORD-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
         currentServerOrderId = randId;
 
@@ -11525,10 +11731,10 @@
             lat: deliveryCoords ? deliveryCoords.lat : null,
             lng: deliveryCoords ? deliveryCoords.lng : null,
             items: [...cart],
-            subtotal: subtotal,
-            deliveryFee: shipping,
-            discount: discount + bundleDiscount,
-            total: total
+            subtotal: totals.rawSubtotal,
+            deliveryFee: totals.shipping,
+            discount: totals.discount,
+            total: totals.total
         };
 
         // Create the order on the server first (C10). If it is rejected (e.g. 409 price check),
