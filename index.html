@@ -3979,6 +3979,22 @@
         <div class="liff-connect-text">กำลังเชื่อมต่อ LINE...</div>
     </div>
 </div>
+<script>
+    // Hard fallback: never allow loading overlay to block UI longer than 1.5s
+    (function() {
+        function dismissLiffOverlay() {
+            var el = document.getElementById('liff-connect-overlay');
+            if (el) {
+                el.classList.add('fade-out');
+                el.style.opacity = '0';
+                el.style.pointerEvents = 'none';
+                setTimeout(function() { el.style.display = 'none'; }, 300);
+            }
+        }
+        setTimeout(dismissLiffOverlay, 1500);
+        window.dismissLiffOverlay = dismissLiffOverlay;
+    })();
+</script>
 
 <!-- AGE VERIFICATION POPUP (20+) -->
 <div id="age-gate-modal" class="age-gate-overlay hidden" style="display:none;">
@@ -8732,7 +8748,6 @@
             `;
         }
     }
-    }
 
     function openProductDetail(prodId) {
         const p = PRODUCTS.find(item => item.id === prodId);
@@ -12697,7 +12712,8 @@
                 setTimeout(hideLoadingOverlay, 450);
                 setTimeout(checkAndShowBirthdayEnvelope, 650);
             } else if (liff.isInClient()) {
-                liff.login();
+                setTimeout(hideLoadingOverlay, 300);
+                try { liff.login(); } catch(loginErr) { console.warn('[LIFF] login error:', loginErr); }
             } else {
                 // Not in LINE app
                 if (isStagingTestMode) {
@@ -12726,6 +12742,8 @@
                 updateMemberUI();
             }
             setTimeout(hideLoadingOverlay, 300);
+        } finally {
+            setTimeout(hideLoadingOverlay, 500);
         }
     }
 
@@ -13129,12 +13147,15 @@
         openLanguagePicker({ firstVisit: true });
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+    function bootstrapStorefront() {
         warmupCustomerLocation();
         loadCartFromStorage();
         fetchStoreConfig();
         applyActiveTheme();
-        if (!checkLineAccessGuard()) return;
+        if (!checkLineAccessGuard()) {
+            if (typeof window.dismissLiffOverlay === 'function') window.dismissLiffOverlay();
+            return;
+        }
         checkAgeGate();
         initLiff();
         renderCatalog();
@@ -13147,7 +13168,13 @@
         updateCartUI();
         initCampaignCarousel();
         setTimeout(checkAndShowBirthdayEnvelope, 850);
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', bootstrapStorefront);
+    } else {
+        bootstrapStorefront();
+    }
 </script>
 
 <!-- maintenance-overlay:start -->
