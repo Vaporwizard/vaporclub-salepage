@@ -6930,7 +6930,7 @@
                     expressEndHour: Number(data.expressEndHour ?? 23),
                     expressClosedMessage: String(data.expressClosedMessage ?? 'พร้อมให้บริการ 9:00 น ในวันพรุ่งนี้')
                 };
-                if (!hasConfirmedPin()) {
+                if (!hasConfirmedPin() && (!mapInstance || !document.getElementById('sheet-map') || !document.getElementById('sheet-map').classList.contains('open'))) {
                     expressFee = storeConfig.shippingFeeRider;
                 }
                 postalFee = 40;
@@ -7673,7 +7673,7 @@
         if (effectiveAvatar) {
             currentUser.avatar = effectiveAvatar;
             const svgFallback = '<svg class="svg-icon" viewBox="0 0 24 24" style="color:var(--avatar-frame-color, #ff6b00);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
-            const avatarImgHtml = `<img src="${effectiveAvatar}" referrerpolicy="no-referrer" alt="${currentUser.name || 'Member'}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.onerror=null; this.parentElement.innerHTML='${svgFallback}';">`;
+            const avatarImgHtml = `<img src="${effectiveAvatar}" referrerpolicy="no-referrer" alt="${currentUser.name || 'Member'}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; flex-shrink:0; min-width:100%; min-height:100%;" onerror="this.onerror=null; this.parentElement.innerHTML='${svgFallback}';">`;
             const avatar1 = document.getElementById('home-user-avatar');
             if (avatar1) avatar1.innerHTML = avatarImgHtml;
             const avatar2 = document.getElementById('profile-user-avatar');
@@ -9887,6 +9887,27 @@
                     attribution: '&copy; OpenStreetMap'
                 }).addTo(mapInstance);
 
+                mapInstance.on('drag', function() {
+                    currentPinSource = 'map_drag';
+                    const now = Date.now();
+                    if (now - lastDragEstTime > 60) {
+                        lastDragEstTime = now;
+                        const center = mapInstance.getCenter();
+                        const est = calculateEstimatedDeliveryFee(center.lat, center.lng);
+                        const mapFeeTitle = document.getElementById('map-delivery-fee-title');
+                        const mapFeeBadge = document.getElementById('map-delivery-fee-badge');
+                        const mapDistTime = document.getElementById('map-delivery-dist-time');
+                        if (est.isOutOfZone) {
+                            if (mapFeeTitle) { mapFeeTitle.textContent = 'อยู่นอกพื้นที่ให้บริการ'; mapFeeTitle.style.color = '#ef4444'; }
+                            if (mapFeeBadge) { mapFeeBadge.textContent = 'อยู่นอกพื้นที่'; mapFeeBadge.style.color = '#ef4444'; }
+                            if (mapDistTime) { mapDistTime.textContent = 'จัดส่งด่วนเฉพาะในตัวเมืองเชียงใหม่และหนองหอย (ไม่เกิน 15 กม.)'; mapDistTime.style.color = '#94a3b8'; }
+                        } else {
+                            if (mapFeeTitle) { mapFeeTitle.textContent = `ค่าส่งด่วน ฿${est.fee}`; mapFeeTitle.style.color = '#ffffff'; }
+                            if (mapFeeBadge) { mapFeeBadge.textContent = `฿${est.fee}`; mapFeeBadge.style.color = '#ff6b00'; }
+                            if (mapDistTime) { mapDistTime.textContent = 'ส่งด่วนถึงที่หมาย 30-45 นาที'; mapDistTime.style.color = '#475569'; }
+                        }
+                    }
+                });
                 mapInstance.on('dragend', function() {
                     currentPinSource = 'map_drag';
                 });
@@ -9948,6 +9969,27 @@
         } else {
             openCartSheet();
         }
+    }
+
+    const STORE_ORIGIN_COORDS = { lat: 18.80019, lng: 99.02412 };
+    let deliveryCalcSeq = 0;
+    let deliveryCalcDebounceTimer = null;
+    let lastDragEstTime = 0;
+
+    function calculateEstimatedDeliveryFee(destLat, destLng) {
+        const straightMeters = getGeoDistanceMeters(STORE_ORIGIN_COORDS.lat, STORE_ORIGIN_COORDS.lng, destLat, destLng);
+        const straightKm = straightMeters / 1000;
+        const estRoadKm = parseFloat((straightKm * 1.32).toFixed(2));
+        
+        // Out of Chiang Mai city delivery zone (> 13 km straight or > 15 km road)
+        if (straightKm > 13.0 || estRoadKm > 15.0) {
+            return { fee: 0, isOutOfZone: true, roadKm: estRoadKm };
+        }
+        
+        // Dynamic pricing: base 25 up to 1.0 km + 5 baht per extra km (+ 15% markup)
+        const baseCost = 25 + Math.max(0, estRoadKm - 1.0) * 5.0;
+        const finalFee = Math.round(baseCost * 1.15);
+        return { fee: Math.max(25, finalFee), isOutOfZone: false, roadKm: estRoadKm };
     }
 
     function onCenterPinMoved(lat, lng) {
@@ -10022,27 +10064,35 @@
             updateCartUI();
         };
 
-        fetch(window.API_BASE + '/api/selfservice/calculate-delivery', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lat, lng })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data && data.success) {
-                setZoneState(data.isOutOfZone, typeof data.fee === 'number' ? data.fee : 30);
-            } else {
-                setFlatFeeFallback();
-            }
-        })
-        // The shop's location never ships to the browser, so without the server the standard rider fee is used
-        .catch(setFlatFeeFallback);
+        // 1. Instant dynamic local distance & fee calculation (0ms response on pin move)
+        const instantEst = calculateEstimatedDeliveryFee(lat, lng);
+        setZoneState(instantEst.isOutOfZone, instantEst.fee);
 
-        function setFlatFeeFallback() {
-            setZoneState(false, Number(storeConfig && storeConfig.shippingFeeRider) || 50);
-        }
+        // 2. Debounced background fetch to server for exact OSRM turn-by-turn driving route
+        clearTimeout(deliveryCalcDebounceTimer);
+        const thisSeq = ++deliveryCalcSeq;
+        deliveryCalcDebounceTimer = setTimeout(() => {
+            fetch(window.API_BASE + '/api/selfservice/calculate-delivery', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lat, lng })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (thisSeq !== deliveryCalcSeq) return; // Discard stale out-of-order response
+                if (data && data.success) {
+                    setZoneState(data.isOutOfZone, typeof data.fee === 'number' ? data.fee : instantEst.fee);
+                }
+            })
+            .catch(() => {
+                // Keep the instant local estimation if backend is busy/sleeping
+            });
+        }, 220);
 
         const geoSeq = ++reverseGeocodeSeq;
+        const pinAddrEl = document.getElementById('map-pin-address');
+        if (pinAddrEl) pinAddrEl.textContent = 'กำลังดึงที่อยู่จากพิกัด...';
+
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=th`)
             .then(r => r.json())
             .then(data => {
@@ -10050,12 +10100,16 @@
                 if (data && data.display_name) {
                     currentPlaceName = data.display_name;
                     currentPlaceNameCoords = { lat, lng };
-                    const pinAddrEl = document.getElementById('map-pin-address');
                     if (pinAddrEl) pinAddrEl.textContent = currentPlaceName;
                     const subAddr = document.getElementById('member-sub-address');
                     if (subAddr) subAddr.textContent = currentPlaceName.slice(0, 32) + '...';
                 }
-            }).catch(() => {});
+            })
+            .catch(() => {
+                if (geoSeq === reverseGeocodeSeq && pinAddrEl) {
+                    pinAddrEl.textContent = `พิกัด GPS (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+                }
+            });
     }
 
     function locateCurrentGPS() {
