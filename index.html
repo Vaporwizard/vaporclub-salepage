@@ -7164,6 +7164,13 @@
         return false;
     }
 
+    // The server sends private campaigns only to the customer they were issued to, so the promotion
+    // requests carry the LINE user id when it is known (nothing else about the customer is sent)
+    function promoUserQuery() {
+        const uid = (typeof currentUser !== 'undefined' && currentUser && currentUser.userId) ? String(currentUser.userId) : '';
+        return uid ? ('?userId=' + encodeURIComponent(uid)) : '';
+    }
+
     function isPromoAllowedForCustomer(p) {
         if (!p || p.active === false) return false;
         const now = Date.now();
@@ -8343,7 +8350,7 @@
         } else if (tabName === 'home') {
             updateMemberUI();
         } else if (tabName === 'deals') {
-            fetch(window.API_BASE + '/api/selfservice/promotions')
+            fetch(window.API_BASE + '/api/selfservice/promotions' + promoUserQuery())
                 .then(r => r.json())
                 .then(d => { if (d && d.success && Array.isArray(d.promotions)) syncCampaignsToVouchers(d.promotions); })
                 .catch(() => {});
@@ -10775,22 +10782,38 @@
     function deleteCurrentAddressFromEditModal() {
         if (!confirm('ยืนยันลบที่อยู่นี้หรือไม่?')) return;
 
-        if (currentSavedAddress && currentSavedAddress.detail) {
+        // Drop this address from the saved express list (the key the list is really stored under)
+        const deletedDetail = (currentSavedAddress && currentSavedAddress.detail) || currentUser.address || '';
+        if (deletedDetail) {
             let list = getSavedExpressAddresses();
-            list = list.filter(a => a.detail !== currentSavedAddress.detail);
+            list = list.filter(a => a.detail !== deletedDetail);
             try {
                 localStorage.setItem('vapor_customer_express_addresses', JSON.stringify(list));
             } catch(e) {}
         }
 
+        // Clear the express address and its pin everywhere it lives locally
         currentSavedAddress = null;
         currentUser.address = '';
         currentPlaceName = '';
+        currentPlaceNameCoords = null;
+        currentPinnedCoords = { ...DEFAULT_MAP_CENTER };
+        currentPinSource = null;
         try {
-            localStorage.removeItem('vapor_customer_last_address');
+            // vapor_saved_address also holds name/phone/birthdate: keep those, drop only the address and pin
+            const rawSaved = localStorage.getItem('vapor_saved_address');
+            if (rawSaved) {
+                const parsed = JSON.parse(rawSaved);
+                if (parsed && typeof parsed === 'object') {
+                    delete parsed.address;
+                    delete parsed.coordinates;
+                    localStorage.setItem('vapor_saved_address', JSON.stringify(parsed));
+                }
+            }
         } catch(e) {}
 
         if (currentUser.userId) {
+            // The server ignores empty values, so it needs an explicit flag to clear the rider address
             fetch(window.API_BASE + '/api/selfservice/address', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -10798,31 +10821,31 @@
                     userId: currentUser.userId,
                     name: currentUser.name,
                     phone: currentUser.phone,
-                    address: '',
-                    coordinates: null
+                    clearAddress: true
                 })
             }).catch(() => {});
         }
 
+        // Same re-render as the address manager's delete
+        renderManagerExpressAddresses();
         renderCartAddress();
         updateMemberUI();
         closeAllSheets();
         if (window.currentAddressEditSource === 'addresses_manager') {
             openSavedAddressesManagerModal('express');
         } else {
-            const backdrop = document.getElementById('backdrop');
-            if (backdrop) backdrop.classList.remove('open');
+            // Opened from the cart: bring the customer back to the cart instead of the home tab
+            openCartSheet();
         }
         showToast('ลบที่อยู่เรียบร้อยแล้ว');
     }
 
     function deletePostalAddressFromManager() {
         if (!confirm('ยืนยันลบที่อยู่จัดส่งพัสดุนี้หรือไม่?')) return;
-        try {
-            localStorage.removeItem('vapor_customer_postal_addresses');
-        } catch(e) {}
+        // Same record and re-render as the manager's card delete button
+        clearSavedPostalAddress();
         closeAllSheets();
-        updateMemberUI();
+        openSavedAddressesManagerModal('postal');
         showToast('ลบที่อยู่พัสดุเรียบร้อยแล้ว');
     }
 
@@ -11328,9 +11351,8 @@
         `;
     }
 
-    function deletePostalAddress() {
-        if (!confirm('ยืนยันลบที่อยู่นี้หรือไม่?')) return;
-
+    // Removes the saved parcel address (memory + localStorage) and re-renders every place it is shown
+    function clearSavedPostalAddress() {
         currentUser.savedPostalAddress = null;
         try {
             localStorage.removeItem('vapor_customer_saved_postal_address');
@@ -11339,6 +11361,11 @@
         renderManagerPostalAddress();
         renderPostalSection();
         updateMemberUI();
+    }
+
+    function deletePostalAddress() {
+        if (!confirm('ยืนยันลบที่อยู่นี้หรือไม่?')) return;
+        clearSavedPostalAddress();
         showToast('ลบที่อยู่พัสดุเรียบร้อยแล้ว');
     }
 
@@ -11371,7 +11398,7 @@
         openSavedAddressesManagerModal('postal');
     }
 
-    function savePostalAddressFromManager() {
+    async function savePostalAddressFromManager() {
         const name = document.getElementById('mgr-postal-fullname').value.trim();
         const phone = document.getElementById('mgr-postal-phone').value.trim();
         const addressLine = document.getElementById('mgr-postal-addressline').value.trim();
@@ -11404,28 +11431,47 @@
         if (!currentUser.name || currentUser.name.includes('LINE User')) currentUser.name = name;
         if (!currentUser.phone) currentUser.phone = phone;
 
-        try {
-            fetch(window.API_BASE + '/api/selfservice/address', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: currentUser.userId || null,
-                    type: 'postal',
-                    ...postalData
-                })
-            }).catch(() => {});
-        } catch(e) {}
+        let postalSavedOnServer = true;
+        // The server keeps the parcel address in postalData; "address"/"formatted" is the rider address and must not be overwritten here
+        if (currentUser.userId) {
+            let saveOk = true;
+            let saveError = '';
+            try {
+                const res = await fetch(window.API_BASE + '/api/selfservice/address', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.userId,
+                        name: currentUser.name,
+                        phone: currentUser.phone,
+                        postalData: postalData
+                    })
+                });
+                let data = null;
+                try { data = await res.json(); } catch(e) {}
+                if (!res.ok || !data || !data.success) {
+                    saveOk = false;
+                    saveError = (data && data.error) || '';
+                }
+            } catch(e) {
+                saveOk = false;
+            }
+            if (!saveOk) {
+                showToast(saveError || 'บันทึกที่อยู่พัสดุไปยังระบบไม่สำเร็จ กรุณาลองใหม่อีกครั้งค่ะ');
+                postalSavedOnServer = false;
+            }
+        }
 
         renderPostalSection();
         updateMemberUI();
-        showToast('บันทึกที่อยู่จัดส่งพัสดุเรียบร้อยแล้ว');
+        if (postalSavedOnServer) showToast('บันทึกที่อยู่จัดส่งพัสดุเรียบร้อยแล้ว');
         openSavedAddressesManagerModal('postal');
     }
 
     /* ========================================================
        POSTAL SHIPPING ADDRESS (บันทึกได้จริง 100%)
        ======================================================== */
-    function savePostalAddressDirect() {
+    async function savePostalAddressDirect() {
         const name = document.getElementById('postal-fullname').value.trim();
         const phone = document.getElementById('postal-phone').value.trim();
         const addressLine = document.getElementById('postal-address-line').value.trim();
@@ -11456,20 +11502,42 @@
         if (!currentUser.name || currentUser.name.includes('LINE User')) currentUser.name = name;
         if (!currentUser.phone || currentUser.phone.includes('xxx')) currentUser.phone = phone;
 
-        try {
-            fetch(window.API_BASE + '/api/selfservice/address', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: currentUser.userId || null,
-                    type: 'postal',
-                    ...postalData
-                })
-            }).catch(() => {});
-        } catch(e) {}
+        // Local state is already saved above, so checkout (which calls this without awaiting) can continue
+        renderPostalSection();
+
+        let postalSavedOnServer = true;
+        // The server keeps the parcel address in postalData; "address"/"formatted" is the rider address and must not be overwritten here
+        if (currentUser.userId) {
+            let saveOk = true;
+            let saveError = '';
+            try {
+                const res = await fetch(window.API_BASE + '/api/selfservice/address', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.userId,
+                        name: currentUser.name,
+                        phone: currentUser.phone,
+                        postalData: postalData
+                    })
+                });
+                let data = null;
+                try { data = await res.json(); } catch(e) {}
+                if (!res.ok || !data || !data.success) {
+                    saveOk = false;
+                    saveError = (data && data.error) || '';
+                }
+            } catch(e) {
+                saveOk = false;
+            }
+            if (!saveOk) {
+                showToast(saveError || 'บันทึกที่อยู่พัสดุไปยังระบบไม่สำเร็จ กรุณาลองใหม่อีกครั้งค่ะ');
+                postalSavedOnServer = false;
+            }
+        }
 
         renderPostalSection();
-        showToast('บันทึกที่อยู่จัดส่งพัสดุเรียบร้อยแล้ว');
+        if (postalSavedOnServer) showToast('บันทึกที่อยู่จัดส่งพัสดุเรียบร้อยแล้ว');
     }
 
     function renderPostalSection() {
@@ -11704,8 +11772,14 @@
     }
 
     let payCountdownTimer = null;
-    function startPaymentCountdown(minutes = 30) {
+    // Stops the payment countdown so it cannot fire alert() + closeAllSheets() later (after the
+    // customer closed the sheet to pay later, or after the slip was accepted)
+    function stopPaymentCountdown() {
         if (payCountdownTimer) clearInterval(payCountdownTimer);
+        payCountdownTimer = null;
+    }
+    function startPaymentCountdown(minutes = 30) {
+        stopPaymentCountdown();
         const expireTimestamp = Date.now() + minutes * 60 * 1000;
         
         function tick() {
@@ -11728,7 +11802,7 @@
             }
 
             if (remainingSec <= 0) {
-                clearInterval(payCountdownTimer);
+                stopPaymentCountdown();
                 if (timerEl) timerEl.textContent = '00:00 (หมดเวลา)';
                 alert('หมดเวลาชำระเงิน (30 นาที)\nรายการคำสั่งซื้อนี้ถูกยกเลิกแล้ว กรุณากดสั่งซื้อใหม่อีกครั้งนะคะ');
                 closeAllSheets();
@@ -11822,8 +11896,6 @@
             const elapsedMins = (Date.now() - new Date(order.createdAt).getTime()) / (1000 * 60);
             remainMins = Math.max(1, Math.round(30 - elapsedMins));
         }
-        startPaymentCountdown(remainMins);
-
         const qrContainer = document.getElementById('dynamic-qr-canvas-box');
         qrContainer.innerHTML = '';
         const payload = generateMaeManeeQRPayloadClient(totalAmount);
@@ -11839,6 +11911,8 @@
         closeAllSheets();
         document.getElementById('backdrop').classList.add('open');
         document.getElementById('sheet-payment').classList.add('open');
+        // Started after the sheet is open: closeAllSheets() above stops any countdown of a previous order
+        startPaymentCountdown(remainMins);
     }
 
     let isSubmittingOrder = false;
@@ -11978,9 +12052,24 @@
         try {
             result = await submitOrderToBackend(orderObj);
             if (!result.ok && result.reason === 'ORDER_ID_EXISTS') {
-                // Random order number collided with an existing one: retry once with a new number
-                orderObj.id = 'ORD-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
-                result = await submitOrderToBackend(orderObj);
+                // The order number is already on the server. Usually that is this very order: the first
+                // request reached the server but its reply was lost, and the automatic retry was refused.
+                // Submitting again with a new number would create a second order and deduct stock twice,
+                // so the existing order is used instead. Only a real collision (no such order) gets a new number.
+                let existingOrder = (result.order && typeof result.order === 'object') ? result.order : null;
+                let orderMissing = false;
+                if (!existingOrder) {
+                    const lookup = await fetchServerOrderById(orderObj.id);
+                    if (lookup.found) existingOrder = lookup.order;
+                    else if (lookup.status === 404) orderMissing = true;
+                }
+                if (orderMissing) {
+                    orderObj.id = 'ORD-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
+                    result = await submitOrderToBackend(orderObj);
+                } else {
+                    // Found (or lookup failed for another reason while the server says the id exists): continue as created
+                    result = { ok: true, orderId: (existingOrder && existingOrder.id) || orderObj.id, order: existingOrder };
+                }
             }
         } finally {
             isSubmittingOrder = false;
@@ -11992,6 +12081,15 @@
             return;
         }
         orderObj.id = result.orderId || orderObj.id;
+        if (result.order && typeof result.order === 'object') {
+            // Order already created by the server: show what it stored (same post-success path as a 201)
+            const so = result.order;
+            if (so.status) orderObj.status = so.status;
+            if (so.statusText) orderObj.statusText = so.statusText;
+            if (so.total !== undefined && so.total !== null && Number.isFinite(Number(so.total))) orderObj.total = Number(so.total);
+            if (Array.isArray(so.items) && so.items.length > 0) orderObj.items = so.items;
+            if (so.createdAt) orderObj.createdAt = so.createdAt;
+        }
         currentServerOrderId = orderObj.id;
 
         // Save order into localStorage so it appears in Orders tab
@@ -12103,6 +12201,8 @@
                 ok: false,
                 status: res.status,
                 reason: data && data.reason,
+                // On 409 ORDER_ID_EXISTS the server includes the order it already holds
+                order: (data && data.order && typeof data.order === 'object') ? data.order : null,
                 error: (data && data.error) || 'ไม่สามารถสร้างคำสั่งซื้อได้ในขณะนี้ กรุณาลองใหม่อีกครั้งค่ะ'
             };
         } catch (e) {
@@ -12111,7 +12211,25 @@
         }
     }
 
+    // Looks up an order the server reports as existing. found: true + order, or found: false with the HTTP status (404 = no such order, 0 = network error)
+    async function fetchServerOrderById(orderId) {
+        try {
+            const res = await fetch(window.API_BASE + '/api/selfservice/order/' + encodeURIComponent(orderId));
+            let data = null;
+            try { data = await res.json(); } catch (e) {}
+            if (res.ok && data && data.success && data.order && typeof data.order === 'object') {
+                return { found: true, status: res.status, order: data.order };
+            }
+            return { found: false, status: res.status, order: null };
+        } catch (e) {
+            console.error('[FetchOrder Error]', e);
+            return { found: false, status: 0, order: null };
+        }
+    }
+
     function closePaymentSheet() {
+        // The customer pays later from the Orders tab: no timeout alert may pop up afterwards
+        stopPaymentCountdown();
         closeAllSheets();
         switchNavTab('orders');
         filterOrders('IN_PROGRESS', document.getElementById('btn-filter-in-progress'));
@@ -12285,6 +12403,7 @@
                 } catch(e) {}
 
                 showToast('ได้รับยอดชำระแล้ว คลังสินค้ากำลังเตรียมของ');
+                stopPaymentCountdown();
                 closeAllSheets();
                 cart = [];
                 clearCartFromStorage();
@@ -12925,7 +13044,7 @@
 
         // Sync dynamic banners & product images from Hub Media CMS
         try {
-            const res = await fetch((window.API_BASE || '') + '/api/selfservice/media-config');
+            const res = await fetch((window.API_BASE || '') + '/api/selfservice/media-config' + promoUserQuery());
             const data = await res.json();
             if (data && data.success) {
                 // 1. Render dynamic banners from Hub FIRST (Shielded from product/promo exceptions)
@@ -13023,7 +13142,7 @@
         // Ensure promotions are loaded even if media-config fails or has no promotions
         if (!window.__promotionsLoaded) {
             try {
-                fetch(window.API_BASE + '/api/selfservice/promotions')
+                fetch(window.API_BASE + '/api/selfservice/promotions' + promoUserQuery())
                     .then(r => r.json())
                     .then(d => {
                         if (d && d.success && Array.isArray(d.promotions) && d.promotions.length > 0) {
@@ -13042,6 +13161,11 @@
     }
 
     function closeAllSheets() {
+        // Closing the payment sheet ends its countdown; a payment sheet opened later starts its own
+        const paySheet = document.getElementById('sheet-payment');
+        if (paySheet && paySheet.classList.contains('open') && typeof stopPaymentCountdown === 'function') {
+            stopPaymentCountdown();
+        }
         document.getElementById('backdrop').classList.remove('open');
         document.querySelectorAll('.bottom-sheet').forEach(el => el.classList.remove('open'));
     }
