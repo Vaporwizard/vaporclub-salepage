@@ -5736,7 +5736,10 @@
         if (savedAddr) {
             const parsed = JSON.parse(savedAddr);
             if (parsed.name) currentUser.name = parsed.name;
-            if (parsed.phone) currentUser.phone = parsed.phone;
+            if (parsed.phone) {
+                currentUser.phone = parsed.phone;
+                try { localStorage.setItem('vapor_customer_phone', parsed.phone); } catch(e) {}
+            }
             if (parsed.birthdate) currentUser.birthdate = parsed.birthdate;
             if (parsed.address) currentUser.address = parsed.address;
         }
@@ -7657,6 +7660,11 @@
             if (avatar1) avatar1.innerHTML = avatarImgHtml;
             const avatar2 = document.getElementById('profile-user-avatar');
             if (avatar2) avatar2.innerHTML = avatarImgHtml;
+            const avatar3 = document.getElementById('profile-edit-avatar-preview');
+            if (avatar3) avatar3.innerHTML = avatarImgHtml;
+        }
+        if (typeof updateProfileEditPreviewAvatar === 'function') {
+            updateProfileEditPreviewAvatar();
         }
         applyAvatarFrameColor();
 
@@ -10251,6 +10259,17 @@
         }
     }
 
+    function updateProfileEditPreviewAvatar() {
+        const previewEl = document.getElementById('profile-edit-avatar-preview');
+        if (!previewEl) return;
+        const effectiveAvatar = currentUser.avatar || localStorage.getItem('vapor_customer_avatar') || '';
+        if (effectiveAvatar) {
+            previewEl.innerHTML = `<img src="${effectiveAvatar}" referrerpolicy="no-referrer" alt="${currentUser.name || 'Member'}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+        } else {
+            previewEl.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24" style="color:var(--avatar-frame-color, #ff6b00); width:30px; height:30px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+        }
+    }
+
     function validateBirthdateAge(bdateStr) {
         if (!bdateStr || !bdateStr.trim()) return { valid: true };
         const raw = bdateStr.trim();
@@ -10368,6 +10387,7 @@
         tempSelectedFrameGlow = found.glow;
 
         updateProfileEditPreviewName();
+        updateProfileEditPreviewAvatar();
         renderAvatarFrameColorSwatches(tempSelectedFrameColor);
     }
 
@@ -12679,81 +12699,99 @@
 
         // Sync dynamic banners & product images from Hub Media CMS
         try {
-            const res = await fetch(window.API_BASE + '/api/selfservice/media-config');
+            const res = await fetch((window.API_BASE || '') + '/api/selfservice/media-config');
             const data = await res.json();
             if (data && data.success) {
-                if (Array.isArray(data.promotions) && data.promotions.length > 0) {
-                    syncCampaignsToVouchers(data.promotions);
-                }
-                // 0. Update dynamic products catalog from Hub
-                if (Array.isArray(data.products) && data.products.length > 0) {
-                    PRODUCTS.length = 0;
-                    data.products.forEach(p => PRODUCTS.push(p));
-                    renderCatalog();
-                    renderRecommendedProducts();
-                    syncRealInventory();
+                // 1. Render dynamic banners from Hub FIRST (Shielded from product/promo exceptions)
+                try {
+                    const allBanners = Array.isArray(data.banners) ? data.banners : [];
+                    try { checkAndShowPopupBanners(allBanners); } catch (e) { console.warn('[Popup Banner Err]', e); }
+
+                    const carouselBanners = allBanners.filter(b => b.placement !== 'popup' && b.is_popup !== true && b.active !== false);
+
+                    if (carouselBanners.length > 0 && track && dotsBar) {
+                        track.innerHTML = carouselBanners.map(b => {
+                            const imgUrl = b.imageUrl || b.url || '';
+                            if (imgUrl) {
+                                return `
+                                    <div class="campaign-slide" style="padding:0; aspect-ratio:16/7; max-height:160px; background:#000;" onclick="handleBannerClick('${b.linkCategory || b.linkValue || 'all'}')">
+                                        <img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:18px; display:block;" alt="${b.title || 'Promo'}">
+                                    </div>
+                                `;
+                            } else {
+                                return `
+                                    <div class="campaign-slide" style="aspect-ratio:16/7; max-height:160px; background:${b.bgGradient || 'linear-gradient(135deg, #ea580c 0%, #ff6b00 100%)'};" onclick="handleBannerClick('${b.linkCategory || b.linkValue || 'all'}')">
+                                        <div style="z-index:2;">
+                                            <span style="font-size:10px; font-weight:800; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:4px; text-transform:uppercase;">${b.tag || 'HOT PROMO'}</span>
+                                            <div style="font-size:16px; font-weight:900; margin-top:4px;">${b.title}</div>
+                                            <div style="font-size:11px; opacity:0.9; margin-top:2px;">${b.subtitle || ''}</div>
+                                        </div>
+                                        <div style="background:rgba(255,255,255,0.2); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:900;">
+                                            ${b.badgeText || '%'}
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }).join('');
+
+                        dotsBar.innerHTML = carouselBanners.map((_, i) => `<div class="campaign-dot ${i === 0 ? 'active' : ''}"></div>`).join('');
+                        if (carouselWrap) carouselWrap.style.display = 'block';
+                        initCarouselScrollLoop();
+                    } else {
+                        // No active carousel banners from Backoffice -> Hide carousel completely
+                        if (carouselWrap) carouselWrap.style.display = 'none';
+                        if (carouselTimer) { clearInterval(carouselTimer); carouselTimer = null; }
+                    }
+                } catch (bErr) {
+                    console.warn('[Carousel Banner Render Error]', bErr);
                 }
 
-                // 1. Update product custom images
-                if (data.productImages && typeof data.productImages === 'object') {
-                    let hasCustomImg = false;
-                    PRODUCTS.forEach(p => {
-                        if (data.productImages[p.id]) {
-                            p.image = data.productImages[p.id];
-                            hasCustomImg = true;
-                        }
-                    });
-                    if (hasCustomImg) {
-                        renderCatalog();
-                        renderRecommendedProducts();
+                // 2. Promotions sync (Safely wrapped)
+                if (Array.isArray(data.promotions) && data.promotions.length > 0) {
+                    try {
+                        syncCampaignsToVouchers(data.promotions);
+                    } catch (promoErr) {
+                        console.warn('[Promotions Sync Error]', promoErr);
                     }
                 }
 
-                // 2. Render dynamic banners from Hub
-                const allBanners = Array.isArray(data.banners) ? data.banners : [];
-                checkAndShowPopupBanners(allBanners);
+                // 3. Update dynamic products catalog from Hub (Safely wrapped)
+                if (Array.isArray(data.products) && data.products.length > 0) {
+                    try {
+                        PRODUCTS.length = 0;
+                        data.products.forEach(p => PRODUCTS.push(p));
+                        renderCatalog();
+                        renderRecommendedProducts();
+                        syncRealInventory();
+                    } catch (prodErr) {
+                        console.warn('[Products Sync Error]', prodErr);
+                    }
+                }
 
-                const carouselBanners = allBanners.filter(b => b.placement !== 'popup' && b.is_popup !== true && b.active !== false);
-
-                if (carouselBanners.length > 0 && track && dotsBar) {
-                    track.innerHTML = carouselBanners.map(b => {
-                        const isImg = !!b.imageUrl;
-                        if (isImg) {
-                            return `
-                                <div class="campaign-slide" style="padding:0; aspect-ratio:16/7; max-height:160px; background:#000;" onclick="handleBannerClick('${b.linkCategory || 'all'}')">
-                                    <img src="${b.imageUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:18px; display:block;" alt="${b.title || 'Promo'}">
-                                </div>
-                            `;
-                        } else {
-                            return `
-                                <div class="campaign-slide" style="aspect-ratio:16/7; max-height:160px; background:${b.bgGradient || 'linear-gradient(135deg, #ea580c 0%, #ff6b00 100%)'};" onclick="handleBannerClick('${b.linkCategory || 'all'}')">
-                                    <div style="z-index:2;">
-                                        <span style="font-size:10px; font-weight:800; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:4px; text-transform:uppercase;">${b.tag || 'HOT PROMO'}</span>
-                                        <div style="font-size:16px; font-weight:900; margin-top:4px;">${b.title}</div>
-                                        <div style="font-size:11px; opacity:0.9; margin-top:2px;">${b.subtitle || ''}</div>
-                                    </div>
-                                    <div style="background:rgba(255,255,255,0.2); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:900;">
-                                        ${b.badgeText || '%'}
-                                    </div>
-                                </div>
-                            `;
+                // 4. Update product custom images (Safely wrapped)
+                if (data.productImages && typeof data.productImages === 'object') {
+                    try {
+                        let hasCustomImg = false;
+                        PRODUCTS.forEach(p => {
+                            if (data.productImages[p.id]) {
+                                p.image = data.productImages[p.id];
+                                hasCustomImg = true;
+                            }
+                        });
+                        if (hasCustomImg) {
+                            renderCatalog();
+                            renderRecommendedProducts();
                         }
-                    }).join('');
-
-                    dotsBar.innerHTML = carouselBanners.map((_, i) => `<div class="campaign-dot ${i === 0 ? 'active' : ''}"></div>`).join('');
-                    if (carouselWrap) carouselWrap.style.display = 'block';
-                    initCarouselScrollLoop();
-                } else {
-                    // No active carousel banners from Backoffice -> Hide carousel completely
-                    if (carouselWrap) carouselWrap.style.display = 'none';
-                    if (carouselTimer) { clearInterval(carouselTimer); carouselTimer = null; }
+                    } catch (imgErr) {
+                        console.warn('[Product Images Sync Error]', imgErr);
+                    }
                 }
             } else {
                 if (carouselWrap) carouselWrap.style.display = 'none';
             }
         } catch (e) {
             console.warn('[LIFF] Media config sync fallback:', e.message);
-            if (carouselWrap) carouselWrap.style.display = 'none';
+            if (carouselWrap && !track?.children?.length) carouselWrap.style.display = 'none';
         }
 
         // Ensure promotions are loaded even if media-config fails or has no promotions
@@ -13366,13 +13404,7 @@
         } catch(e) {}
     const isLineAllowed = checkLineAccessGuard();
     updateLanguageMenuBadge();
-    if (isLineAllowed) {
-        checkAgeGate();
-        updateMemberUI();
-        updateCartUI();
-        updateOrdersBadges();
-        initCampaignCarousel();
-    } else if (!hasChosenLanguage()) {
+    if (!isLineAllowed && !hasChosenLanguage()) {
         openLanguagePicker({ firstVisit: true });
     }
 
@@ -13419,7 +13451,7 @@
         }
     }
 
-    function bootstrapStorefront() {
+    async function bootstrapStorefront() {
         warmupCustomerLocation();
         loadCartFromStorage();
         fetchStoreConfig();
@@ -13429,7 +13461,7 @@
             return;
         }
         checkAgeGate();
-        loadCustomerProfile();
+        await loadCustomerProfile();
         initLiff();
         renderCatalog();
         renderRecommendedProducts();
