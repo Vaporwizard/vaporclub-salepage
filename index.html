@@ -7267,14 +7267,18 @@
                     if (hasProductFilter) {
                         const itProdId = String(it.productId || it.product_id || it.id || '').trim();
                         const itName = String(it.name || '').trim().toLowerCase();
-                        if (itProdId && promo.product_ids.includes(itProdId)) return true;
-                        const matchedProd = (typeof PRODUCTS !== 'undefined' && Array.isArray(PRODUCTS))
-                            ? PRODUCTS.find(p => promo.product_ids.includes(String(p.id)))
-                            : null;
-                        if (matchedProd && matchedProd.name && (itName.includes(matchedProd.name.toLowerCase()) || matchedProd.name.toLowerCase().includes(itName))) {
+                        const listedIds = promo.product_ids.map(pid => String(pid).trim());
+                        if (itProdId && listedIds.includes(itProdId)) return true;
+                        const listedProducts = (typeof PRODUCTS !== 'undefined' && Array.isArray(PRODUCTS))
+                            ? PRODUCTS.filter(p => listedIds.includes(String(p.id).trim()))
+                            : [];
+                        if (itName && listedProducts.some(p => {
+                            const pName = String(p.name || '').trim().toLowerCase();
+                            return pName && (itName.includes(pName) || pName.includes(itName));
+                        })) {
                             return true;
                         }
-                        return promo.product_ids.some(pid => itName.includes(String(pid).toLowerCase()));
+                        return listedIds.some(pid => { const pStr = pid.toLowerCase(); return pStr && itName.includes(pStr); });
                     }
                     return matchItemCategory(it.name, targetCat) && (!Array.isArray(promo.brandFilter) || promo.brandFilter.length === 0 || promo.brandFilter.some(b => String(it.name || '').toLowerCase().includes(String(b).toLowerCase())));
                 });
@@ -9464,7 +9468,8 @@
         const discount = totals.discount;
         const discountDesc = totals.discountDesc;
         const total = totals.total;
-        const isFreeShipping = (Number(storeConfig?.freeShippingMin) || 0) > 0 && rawSubtotal >= (Number(storeConfig?.freeShippingMin) || 0);
+        const freeShippingThreshold = Number(storeConfig?.freeShippingMin) || 0;
+        const isFreeShipping = freeShippingThreshold > 0 && rawSubtotal >= freeShippingThreshold;
 
         if (document.getElementById('cart-subtotal')) document.getElementById('cart-subtotal').textContent = `฿${rawSubtotal}`;
 
@@ -10996,33 +11001,54 @@
             return;
         }
 
-        currentSavedAddress = { ...picked };
-        currentUser.address = picked.detail;
-        if (picked.coordinates && picked.coordinates.lat && picked.coordinates.lng) {
-            currentPinnedCoords = { ...picked.coordinates };
-            currentPinSource = isDefaultMapCenter(currentPinnedCoords) ? null : 'saved';
-            onCenterPinMoved(currentPinnedCoords.lat, currentPinnedCoords.lng);
+        // A saved address may have no usable pin (older entries, or saved before pinning): the address
+        // is still applied and the pin is left for the customer to set; nothing in here may stop the
+        // cart from reopening
+        const pinLat = picked.coordinates ? Number(picked.coordinates.lat) : NaN;
+        const pinLng = picked.coordinates ? Number(picked.coordinates.lng) : NaN;
+        const hasPin = Number.isFinite(pinLat) && Number.isFinite(pinLng) && pinLat !== 0 && pinLng !== 0;
+        let savedCoords = null;
+        try {
+            currentSavedAddress = { ...picked };
+            currentUser.address = picked.detail;
+            if (hasPin) {
+                currentPinnedCoords = { lat: pinLat, lng: pinLng };
+                currentPinSource = isDefaultMapCenter(currentPinnedCoords) ? null : 'saved';
+                savedCoords = { ...currentPinnedCoords };
+                onCenterPinMoved(pinLat, pinLng);
+            } else {
+                currentPinSource = null;
+            }
+        } catch (err) {
+            console.warn('[Address] Pin / fee update failed, address kept:', err && err.message ? err.message : err);
         }
 
         if (currentUser.userId) {
-            fetch(window.API_BASE + '/api/selfservice/address', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: currentUser.userId,
-                    name: currentUser.name,
-                    phone: currentUser.phone,
-                    address: picked.detail,
-                    coordinates: currentPinnedCoords
-                })
-            }).catch(() => {});
+            try {
+                fetch(window.API_BASE + '/api/selfservice/address', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.userId,
+                        name: currentUser.name,
+                        phone: currentUser.phone,
+                        address: picked.detail,
+                        coordinates: savedCoords
+                    })
+                }).catch(() => {});
+            } catch (err) {}
         }
 
-        closeAllSheets();
-        renderCartAddress();
-        updateMemberUI();
-        openCartSheet();
-        showToast('เลือกที่อยู่จัดส่งเรียบร้อยแล้ว');
+        try {
+            renderCartAddress();
+            updateMemberUI();
+        } catch (err) {
+            console.warn('[Address] Cart / member re-render failed:', err && err.message ? err.message : err);
+        } finally {
+            closeAllSheets();
+            openCartSheet();
+            showToast(hasPin ? 'เลือกที่อยู่จัดส่งเรียบร้อยแล้ว' : 'เลือกที่อยู่แล้ว กรุณาปักหมุดเพื่อคำนวณค่าส่ง');
+        }
     }
 
     /* ========================================================
