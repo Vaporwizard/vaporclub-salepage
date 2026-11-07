@@ -2169,6 +2169,8 @@
             --avatar-frame-glow: rgba(255, 107, 0, 0.35);
         }
         .user-avatar-frame {
+            position: relative;
+            isolation: isolate;
             border-radius: 50%;
             border: 2.5px solid var(--avatar-frame-color, #ff6b00) !important;
             box-shadow: 0 0 12px var(--avatar-frame-glow, rgba(255, 107, 0, 0.35)) !important;
@@ -2179,6 +2181,27 @@
             flex-shrink: 0;
             transition: border-color 0.25s ease, box-shadow 0.25s ease;
             box-sizing: border-box;
+        }
+        /* The LINE picture fills the circle as a square block. Without min-width/min-height and
+           flex-shrink:0, WebKit lets the image shrink or shift inside the flex frame and part of the
+           circle shows the dark background. No pseudo-element may be drawn over it. */
+        .user-avatar-frame::before,
+        .user-avatar-frame::after {
+            content: none !important;
+        }
+        .user-avatar-frame > img.user-avatar-img {
+            width: 100%;
+            height: 100%;
+            min-width: 100%;
+            min-height: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            object-position: center;
+            border-radius: 50%;
+            display: block;
+            flex-shrink: 0;
+            margin: 0;
+            background: #0f172a;
         }
 
         /* Luxury VIP Profile Gradient Card & Tier Colors */
@@ -7709,6 +7732,55 @@
         }
     }
 
+    /* ========================================================
+       LINE AVATAR FRAMES (home strip, member header, profile editor preview)
+       Built with DOM nodes, not an HTML string: the old template put a double-quoted SVG inside a
+       double-quoted onerror attribute, which closed the img tag early, left stray text in the frame and
+       pushed the picture half out of the circle. When the LINE CDN picture fails to load (or loads
+       empty) the frame falls back to the default person icon.
+       ======================================================== */
+    function avatarFallbackIcon(sizePx) {
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('class', 'svg-icon');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.style.color = 'var(--avatar-frame-color, #ff6b00)';
+        svg.style.width = sizePx + 'px';
+        svg.style.height = sizePx + 'px';
+        const path = document.createElementNS(ns, 'path');
+        path.setAttribute('d', 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2');
+        const circle = document.createElementNS(ns, 'circle');
+        circle.setAttribute('cx', '12');
+        circle.setAttribute('cy', '7');
+        circle.setAttribute('r', '4');
+        svg.appendChild(path);
+        svg.appendChild(circle);
+        return svg;
+    }
+
+    function renderAvatarImage(frameEl, src, name, iconSizePx) {
+        if (!frameEl) return;
+        frameEl.replaceChildren();
+        if (!src) {
+            frameEl.appendChild(avatarFallbackIcon(iconSizePx || 20));
+            return;
+        }
+        const img = document.createElement('img');
+        img.className = 'user-avatar-img';
+        img.alt = name || 'Member';
+        img.referrerPolicy = 'no-referrer';
+        img.decoding = 'async';
+        img.onerror = function () {
+            img.onerror = null;
+            if (img.parentNode === frameEl) frameEl.replaceChildren(avatarFallbackIcon(iconSizePx || 20));
+        };
+        img.onload = function () {
+            if (!img.naturalWidth || !img.naturalHeight) img.onerror();
+        };
+        img.src = src;
+        frameEl.appendChild(img);
+    }
+
     function updateMemberUI() {
         const tierInfo = calculateMemberTier(currentUser.monthlySpent, currentUser.memberTier);
 
@@ -7722,14 +7794,9 @@
         const effectiveAvatar = currentUser.avatar || localStorage.getItem('vapor_customer_avatar') || '';
         if (effectiveAvatar) {
             currentUser.avatar = effectiveAvatar;
-            const svgFallback = '<svg class="svg-icon" viewBox="0 0 24 24" style="color:var(--avatar-frame-color, #ff6b00);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
-            const avatarImgHtml = `<img src="${effectiveAvatar}" referrerpolicy="no-referrer" alt="${currentUser.name || 'Member'}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; flex-shrink:0; min-width:100%; min-height:100%;" onerror="this.onerror=null; this.parentElement.innerHTML='${svgFallback}';">`;
-            const avatar1 = document.getElementById('home-user-avatar');
-            if (avatar1) avatar1.innerHTML = avatarImgHtml;
-            const avatar2 = document.getElementById('profile-user-avatar');
-            if (avatar2) avatar2.innerHTML = avatarImgHtml;
-            const avatar3 = document.getElementById('profile-edit-avatar-preview');
-            if (avatar3) avatar3.innerHTML = avatarImgHtml;
+            renderAvatarImage(document.getElementById('home-user-avatar'), effectiveAvatar, currentUser.name, 16);
+            renderAvatarImage(document.getElementById('profile-user-avatar'), effectiveAvatar, currentUser.name, 20);
+            renderAvatarImage(document.getElementById('profile-edit-avatar-preview'), effectiveAvatar, currentUser.name, 30);
         }
         if (typeof updateProfileEditPreviewAvatar === 'function') {
             updateProfileEditPreviewAvatar();
@@ -10375,9 +10442,11 @@
         preview.style.setProperty('box-shadow', `0 0 14px ${tempSelectedFrameGlow}`, 'important');
 
         if (currentUser.avatar) {
-            preview.innerHTML = `<img src="${currentUser.avatar}" referrerpolicy="no-referrer" alt="${currentUser.name}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+            if (!preview.querySelector('img.user-avatar-img')) renderAvatarImage(preview, currentUser.avatar, currentUser.name, 30);
         } else {
-            preview.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24" style="color:${tempSelectedFrameColor}; width:30px; height:30px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+            const icon = avatarFallbackIcon(30);
+            icon.style.color = tempSelectedFrameColor;
+            preview.replaceChildren(icon);
         }
     }
 
@@ -10393,11 +10462,7 @@
         const previewEl = document.getElementById('profile-edit-avatar-preview');
         if (!previewEl) return;
         const effectiveAvatar = currentUser.avatar || localStorage.getItem('vapor_customer_avatar') || '';
-        if (effectiveAvatar) {
-            previewEl.innerHTML = `<img src="${effectiveAvatar}" referrerpolicy="no-referrer" alt="${currentUser.name || 'Member'}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
-        } else {
-            previewEl.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24" style="color:var(--avatar-frame-color, #ff6b00); width:30px; height:30px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-        }
+        renderAvatarImage(previewEl, effectiveAvatar, currentUser.name, 30);
     }
 
     function validateBirthdateAge(bdateStr) {
