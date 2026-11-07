@@ -1057,7 +1057,7 @@
             width: 82px;
             height: 82px;
             border-radius: 14px;
-            background: #ffffff;
+            background: radial-gradient(circle at 50% 40%, #1f293d 0%, #0d121d 100%);
             border: 1px solid var(--border-subtle);
             display: flex;
             align-items: center;
@@ -4197,7 +4197,7 @@
             <div class="recommended-card" onclick="openProductDetail(5)">
                 <div class="rec-thumb-box">
                     <span class="rec-badge-tag">TOP 2</span>
-                    <img src="/assets/products/infy_plus.png" class="rec-thumb-img" alt="INFY PLUS" onerror="this.onerror=null; this.src='/assets/products/ks_lumina_pod.png';">
+                    <img src="https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792742984201.jpg" class="rec-thumb-img" alt="INFY PLUS" onerror="this.onerror=null; this.src='/assets/products/ks_lumina_pod.png';">
                 </div>
                 <div class="rec-info-col">
                     <div class="rec-title">หัวพอต INFY PLUS 2.5ml</div>
@@ -5730,6 +5730,8 @@
         if (savedName) currentUser.name = savedName;
         const savedAvatar = localStorage.getItem('vapor_customer_avatar');
         if (savedAvatar) currentUser.avatar = savedAvatar;
+        const savedUserId = localStorage.getItem('vapor_customer_user_id');
+        if (savedUserId) currentUser.userId = savedUserId;
         const savedAddr = localStorage.getItem('vapor_saved_address');
         if (savedAddr) {
             const parsed = JSON.parse(savedAddr);
@@ -8523,9 +8525,9 @@
         if (!container) return;
 
         const topPickConfigs = [
-            { id: 9, defaultTitle: 'Marbo 10000 Puff (Marbo 10K)', defaultTagline: 'พอตใช้แล้วทิ้งยอดฮิต 10,000 คำ หน้าจอดิจิทัล แบตอึด', fallbackImg: '/assets/products/marbo_10k.png' },
-            { id: 5, defaultTitle: 'หัวพอต INFY PLUS 2.5ml', defaultTagline: 'หัวพอตไฟกระพริบยอดนิยม กลิ่นหอมหวาน รสชาติดีเยี่ยม', fallbackImg: '/assets/products/infy_plus.png' },
-            { id: 6, defaultTitle: 'หัวสวิตช์ M SWITCH 15000 Puff', defaultTagline: 'หัวสวิตช์ขนาดใหญ่ 15,000 คำ สลับกลิ่นได้ คุ้มค่าสูงสุด', fallbackImg: '/assets/products/m_switch.png' }
+            { id: 9, defaultTitle: 'Marbo 10000 Puff (Marbo 10K)', defaultTagline: 'พอตใช้แล้วทิ้งยอดฮิต 10,000 คำ หน้าจอดิจิทัล แบตอึด', fallbackImg: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792736936843.jpg' },
+            { id: 5, defaultTitle: 'หัวพอต INFY PLUS 2.5ml', defaultTagline: 'หัวพอตไฟกระพริบยอดนิยม กลิ่นหอมหวาน รสชาติดีเยี่ยม', fallbackImg: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792742984201.jpg' },
+            { id: 6, defaultTitle: 'หัวสวิตช์ M SWITCH 15000 Puff', defaultTagline: 'หัวสวิตช์ขนาดใหญ่ 15,000 คำ สลับกลิ่นได้ คุ้มค่าสูงสุด', fallbackImg: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792738869182.jpg' }
         ];
 
         container.innerHTML = topPickConfigs.map((cfg, idx) => {
@@ -13374,6 +13376,49 @@
         openLanguagePicker({ firstVisit: true });
     }
 
+    async function loadCustomerProfile(userId, phone) {
+        const uId = userId || currentUser.userId || localStorage.getItem('vapor_customer_user_id') || '';
+        const ph = phone || currentUser.phone || localStorage.getItem('vapor_customer_phone') || '';
+        if (!uId && !ph) return;
+
+        try {
+            const url = `${window.API_BASE || ''}/api/selfservice/profile?userId=${encodeURIComponent(uId)}&phone=${encodeURIComponent(ph)}&channelId=${encodeURIComponent(getOriginChannel())}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data && data.success && data.profile) {
+                const prof = data.profile;
+                const profAvatar = prof.avatar || prof.pictureUrl || prof.linePictureUrl;
+                if (profAvatar) {
+                    currentUser.avatar = profAvatar;
+                    try { localStorage.setItem('vapor_customer_avatar', profAvatar); } catch(e) {}
+                }
+                if (prof.userId && !currentUser.userId) {
+                    currentUser.userId = prof.userId;
+                    try { localStorage.setItem('vapor_customer_user_id', prof.userId); } catch(e) {}
+                }
+                if (prof.phone && !currentUser.phone) {
+                    currentUser.phone = prof.phone;
+                    try { localStorage.setItem('vapor_customer_phone', prof.phone); } catch(e) {}
+                }
+                if (prof.name && (!currentUser.name || currentUser.name === 'ลูกค้า LINE' || currentUser.name === 'คุณลูกค้า (LINE User)')) {
+                    currentUser.name = prof.name;
+                    try { localStorage.setItem('vapor_customer_name', prof.name); } catch(e) {}
+                }
+                if (prof.monthlySpent !== undefined) currentUser.monthlySpent = prof.monthlySpent;
+                if (prof.memberTier) currentUser.memberTier = prof.memberTier;
+                if (prof.orderCount !== undefined) currentUser.orderCount = prof.orderCount;
+                if (prof.orders && prof.orders.length > 0) {
+                    try { localStorage.setItem('vapor_customer_orders', JSON.stringify(prof.orders)); } catch(e) {}
+                }
+                updateMemberUI();
+                renderPostalSection();
+                renderOrders();
+            }
+        } catch (e) {
+            console.warn('[Profile fetch background warning]', e && e.message);
+        }
+    }
+
     function bootstrapStorefront() {
         warmupCustomerLocation();
         loadCartFromStorage();
@@ -13384,6 +13429,7 @@
             return;
         }
         checkAgeGate();
+        loadCustomerProfile();
         initLiff();
         renderCatalog();
         renderRecommendedProducts();
