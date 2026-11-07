@@ -4114,7 +4114,7 @@
                     <div style="font-size:10.5px; color:#ff6b00; font-weight:700;" id="home-tier-badge">Basic Member • ยอดสะสม ฿410</div>
                 </div>
             </div>
-            <div style="font-size:11px; font-weight:800; color:#ff6b00; display:flex; align-items:center; gap:4px;">
+            <div role="button" onclick="switchNavTab('member')" style="font-size:11px; font-weight:800; color:#ff6b00; display:flex; align-items:center; gap:4px; cursor:pointer;">
                 <span>ดูสิทธิพิเศษ</span>
                 <span>&gt;</span>
             </div>
@@ -8376,7 +8376,7 @@
         if (target.startsWith('product:')) {
             const prodId = target.replace('product:', '');
             const p = PRODUCTS.find(it => String(it.id) === String(prodId));
-            if (p) { openProductDetail(p); return; }
+            if (p) { openProductDetail(p.id); return; }
         }
         if (/^https?:\/\//i.test(target)) {
             window.open(target, '_blank');
@@ -12591,6 +12591,9 @@
             } else if (isPendingDeliver) {
                 statusColor = '#0284c7';
                 statusText = 'กำลังเตรียมจัดส่ง';
+            } else if (o.status === 'PACKING') {
+                statusColor = '#0284c7';
+                statusText = 'กำลังแพ็กของ';
             } else if (o.status === 'PACKED') {
                 statusColor = '#0284c7';
                 statusText = 'แพ็คแล้ว รอจัดส่ง';
@@ -12714,14 +12717,12 @@
 
     function openOrderTrackingModal(orderId) {
         const allOrders = getStoredOrders();
+        // Not in this device's history: show a lookup state until the server answers (no sample order)
         let order = allOrders.find(o => o.id === orderId) || {
-            id: orderId || 'ORD-20261016-0982',
-            status: 'WAITING_PAYMENT',
-            storeName: 'VAPOR OFFICIAL STORE',
-            timeStr: 'เมื่อสักครู่',
-            total: 180,
-            deliveryMethod: 'express',
-            items: [{ name: 'หัวพอต MOOOD 3ML', flavor: 'พีชสตอ (Nic 3%)', qty: 1 }]
+            id: orderId || '',
+            status: 'LOOKING_UP',
+            items: [],
+            total: 0
         };
 
         activeTrackingOrderId = order.id || orderId;
@@ -12773,6 +12774,9 @@
 
             const status = ord.status || 'WAITING_PAYMENT';
             const isPostal = (ord.deliveryMethod === 'postal' || ord.type === 'postal' || ord.shippingMethod === 'postal');
+            // Payment window: the server's expiresAt when known, otherwise 30 minutes from creation
+            const expiresAtMs = ord.expiresAt ? Date.parse(ord.expiresAt) : (ord.createdAt ? Date.parse(ord.createdAt) + 30 * 60 * 1000 : NaN);
+            const paymentExpired = status === 'WAITING_PAYMENT' && !ord.slipPendingReview && Number.isFinite(expiresAtMs) && Date.now() > expiresAtMs;
 
             // Handle packed photo from Warehouse Web Hub / Backoffice
             const packPhoto = ord.packedPhotoUrl || ord.packed_photo_url || (Array.isArray(ord.packPhotos) && ord.packPhotos[0]) || (Array.isArray(ord.pack_photos) && ord.pack_photos[0]);
@@ -12783,7 +12787,30 @@
                 if (photoWrap) photoWrap.style.display = 'block';
             }
 
-            if (status === 'WAITING_PAYMENT') {
+            if (status === 'LOOKING_UP' || status === 'NOT_FOUND') {
+                const notFound = status === 'NOT_FOUND';
+                if (pill) {
+                    pill.textContent = notFound ? 'ไม่พบออเดอร์นี้' : 'กำลังตรวจสอบ...';
+                    pill.style.background = notFound ? 'rgba(239, 68, 68, 0.15)' : 'rgba(148, 163, 184, 0.15)';
+                    pill.style.color = notFound ? '#ef4444' : '#94a3b8';
+                }
+                if (s1Action) s1Action.style.display = 'none';
+                if (notFound) {
+                    const nfBanner = document.getElementById('track-cancelled-banner');
+                    const nfReason = document.getElementById('track-cancelled-reason-text');
+                    if (nfBanner) nfBanner.style.display = 'block';
+                    if (nfReason) nfReason.textContent = 'ไม่พบออเดอร์นี้ในระบบ หากชำระเงินไปแล้วกรุณาติดต่อแอดมินพร้อมเลขออเดอร์';
+                }
+            } else if (paymentExpired) {
+                if (pill) {
+                    pill.textContent = 'หมดเวลาชำระเงิน';
+                    pill.style.background = 'rgba(239, 68, 68, 0.15)';
+                    pill.style.color = '#ef4444';
+                }
+                if (s1) s1.classList.add('active');
+                if (s1Action) s1Action.style.display = 'none';
+                if (s2Desc) s2Desc.textContent = 'ออเดอร์นี้เกินเวลาชำระเงิน 30 นาทีแล้ว กรุณาสั่งซื้อใหม่';
+            } else if (status === 'WAITING_PAYMENT') {
                 if (pill) {
                     pill.textContent = ord.slipPendingReview ? 'รอแอดมินตรวจสลิป' : 'รอชำระเงิน';
                     pill.style.background = 'rgba(255, 107, 0, 0.15)';
@@ -12797,9 +12824,9 @@
                 if (s4Title) s4Title.textContent = isPostal ? 'ส่งมอบพัสดุแล้ว' : 'ไรเดอร์รับพัสดุแล้ว';
                 if (s4Desc) s4Desc.textContent = isPostal ? 'จัดส่งพัสดุ Flash Express / EMS' : 'อาจใช้เวลาถึง 1-3 ชั่วโมง อยู่ที่สภาพการจราจรและสภาพอากาศ';
 
-            } else if (['PAID', 'PENDING_PACK'].includes(status)) {
+            } else if (['PAID', 'PENDING_PACK', 'PACKING'].includes(status)) {
                 if (pill) {
-                    pill.textContent = 'กำลังแพ็ค';
+                    pill.textContent = status === 'PACKING' ? 'กำลังแพ็กของ' : 'กำลังแพ็ค';
                     pill.style.background = 'rgba(14, 165, 233, 0.15)';
                     pill.style.color = '#38bdf8';
                 }
@@ -12886,8 +12913,8 @@
         // Fetch real-time latest order status from server (including packedPhotoUrl from Web Hub)
         if (order && order.id) {
             fetch(window.API_BASE + '/api/selfservice/order/' + encodeURIComponent(order.id))
-                .then(r => r.json())
-                .then(data => {
+                .then(async r => ({ httpStatus: r.status, data: await r.json().catch(() => null) }))
+                .then(({ httpStatus, data }) => {
                     if (data && data.success && data.order) {
                         order = { ...order, ...data.order };
                         renderTrackingUI(order);
@@ -12900,6 +12927,10 @@
                                 localStorage.setItem('vapor_customer_orders', JSON.stringify(cached));
                             }
                         } catch(e) {}
+                    } else if (httpStatus === 404 || order.status === 'LOOKING_UP') {
+                        // The server does not have this order: no pay / cancel buttons
+                        order = { ...order, status: 'NOT_FOUND' };
+                        renderTrackingUI(order);
                     }
                 })
                 .catch(err => {
