@@ -4126,10 +4126,28 @@
         </div>
 
         <!-- 2. CAMPAIGN BANNER CAROUSEL (LOOP AD BANNER - SYNCED FROM BACKOFFICE CMS) -->
-        <div class="campaign-carousel-wrap" id="campaign-carousel-wrap" style="display:none;">
-            <div class="campaign-carousel-track" id="campaign-carousel-track"></div>
+        <div class="campaign-carousel-wrap" id="campaign-carousel-wrap" style="display:block;">
+            <div class="campaign-carousel-track" id="campaign-carousel-track">
+                <div class="campaign-slide" style="padding:0; aspect-ratio:16/7; max-height:160px; background:#000;" onclick="handleBannerClick('all')">
+                    <img src="https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/banners/banners/banner_1793887453477.jpg" style="width:100%; height:100%; object-fit:cover; border-radius:18px; display:block;" alt="infyplus">
+                </div>
+                <div class="campaign-slide" style="padding:0; aspect-ratio:16/7; max-height:160px; background:#000;" onclick="handleBannerClick('all')">
+                    <img src="https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/banners/banners/banner_1793887477777.jpg" style="width:100%; height:100%; object-fit:cover; border-radius:18px; display:block;" alt="smash go">
+                </div>
+                <div class="campaign-slide" style="padding:0; aspect-ratio:16/7; max-height:160px; background:#000;" onclick="handleBannerClick('all')">
+                    <img src="https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/banners/banners/banner_1793887407580.jpg" style="width:100%; height:100%; object-fit:cover; border-radius:18px; display:block;" alt="มาโบ 10k">
+                </div>
+                <div class="campaign-slide" style="padding:0; aspect-ratio:16/7; max-height:160px; background:#000;" onclick="handleBannerClick('all')">
+                    <img src="https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/banners/banners/banner_1793887585685.jpg" style="width:100%; height:100%; object-fit:cover; border-radius:18px; display:block;" alt="Vplus">
+                </div>
+            </div>
             <!-- Dots Indicator -->
-            <div class="campaign-dots-bar" id="campaign-dots-bar"></div>
+            <div class="campaign-dots-bar" id="campaign-dots-bar">
+                <div class="campaign-dot active"></div>
+                <div class="campaign-dot"></div>
+                <div class="campaign-dot"></div>
+                <div class="campaign-dot"></div>
+            </div>
         </div>
 
         <!-- 3. COLLECTIBLE VOUCHERS SECTION (NO EMOJIS) -->
@@ -13456,6 +13474,8 @@
         loadCartFromStorage();
         fetchStoreConfig();
         applyActiveTheme();
+        initCarouselScrollLoop();
+        initCampaignCarousel();
         if (!checkLineAccessGuard()) {
             if (typeof window.dismissLiffOverlay === 'function') window.dismissLiffOverlay();
             return;
@@ -13471,7 +13491,6 @@
         syncVoucherButtonStates();
         populateCartVoucherSelect();
         updateCartUI();
-        initCampaignCarousel();
         setTimeout(checkAndShowBirthdayEnvelope, 850);
     }
 
