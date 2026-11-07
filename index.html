@@ -2189,6 +2189,38 @@
         .user-avatar-frame::after {
             content: none !important;
         }
+        /* Announcement marquee: the text is repeated so that the track is at least twice the bar width;
+           moving it by exactly half its width and looping gives a seamless scroll. Paused on hover and,
+           on touch devices, while a finger rests on it (class set by script). */
+        .announcement-bar {
+            --ab-bg: #ff6b00;
+            --ab-fg: #0b0d12;
+            --ab-duration: 18s;
+            background: var(--ab-bg);
+            color: var(--ab-fg);
+            height: 32px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .announcement-bar[hidden] { display: none; }
+        .announcement-track {
+            display: flex;
+            width: max-content;
+            animation: announcement-scroll var(--ab-duration) linear infinite;
+            will-change: transform;
+        }
+        .announcement-item { display: inline-flex; align-items: center; gap: 12px; padding: 0 28px; white-space: nowrap; }
+        .announcement-item::after { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.6; }
+        .announcement-bar:hover .announcement-track, .announcement-bar.is-paused .announcement-track { animation-play-state: paused; }
+        @keyframes announcement-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @media (prefers-reduced-motion: reduce) { .announcement-track { animation-duration: 60s; } }
+
         .user-avatar-frame > img.user-avatar-img {
             width: 100%;
             height: 100%;
@@ -4087,6 +4119,11 @@
             <span class="header-cart-badge" id="header-cart-badge">0</span>
         </div>
     </header>
+
+    <!-- Announcement marquee (Settings > ร้านค้า > ป้ายไฟข้อความวิ่ง); hidden = no space taken -->
+    <div id="announcement-bar" class="announcement-bar" hidden data-i18n-skip aria-label="ประกาศจากร้าน">
+        <div class="announcement-track" id="announcement-track"></div>
+    </div>
 
     <!-- Theme Announcement Banner -->
     <div id="theme-announcement-bar" class="theme-announcement-bar" style="display:none; padding:8px 16px; text-align:center; font-size:12px; font-weight:700; color:#ffffff; background:var(--primary-color, #ff6b00); box-shadow:0 2px 8px rgba(0,0,0,0.25); z-index:45; position:relative;">
@@ -6951,7 +6988,8 @@
                     expressDeliveryEnabled: data.expressDeliveryEnabled !== undefined ? Boolean(data.expressDeliveryEnabled) : true,
                     expressStartHour: Number(data.expressStartHour ?? 9),
                     expressEndHour: Number(data.expressEndHour ?? 23),
-                    expressClosedMessage: String(data.expressClosedMessage ?? 'พร้อมให้บริการ 9:00 น ในวันพรุ่งนี้')
+                    expressClosedMessage: String(data.expressClosedMessage ?? 'พร้อมให้บริการ 9:00 น ในวันพรุ่งนี้'),
+                    announcementBar: (data.announcementBar && typeof data.announcementBar === 'object') ? data.announcementBar : null
                 };
                 if (!hasConfirmedPin() && (!mapInstance || !document.getElementById('sheet-map') || !document.getElementById('sheet-map').classList.contains('open'))) {
                     expressFee = storeConfig.shippingFeeRider;
@@ -7029,8 +7067,61 @@
         }
     }
 
+    /* ========================================================
+       ANNOUNCEMENT MARQUEE (under the header)
+       Settings come from store-config: { enabled, text, speed, bgColor, textColor }. The text is placed
+       as text nodes (never HTML). Off or empty = the bar stays hidden and takes no space.
+       ======================================================== */
+    const ANNOUNCEMENT_SPEED_SECONDS = { slow: 30, medium: 18, fast: 10 };
+
+    function applyAnnouncementBar(cfg) {
+        const bar = document.getElementById('announcement-bar');
+        const track = document.getElementById('announcement-track');
+        if (!bar || !track) return;
+        const text = cfg && typeof cfg.text === 'string' ? cfg.text.replace(/\s+/g, ' ').trim() : '';
+        if (!cfg || cfg.enabled !== true || !text) {
+            bar.hidden = true;
+            track.replaceChildren();
+            return;
+        }
+        const hex = (v, fallback) => (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v) ? v : fallback);
+        bar.style.setProperty('--ab-bg', hex(cfg.bgColor, '#ff6b00'));
+        bar.style.setProperty('--ab-fg', hex(cfg.textColor, '#0b0d12'));
+        bar.hidden = false;
+        // Enough copies to cover the bar twice (an even number keeps the two halves identical)
+        const barWidth = bar.clientWidth || window.innerWidth || 400;
+        let copies = Math.max(2, Math.ceil((barWidth * 2) / (text.length * 9 + 56)));
+        if (copies % 2 === 1) copies += 1;
+        const frag = document.createDocumentFragment();
+        for (let i = 0; i < copies; i++) {
+            const item = document.createElement('span');
+            item.className = 'announcement-item';
+            item.textContent = text;
+            frag.appendChild(item);
+        }
+        track.replaceChildren(frag);
+        // Duration scales with the scrolled width so short and long texts move at the same speed
+        const seconds = ANNOUNCEMENT_SPEED_SECONDS[cfg.speed] || ANNOUNCEMENT_SPEED_SECONDS.medium;
+        const half = track.scrollWidth / 2;
+        bar.style.setProperty('--ab-duration', Math.max(4, seconds * (half / 400)).toFixed(1) + 's');
+    }
+
+    (function wireAnnouncementBar() {
+        const bar = document.getElementById('announcement-bar');
+        if (!bar) return;
+        bar.addEventListener('touchstart', () => bar.classList.add('is-paused'), { passive: true });
+        bar.addEventListener('touchend', () => bar.classList.remove('is-paused'));
+        bar.addEventListener('touchcancel', () => bar.classList.remove('is-paused'));
+        let resizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => { if (storeConfig && storeConfig.announcementBar) applyAnnouncementBar(storeConfig.announcementBar); }, 200);
+        });
+    })();
+
     function applyStoreConfigToUI() {
         checkExpressOperatingHours();
+        applyAnnouncementBar(storeConfig ? storeConfig.announcementBar : null);
         if (!storeConfig) return;
         if (storeConfig.storeName) {
             document.title = 'Vapor Club';
