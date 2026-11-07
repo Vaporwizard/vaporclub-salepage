@@ -11960,6 +11960,11 @@
             items: [...cart],
             subtotal: totals.rawSubtotal,
             deliveryFee: totals.shipping,
+            // Fee before discounts and the discount split: the server prices the order itself and uses
+            // these only to reconcile with the quote this page received
+            deliveryFeeGross: totals.baseShipping,
+            deliveryDiscount: totals.totalDeliveryDiscount,
+            productDiscount: totals.totalProductDiscount,
             discount: totals.discount,
             total: totals.total
         };
@@ -12057,6 +12062,9 @@
                 pinSource: isPostal ? null : ((currentSavedAddress && currentSavedAddress.pinSource) || currentPinSource || null),
                 deliveryMethod: orderObj.deliveryMethod,
                 deliveryFee: orderObj.deliveryFee,
+                deliveryFeeGross: orderObj.deliveryFeeGross,
+                deliveryDiscount: orderObj.deliveryDiscount,
+                productDiscount: orderObj.productDiscount,
                 voucherCode: selectedVoucher,
                 ageConfirmed: isAgeVerified(),
                 discount: orderObj.discount,
