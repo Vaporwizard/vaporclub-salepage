@@ -7210,10 +7210,45 @@
             const isDeliveryTarget = ['DELIVERY', 'POSTAL', 'ALL_DELIVERY'].includes(targetCat) ||
                                      /ค่าส่ง|จัดส่ง|delivery|shipping/i.test(promo.name || '');
 
-            if (ruleType === 'BUNDLE_FIXED_PRICE') {
-                const bQty = Number(rule.bundleQty || promo.bundleQty || 4);
-                const bPrice = Number(rule.bundlePrice || promo.bundlePrice || 500);
-                const eligibleItems = cartItems.filter(it => matchItemCategory(it.name, targetCat) && (!Array.isArray(promo.brandFilter) || promo.brandFilter.length === 0 || promo.brandFilter.some(b => String(it.name || '').toLowerCase().includes(String(b).toLowerCase()))));
+                        if (ruleType === 'BUNDLE_FIXED_PRICE') {
+                // Smart quantity detection: rule.bundleQty -> promo.bundleQty -> promo.minQty -> regex from title
+                let bQty = Number(rule.bundleQty || promo.bundleQty || 0);
+                if (bQty <= 1) {
+                    const parsedFromMin = Number(promo.minQty || promo.min_qty || 0);
+                    if (parsedFromMin > 1) {
+                        bQty = parsedFromMin;
+                    } else {
+                        const nameText = String(promo.name || '') + ' ' + String(promo.description || '');
+                        const m = nameText.match(/(?:ซื้อ|ครบ|เซ็ต|เหมา|bundle|แพ็ค)?\s*(\d+)\s*(?:หัว|ชิ้น|อัน|กล่อง|pods?|pcs?)/i) || nameText.match(/(\d+)\s*(?:หัว|ชิ้น|อัน|กล่อง|pods?|pcs?)\s*(\d+)/i);
+                        bQty = (m && Number(m[1]) > 1) ? Number(m[1]) : 4;
+                    }
+                }
+
+                let bPrice = Number(rule.bundlePrice || promo.bundlePrice || rule.discountValue || promo.value || 0);
+                if (bPrice <= 0) {
+                    const nameText = String(promo.name || '') + ' ' + String(promo.description || '');
+                    const m = nameText.match(/(?:หัว|ชิ้น|อัน|กล่อง|pods?|pcs?)\s*(\d+)/i) || nameText.match(/(\d+)\s*(?:บาท|\.-|.-)/i);
+                    if (m && Number(m[1]) > 0) bPrice = Number(m[1]);
+                }
+
+                // Filter items by product_ids if specified, or by category and brand filter
+                const hasProductFilter = Array.isArray(promo.product_ids) && promo.product_ids.length > 0;
+                const eligibleItems = cartItems.filter(it => {
+                    if (hasProductFilter) {
+                        const itProdId = String(it.productId || it.product_id || it.id || '').trim();
+                        const itName = String(it.name || '').trim().toLowerCase();
+                        if (itProdId && promo.product_ids.includes(itProdId)) return true;
+                        const matchedProd = (typeof PRODUCTS !== 'undefined' && Array.isArray(PRODUCTS))
+                            ? PRODUCTS.find(p => promo.product_ids.includes(String(p.id)))
+                            : null;
+                        if (matchedProd && matchedProd.name && (itName.includes(matchedProd.name.toLowerCase()) || matchedProd.name.toLowerCase().includes(itName))) {
+                            return true;
+                        }
+                        return promo.product_ids.some(pid => itName.includes(String(pid).toLowerCase()));
+                    }
+                    return matchItemCategory(it.name, targetCat) && (!Array.isArray(promo.brandFilter) || promo.brandFilter.length === 0 || promo.brandFilter.some(b => String(it.name || '').toLowerCase().includes(String(b).toLowerCase())));
+                });
+
                 const totalCount = eligibleItems.reduce((sum, it) => sum + (it.qty || 1), 0);
                 if (totalCount >= bQty && bPrice > 0) {
                     const fullBundles = Math.floor(totalCount / bQty);
@@ -7449,9 +7484,24 @@
                 }
             }
         } else if (v.type === 'bundle' || v.type === 'BUNDLE_FIXED_PRICE') {
-            // Bundle Fixed Price: e.g. 10 pods for 1,100 THB
-            const bQty = Number(v.bundleQty) || 1;
-            const bPrice = Number(v.bundlePrice) || 0;
+            // Bundle Fixed Price: e.g. 10 pods for 1,100 THB or 4 pods for 500 THB
+            let bQty = Number(v.bundleQty) || 0;
+            if (bQty <= 1) {
+                const parsedFromMin = Number(v.minQty || v.min_qty || 0);
+                if (parsedFromMin > 1) {
+                    bQty = parsedFromMin;
+                } else {
+                    const nameText = String(v.title || v.desc || v.condition || '');
+                    const m = nameText.match(/(?:ซื้อ|ครบ|เซ็ต|เหมา|bundle|แพ็ค)?\s*(\d+)\s*(?:หัว|ชิ้น|อัน|กล่อง|pods?|pcs?)/i) || nameText.match(/(\d+)\s*(?:หัว|ชิ้น|อัน|กล่อง|pods?|pcs?)\s*(\d+)/i);
+                    bQty = (m && Number(m[1]) > 1) ? Number(m[1]) : 4;
+                }
+            }
+            let bPrice = Number(v.bundlePrice) || Number(v.discount) || 0;
+            if (bPrice <= 0) {
+                const nameText = String(v.title || v.desc || v.condition || '');
+                const m = nameText.match(/(?:หัว|ชิ้น|อัน|กล่อง|pods?|pcs?)\s*(\d+)/i) || nameText.match(/(\d+)\s*(?:บาท|\.-|.-)/i);
+                if (m && Number(m[1]) > 0) bPrice = Number(m[1]);
+            }
             if (eligibleItemsCount >= bQty && bPrice > 0) {
                 const fullBundles = Math.floor(eligibleItemsCount / bQty);
                 const avgItemPrice = eligibleItemsCount > 0 ? (eligibleSubtotal / eligibleItemsCount) : 0;
@@ -8791,7 +8841,15 @@
                 discountPercent: isPercent ? discountVal : 0,
                 minSpend: Number(p.minSubtotal || 0),
                 minQty: Number(p.minQty || p.min_qty || 0),
-                bundleQty: Number(p.pricingRule?.bundleQty || p.bundleQty || 1),
+                bundleQty: (() => {
+                    let q = Number(p.pricingRule?.bundleQty || p.bundleQty || 0);
+                    if (q <= 1) {
+                        const m = (String(p.name || '') + ' ' + String(p.description || '')).match(/(?:ซื้อ|ครบ|เซ็ต|เหมา|bundle|แพ็ค)?\s*(\d+)\s*(?:หัว|ชิ้น|อัน|กล่อง|pods?|pcs?)/i);
+                        if (m && Number(m[1]) > 1) return Number(m[1]);
+                        return Number(p.minQty || p.min_qty || 4);
+                    }
+                    return q;
+                })(),
                 bundlePrice: Number(p.pricingRule?.bundlePrice || p.bundlePrice || 0),
                 type: vType,
                 targetCategory: finalTarget,
