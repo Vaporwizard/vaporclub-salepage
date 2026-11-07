@@ -1312,7 +1312,7 @@
         .prod-mockup-wrapper {
             width: 100%;
             aspect-ratio: 1 / 1;
-            background: #ffffff;
+            background: radial-gradient(circle at 50% 40%, #1f293d 0%, #0d121d 100%);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -1325,22 +1325,26 @@
         .prod-mockup-img {
             width: 100%;
             height: 100%;
-            max-width: 100%;
-            max-height: 100%;
             object-fit: cover;
-            transform: scale(1.15);
-            transition: transform 0.2s ease;
+            transition: transform 0.25s ease, opacity 0.2s ease, filter 0.2s ease;
         }
         .product-card:hover .prod-mockup-img {
-            transform: scale(1.22);
+            transform: scale(1.06);
+        }
+        .product-card.out-of-stock .prod-mockup-img,
+        .prod-mockup-wrapper:has(.prod-out-overlay) .prod-mockup-img {
+            filter: grayscale(20%);
+            opacity: 0.85;
         }
         .prod-out-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(15, 23, 42, 0.7);
+            background: rgba(15, 23, 42, 0.42);
+            backdrop-filter: blur(0.5px);
             display: flex;
             align-items: center;
             justify-content: center;
+            pointer-events: none;
         }
         .prod-out-badge-pill {
             background: #ef4444;
@@ -2366,7 +2370,7 @@
             aspect-ratio: 1 / 1;
             max-width: 100%;
             margin: 0 0 16px 0;
-            background: #ffffff;
+            background: radial-gradient(circle at 50% 40%, #1f293d 0%, #0d121d 100%);
             border-radius: 16px;
             display: flex;
             align-items: center;
@@ -5706,7 +5710,7 @@
     let currentUser = {
         name: 'คุณลูกค้า (LINE User)',
         userId: '',
-        avatar: '',
+        avatar: localStorage.getItem('vapor_customer_avatar') || '',
         phone: '',
         birthdate: '',
         address: '',
@@ -5724,6 +5728,8 @@
         if (savedPhone) currentUser.phone = savedPhone;
         const savedName = localStorage.getItem('vapor_customer_name');
         if (savedName) currentUser.name = savedName;
+        const savedAvatar = localStorage.getItem('vapor_customer_avatar');
+        if (savedAvatar) currentUser.avatar = savedAvatar;
         const savedAddr = localStorage.getItem('vapor_saved_address');
         if (savedAddr) {
             const parsed = JSON.parse(savedAddr);
@@ -5778,7 +5784,7 @@
             inStock: true,
             sales: 1240,
             tag: 'ขายดี',
-            image: '/assets/products/moood_3ml.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792730638287.jpg',
             tagline: 'หัวพอตขนาดจุใจ 3ML แยกกลุ่มนิค 3% และ 5%',
             groups: [
                 {
@@ -5808,7 +5814,7 @@
             inStock: false,
             sales: 890,
             tag: 'ยอดนิยม',
-            image: '/assets/products/relx_pro2.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792734255236.jpg',
             tagline: 'หัวพอตนวัตกรรมใหม่ ปรับระดับความแรงได้',
             groups: [
                 {
@@ -5845,7 +5851,7 @@
             inStock: false,
             sales: 450,
             tag: 'จุใจ',
-            image: '/assets/products/relx_large.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792736488212.jpg',
             tagline: 'หัวพอตความจุใหญ่พิเศษ ฟีลสูบนุ่มละมุน',
             groups: [
                 {
@@ -5873,7 +5879,7 @@
             inStock: false,
             sales: 520,
             tag: 'เข้มข้น',
-            image: '/assets/products/relx_ultra.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792736507942.jpg',
             tagline: 'หัวพอตสูตรเข้มข้น นิคแน่น กลิ่นชัด',
             groups: [
                 {
@@ -5903,7 +5909,7 @@
             inStock: true,
             sales: 1580,
             tag: 'มีไฟ',
-            image: '/assets/products/infy_plus.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792742984201.jpg',
             tagline: 'หัวพอตใส 2.5ml ไฟกระพริบยอดฮิต',
             groups: [
                 {
@@ -5930,7 +5936,7 @@
             inStock: true,
             sales: 640,
             tag: 'หัวสลับ',
-            image: '/assets/products/m_switch.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792738869182.jpg',
             tagline: 'หัวพอตแบบเปลี่ยนสำหรับตัวเครื่อง M Switch สูบได้ถึง 15,000 คำ',
             groups: [
                 {
@@ -5955,7 +5961,7 @@
             inStock: false,
             sales: 410,
             tag: '20K คำ',
-            image: '/assets/products/looma_sw.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792738907899.jpg',
             tagline: 'หัวพอตขนาดจัมโบ้ 20,000 คำ ความจุน้ำยาจุใจ รสชาติเข้มข้น',
             groups: [
                 {
@@ -5980,7 +5986,7 @@
             inStock: false,
             sales: 780,
             tag: '9K คำ',
-            image: '/assets/products/marbo_9k.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792743005962.jpg',
             tagline: 'พอตใช้แล้วทิ้ง Marbo 9,000 คำ กลิ่นชัด ควันแน่น พกพาสะดวก',
             groups: [
                 {
@@ -6006,7 +6012,7 @@
             inStock: true,
             sales: 1120,
             tag: 'ยอดนิยม',
-            image: '/assets/products/marbo_10k.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792736936843.jpg',
             tagline: 'พอตใช้แล้วทิ้ง Marbo 10,000 คำ หน้าจอดิจิทัลบอกแบตและน้ำยา',
             groups: [
                 {
@@ -6030,7 +6036,7 @@
             inStock: true,
             sales: 950,
             tag: 'ขายดี',
-            image: '/assets/products/vplus_16k.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792736664482.jpg',
             tagline: 'พอตใช้แล้วทิ้ง VPlus 16,000 คำ แบตอึด หน้าจอบอกปริมาณน้ำยา',
             groups: [
                 {
@@ -6054,7 +6060,7 @@
             inStock: false,
             sales: 870,
             tag: 'คลาสสิก',
-            image: '/assets/products/marbo_zero.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792738938072.jpg',
             tagline: 'หัวพอต Marbo Zero ของแท้ ฟีลสูบแน่น กลิ่นหอมฟุ้ง',
             groups: [
                 {
@@ -6088,7 +6094,7 @@
             inStock: false,
             sales: 320,
             tag: 'รุ่นใหม่',
-            image: '/assets/products/ks_lumina2.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792738948707.jpg',
             tagline: 'ตัวเครื่อง Next Beyond ดีไซน์พรีเมียม ปรับไฟได้ รองรับหัวทุกแบรนด์',
             groups: [
                 {
@@ -6108,7 +6114,7 @@
             inStock: false,
             sales: 460,
             tag: 'ท็อปฮิต',
-            image: '/assets/products/relx_device.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792738967478.jpg',
             tagline: 'เครื่องแท้ Relx Infinity 2 Plus ปรับโหมดสูบได้ 3 ระดับ',
             groups: [
                 {
@@ -6128,7 +6134,7 @@
             inStock: false,
             sales: 380,
             tag: '15K คำ',
-            image: '/assets/products/moood_14k.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792738982733.jpg',
             tagline: 'พอตใช้แล้วทิ้ง Elfbar 15,000 คำ ทรงสวย แบตเตอรี่ทนทาน ควันสมูท',
             groups: [
                 {
@@ -6152,7 +6158,7 @@
             inStock: false,
             sales: 510,
             tag: '14K คำ',
-            image: '/assets/products/moood_14k.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792738992954.jpg',
             tagline: 'พอตใช้แล้วทิ้ง Moood 14,000 คำ กลิ่นละมุน รสชาติหวานฉ่ำลงตัว',
             groups: [
                 {
@@ -6177,7 +6183,7 @@
             inStock: false,
             sales: 430,
             tag: '12K คำ',
-            image: '/assets/products/relx_ultra.png',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/slips/products/product_1792738888709.jpg',
             tagline: 'พอตใช้แล้วทิ้ง Relx Smash Go 12,000 คำ กลิ่นชัดสไตล์ Relx',
             groups: [
                 {
@@ -7640,11 +7646,15 @@
         if (homeTierBadge) homeTierBadge.textContent = `${tierInfo.badgeName} • ยอดสะสม ฿${currentUser.monthlySpent}`;
 
         // Avatars Rendering (Supports LINE Profile Image with referrerpolicy)
-        if (currentUser.avatar) {
+        const effectiveAvatar = currentUser.avatar || localStorage.getItem('vapor_customer_avatar') || '';
+        if (effectiveAvatar) {
+            currentUser.avatar = effectiveAvatar;
+            const svgFallback = '<svg class="svg-icon" viewBox="0 0 24 24" style="color:var(--avatar-frame-color, #ff6b00);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+            const avatarImgHtml = `<img src="${effectiveAvatar}" referrerpolicy="no-referrer" alt="${currentUser.name || 'Member'}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.onerror=null; this.parentElement.innerHTML='${svgFallback}';">`;
             const avatar1 = document.getElementById('home-user-avatar');
-            if (avatar1) avatar1.innerHTML = `<img src="${currentUser.avatar}" referrerpolicy="no-referrer" alt="${currentUser.name}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+            if (avatar1) avatar1.innerHTML = avatarImgHtml;
             const avatar2 = document.getElementById('profile-user-avatar');
-            if (avatar2) avatar2.innerHTML = `<img src="${currentUser.avatar}" referrerpolicy="no-referrer" alt="${currentUser.name}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+            if (avatar2) avatar2.innerHTML = avatarImgHtml;
         }
         applyAvatarFrameColor();
 
@@ -8584,7 +8594,7 @@
                 <div class="product-card" onclick="openProductDetail(${p.id})">
                     ${p.inStock && (tagText || isFlashSale) ? `<span class="${tagClass}">${tagText || 'FLASH SALE'}</span>` : ''}
                     <div class="prod-mockup-wrapper">
-                        <img src="${p.image}" class="prod-mockup-img" alt="${p.name}">
+                        <img src="${p.image}" class="prod-mockup-img" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='/assets/products/relx_device.png';">
                         ${!p.inStock ? '<div class="prod-out-overlay"><span class="prod-out-badge-pill">สินค้าหมด</span></div>' : ''}
                     </div>
                     
@@ -12677,6 +12687,8 @@
                 if (Array.isArray(data.products) && data.products.length > 0) {
                     PRODUCTS.length = 0;
                     data.products.forEach(p => PRODUCTS.push(p));
+                    renderCatalog();
+                    renderRecommendedProducts();
                     syncRealInventory();
                 }
 
@@ -12810,7 +12822,10 @@
                 const profile = await liff.getProfile();
                 currentUser.name = profile.displayName || 'ลูกค้า LINE';
                 currentUser.userId = profile.userId || '';
-                currentUser.avatar = profile.pictureUrl || '';
+                if (profile.pictureUrl) {
+                    currentUser.avatar = profile.pictureUrl;
+                    try { localStorage.setItem('vapor_customer_avatar', profile.pictureUrl); } catch(e) {}
+                }
 
                 // Sync LIFF login & channel tags immediately
                 try {
@@ -12833,6 +12848,11 @@
                     const res = await fetch(`${window.API_BASE || ''}/api/selfservice/profile?userId=${encodeURIComponent(profile.userId)}&displayName=${encodeURIComponent(profile.displayName || '')}&pictureUrl=${encodeURIComponent(profile.pictureUrl || '')}&channelId=${encodeURIComponent(getOriginChannel())}`);
                     const data = await res.json();
                     if (data && data.success && data.profile) {
+                        const profAvatar = data.profile.avatar || data.profile.pictureUrl || data.profile.linePictureUrl;
+                        if (profAvatar) {
+                            currentUser.avatar = profAvatar;
+                            try { localStorage.setItem('vapor_customer_avatar', profAvatar); } catch(e) {}
+                        }
                         if (data.profile.phone) {
                             currentUser.phone = data.profile.phone;
                             try { localStorage.setItem('vapor_customer_phone', data.profile.phone); } catch(e) {}
