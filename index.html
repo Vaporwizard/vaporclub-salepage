@@ -6957,11 +6957,11 @@
     window.clearCartFromStorage = clearCartFromStorage;
 
     let shippingMethod = 'express';
-    let expressFee = 50;
+    let expressFee = 25;
     let postalFee = 40;
     let storeConfig = {
         storeName: 'Vapor Club',
-        shippingFeeRider: 50,
+        shippingFeeRider: 25,
         shippingFeeParcel: 40,
         freeShippingMin: 0,
         parcelRates: [],
@@ -6970,6 +6970,40 @@
         expressEndHour: 23,
         expressClosedMessage: 'พร้อมให้บริการ 9:00 น ในวันพรุ่งนี้'
     };
+
+    async function syncExpressDeliveryFee(coords) {
+        const c = coords || (typeof deliveryCoordsForOrder === 'function' ? deliveryCoordsForOrder() : null) || ((typeof hasConfirmedPin === 'function' && hasConfirmedPin()) ? currentPinnedCoords : null);
+        if (!c || typeof c.lat !== 'number' || typeof c.lng !== 'number') return;
+        if (typeof isDefaultMapCenter === 'function' && isDefaultMapCenter(c)) return;
+
+        // 1. Instant dynamic distance & fee calculation using store criteria (25 THB base + 5 THB/extra km + 15% markup)
+        if (typeof calculateEstimatedDeliveryFee === 'function') {
+            const est = calculateEstimatedDeliveryFee(c.lat, c.lng);
+            if (est.isOutOfZone) {
+                window.isExpressOutOfZone = true;
+                expressFee = 0;
+            } else {
+                window.isExpressOutOfZone = false;
+                expressFee = est.fee;
+            }
+            if (typeof updateCartUI === 'function') updateCartUI();
+        }
+
+        // 2. Exact background OSRM driving route verification from server
+        try {
+            const res = await fetch(window.API_BASE + '/api/selfservice/calculate-delivery', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lat: c.lat, lng: c.lng })
+            });
+            const data = await res.json();
+            if (data && data.success && typeof data.fee === 'number') {
+                expressFee = data.fee;
+                window.isExpressOutOfZone = Boolean(data.isOutOfZone);
+                if (typeof updateCartUI === 'function') updateCartUI();
+            }
+        } catch(e) {}
+    }
     let selectedCarrier = null;
 
     async function fetchStoreConfig() {
@@ -6993,6 +7027,8 @@
                 };
                 if (!hasConfirmedPin() && (!mapInstance || !document.getElementById('sheet-map') || !document.getElementById('sheet-map').classList.contains('open'))) {
                     expressFee = storeConfig.shippingFeeRider;
+                } else if (typeof syncExpressDeliveryFee === 'function') {
+                    syncExpressDeliveryFee();
                 }
                 postalFee = 40;
                 applyStoreConfigToUI();
@@ -7307,12 +7343,23 @@
 
     function calculateDeliveryFee(method = shippingMethod, subtotalAmount = 0, itemCount = 1) {
         if (itemCount === 0) return 0;
-        const base = method === 'postal' ? (Number(postalFee) || 40) : (Number(expressFee) || 50);
         const freeShippingThreshold = Number(storeConfig?.freeShippingMin) || 0;
         if (freeShippingThreshold > 0 && subtotalAmount >= freeShippingThreshold) {
             return 0;
         }
-        return base;
+        if (method === 'postal') {
+            return Number(postalFee) || 40;
+        }
+        const coords = typeof deliveryCoordsForOrder === 'function' ? deliveryCoordsForOrder() : null;
+        if (coords && typeof coords.lat === 'number' && typeof coords.lng === 'number' && typeof calculateEstimatedDeliveryFee === 'function') {
+            if (typeof expressFee !== 'number' || expressFee <= 0 || expressFee === 50 || expressFee === 25) {
+                const est = calculateEstimatedDeliveryFee(coords.lat, coords.lng);
+                if (!est.isOutOfZone && typeof est.fee === 'number') {
+                    expressFee = est.fee;
+                }
+            }
+        }
+        return Number(expressFee) || Number(storeConfig?.shippingFeeRider) || 25;
     }
 
     function calculateAutoPromotions(cartItems = cart, rawSubtotal = 0, baseShipping = 0, method = shippingMethod) {
@@ -9718,6 +9765,9 @@
         document.getElementById('sheet-cart').classList.add('open');
 
         selectShipping(shippingMethod || 'express');
+        if (typeof syncExpressDeliveryFee === 'function') {
+            syncExpressDeliveryFee();
+        }
         updateCartUI();
     }
 
@@ -11107,6 +11157,9 @@
                 currentPinSource = isDefaultMapCenter(currentPinnedCoords) ? null : 'saved';
                 savedCoords = { ...currentPinnedCoords };
                 onCenterPinMoved(pinLat, pinLng);
+                if (typeof syncExpressDeliveryFee === 'function') {
+                    syncExpressDeliveryFee(currentPinnedCoords);
+                }
             } else {
                 currentPinSource = null;
             }
@@ -12112,15 +12165,25 @@
             discount = calc.discount;
         }
 
+        const isPostal = shippingMethod === 'postal';
+        const postalData = currentUser.savedPostalAddress || {};
+        const deliveryCoords = isPostal ? null : deliveryCoordsForOrder();
+
+        // Safety guarantee: ensure expressFee matches the destination coordinates before computing totals
+        if (!isPostal && deliveryCoords && typeof deliveryCoords.lat === 'number' && typeof deliveryCoords.lng === 'number' && typeof calculateEstimatedDeliveryFee === 'function') {
+            const est = calculateEstimatedDeliveryFee(deliveryCoords.lat, deliveryCoords.lng);
+            if (!est.isOutOfZone && typeof est.fee === 'number') {
+                if (typeof expressFee !== 'number' || expressFee <= 0 || expressFee === 50 || expressFee === 25) {
+                    expressFee = est.fee;
+                }
+            }
+        }
+
         const totals = calculateCartTotals();
         discount = totals.discount;
         const total = totals.total;
         const randId = 'ORD-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
         currentServerOrderId = randId;
-
-        const isPostal = shippingMethod === 'postal';
-        const postalData = currentUser.savedPostalAddress || {};
-        const deliveryCoords = isPostal ? null : deliveryCoordsForOrder();
         const baseAddr = (currentSavedAddress && currentSavedAddress.detail) || currentUser.address || currentPinLabel() || (deliveryCoords ? `พิกัดจัดส่ง (${deliveryCoords.lat.toFixed(5)}, ${deliveryCoords.lng.toFixed(5)})` : 'จัดส่งด่วนไรเดอร์');
         const noteText = (currentSavedAddress && currentSavedAddress.note) || currentUser.riderNote || '';
         const finalAddress = isPostal
@@ -13455,6 +13518,9 @@
                             if (isValidPin(pin) && !isDefaultMapCenter(pin)) {
                                 currentPinnedCoords = pin;
                                 currentPinSource = 'saved';
+                                if (typeof syncExpressDeliveryFee === 'function') {
+                                    syncExpressDeliveryFee(pin);
+                                }
                             }
                         }
                         currentUser.monthlySpent = data.profile.monthlySpent || 0;
@@ -13963,6 +14029,9 @@
         checkAgeGate();
         await loadCustomerProfile();
         initLiff();
+        if (typeof syncExpressDeliveryFee === 'function') {
+            syncExpressDeliveryFee();
+        }
         renderCatalog();
         renderRecommendedProducts();
         updateMemberUI();
