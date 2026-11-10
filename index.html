@@ -6329,7 +6329,7 @@
        ======================================================== */
     let currentPopupBanner = null;
 
-    function isPopupBannerHidden(bannerId) {
+    function isPopupBannerHidden(bannerId, customHours) {
         if (!bannerId) return false;
         try {
             const hideTimestamp = localStorage.getItem('vapor_hide_popup_' + bannerId);
@@ -6337,7 +6337,8 @@
             const hideTime = parseInt(hideTimestamp, 10);
             if (isNaN(hideTime)) return false;
             const now = Date.now();
-            return (now - hideTime) < (24 * 60 * 60 * 1000);
+            const h = (typeof customHours === 'number' && !isNaN(customHours) && customHours > 0) ? customHours : 24;
+            return (now - hideTime) < (h * 60 * 60 * 1000);
         } catch (e) {
             return false;
         }
@@ -6866,16 +6867,58 @@
     function handlePopupBannerSlideClick(index) {
         const banner = activePopupBanners[index] || activePopupBanners[currentPopupIndex];
         if (!banner) return;
-        const target = banner.cta_link || banner.linkUrl || banner.linkValue || banner.link_value || banner.linkCategory || banner.link || 'all';
 
         closePopupBanner();
 
+        const linkType = banner.link_type || banner.linkType || '';
+        const rawTarget = banner.cta_link || banner.linkUrl || banner.linkValue || banner.link_value || banner.linkCategory || banner.link || '';
+
+        // Case 1: None / Just show image -> close popup and do nothing further
+        if (linkType === 'none' || rawTarget === 'none' || rawTarget === '') {
+            return;
+        }
+
+        // Case 2: Deals / Vouchers / Promotions
+        if (linkType === 'deals' || rawTarget === 'deals' || rawTarget === 'voucher' || rawTarget === 'vouchers' || rawTarget === 'promotions') {
+            if (typeof switchNavTab === 'function') {
+                switchNavTab('deals');
+            }
+            return;
+        }
+
+        // Case 3: Product
+        if (linkType === 'product') {
+            const prodId = rawTarget.startsWith('product:') ? rawTarget.replace('product:', '') : rawTarget;
+            const p = (typeof PRODUCTS !== 'undefined' && Array.isArray(PRODUCTS)) ? PRODUCTS.find(it => String(it.id) === String(prodId)) : null;
+            if (p && typeof openProductDetail === 'function') {
+                openProductDetail(p.id);
+                return;
+            } else if (typeof handleBannerClick === 'function') {
+                handleBannerClick('product:' + prodId);
+                return;
+            }
+        }
+
+        // Case 4: Category
+        if (linkType === 'category') {
+            if (typeof goToCategory === 'function') {
+                goToCategory(rawTarget || 'all');
+                return;
+            }
+        }
+
+        // Case 5: External URL or general target
+        let resolvedTarget = rawTarget;
+        if (linkType === 'product' && !resolvedTarget.startsWith('product:')) {
+            resolvedTarget = 'product:' + resolvedTarget;
+        }
+
         if (typeof handleBannerClick === 'function') {
-            handleBannerClick(target);
-        } else if (/^https?:\/\//i.test(target)) {
-            window.open(target, '_blank');
+            handleBannerClick(resolvedTarget);
+        } else if ((/^https?:\/\//i.test(resolvedTarget))) {
+            window.open(resolvedTarget, '_blank');
         } else if (typeof goToCategory === 'function') {
-            goToCategory(target);
+            goToCategory(resolvedTarget);
         }
     }
 
@@ -6932,7 +6975,31 @@
 
     function checkAndShowPopupBanners(banners) {
         if (!Array.isArray(banners) || banners.length === 0) return;
-        const popups = banners.filter(b => (b.placement === 'popup' || b.is_popup === true) && b.active !== false && !isPopupBannerHidden(b.id));
+        const now = Date.now();
+        const popups = banners.filter(b => {
+            if (b.placement !== 'popup' && b.is_popup !== true) return false;
+            if (b.active === false) return false;
+
+            // Schedule start check: hide if current time hasn't reached startsAt
+            const startRaw = b.startsAt || b.starts_at;
+            if (startRaw) {
+                const s = new Date(startRaw).getTime();
+                if (!isNaN(s) && now < s) return false;
+            }
+
+            // Schedule end check: hide if current time passed endsAt
+            const endRaw = b.endsAt || b.ends_at;
+            if (endRaw) {
+                const e = new Date(endRaw).getTime();
+                if (!isNaN(e) && now > e) return false;
+            }
+
+            const hideHours = Number(b.dont_show_again_hours ?? b.dontShowAgainHours ?? 24);
+            if (isPopupBannerHidden(b.id, hideHours)) return false;
+
+            return true;
+        });
+
         if (popups.length > 0) {
             if (window._isBirthdayPopupActive || (isTodayCustomerBirthday() && !isBirthdayPopupAlreadySeen())) {
                 window._pendingPopupBanner = popups;
@@ -8511,16 +8578,30 @@
     }
 
     function handleBannerClick(target) {
-        if (!target || target === 'all') {
+        if (!target || target === 'none') {
+            return;
+        }
+        if (target === 'deals' || target === 'voucher' || target === 'vouchers' || target === 'promotions' || target.startsWith('campaign:')) {
+            if (typeof switchNavTab === 'function') {
+                switchNavTab('deals');
+            }
+            return;
+        }
+        if (target === 'all') {
             goToCategory('all');
             return;
         }
         if (target.startsWith('product:')) {
             const prodId = target.replace('product:', '');
-            const p = PRODUCTS.find(it => String(it.id) === String(prodId));
-            if (p) { openProductDetail(p.id); return; }
+            const p = (typeof PRODUCTS !== 'undefined' && Array.isArray(PRODUCTS)) ? PRODUCTS.find(it => String(it.id) === String(prodId)) : null;
+            if (p && typeof openProductDetail === 'function') {
+                openProductDetail(p.id);
+                return;
+            }
+            goToCategory('all');
+            return;
         }
-        if (/^https?:\/\//i.test(target)) {
+        if ((/^https?:\/\//i.test(target))) {
             window.open(target, '_blank');
             return;
         }
@@ -13263,7 +13344,22 @@
                     const allBanners = Array.isArray(data.banners) ? data.banners : [];
                     try { checkAndShowPopupBanners(allBanners); } catch (e) { console.warn('[Popup Banner Err]', e); }
 
-                    const carouselBanners = allBanners.filter(b => b.placement !== 'popup' && b.is_popup !== true && b.active !== false);
+                    const nowTs = Date.now();
+                    const carouselBanners = allBanners.filter(b => {
+                        if (b.placement === 'popup' || b.is_popup === true) return false;
+                        if (b.active === false) return false;
+                        const startRaw = b.startsAt || b.starts_at;
+                        if (startRaw) {
+                            const s = new Date(startRaw).getTime();
+                            if (!isNaN(s) && nowTs < s) return false;
+                        }
+                        const endRaw = b.endsAt || b.ends_at;
+                        if (endRaw) {
+                            const e = new Date(endRaw).getTime();
+                            if (!isNaN(e) && nowTs > e) return false;
+                        }
+                        return true;
+                    });
 
                     if (carouselBanners.length > 0 && track && dotsBar) {
                         track.innerHTML = carouselBanners.map(b => {
