@@ -7336,9 +7336,10 @@
             if (pId && userUsedVouchers.some(u => String(u).trim() === pId)) return true;
         }
 
-        // 2. Check customer orders history
-        const myOrders = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
-        const hasPriorOrders = Array.isArray(myOrders) && myOrders.length > 0;
+        // 2. Check customer orders history (exclude CANCELLED orders so returned vouchers can be reused)
+        const rawOrders = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
+        const myOrders = Array.isArray(rawOrders) ? rawOrders.filter(o => o && String(o.status || '').toUpperCase() !== 'CANCELLED') : [];
+        const hasPriorOrders = myOrders.length > 0;
 
         // New customer vouchers (NEW50, NEW10, etc.) cannot be used if customer has prior orders
         if (['NEW50', 'NEW10'].includes(c) || pId === 'promo_code_newbie10_delivery') {
@@ -12301,6 +12302,7 @@
             deliveryDiscount: totals.totalDeliveryDiscount,
             productDiscount: totals.totalProductDiscount,
             discount: totals.discount,
+            discountCode: selectedVoucher ? String(selectedVoucher).trim().toUpperCase() : '',
             total: totals.total
         };
 
@@ -12497,6 +12499,31 @@
         showToast('บันทึกคำสั่งซื้อแล้ว คุณสามารถชำระเงินได้ที่แท็บคำสั่งซื้อ');
     }
 
+    function restoreVouchersToCustomerLocal(codes) {
+        if (!Array.isArray(codes) || codes.length === 0) return;
+        let changed = false;
+        codes.forEach(raw => {
+            const c = String(raw || '').trim().toUpperCase();
+            if (!c) return;
+            if (Array.isArray(userUsedVouchers)) {
+                const beforeLen = userUsedVouchers.length;
+                userUsedVouchers = userUsedVouchers.filter(u => String(u).trim().toUpperCase() !== c);
+                if (userUsedVouchers.length !== beforeLen) changed = true;
+            }
+            if (Array.isArray(userClaimedVouchers) && !userClaimedVouchers.some(v => String(v).trim().toUpperCase() === c)) {
+                userClaimedVouchers.push(c);
+                changed = true;
+            }
+        });
+        if (changed) {
+            try { localStorage.setItem('vapor_used_vouchers', JSON.stringify(userUsedVouchers)); } catch (e) {}
+            try { localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers)); } catch (e) {}
+            if (typeof syncVoucherButtonStates === 'function') syncVoucherButtonStates();
+            if (typeof populateCartVoucherSelect === 'function') populateCartVoucherSelect();
+            if (typeof updateCartUI === 'function') updateCartUI();
+        }
+    }
+
     function cancelCustomerCurrentOrder() {
         if (!activeTrackingOrderId) return;
         const confirmCancel = confirm('คุณต้องการยกเลิกคำสั่งซื้อนี้ใช่หรือไม่?');
@@ -12505,7 +12532,20 @@
         const orderId = activeTrackingOrderId;
         const allOrders = getStoredOrders();
         const oIdx = allOrders.findIndex(o => o.id === orderId);
+        const localCodesToRestore = [];
         if (oIdx >= 0) {
+            const ord = allOrders[oIdx];
+            const prevStatus = String(ord.status || 'WAITING_PAYMENT').toUpperCase();
+            if (prevStatus === 'WAITING_PAYMENT' && !ord.isPaid) {
+                const dc = String(ord.discountCode || ord.applied_coupon || ord.coupon_code || ord.discount_code || '').trim().toUpperCase();
+                if (dc) localCodesToRestore.push(dc);
+                if (Array.isArray(ord.vouchers)) {
+                    ord.vouchers.forEach(v => {
+                        const vc = String(v || '').trim().toUpperCase();
+                        if (vc && !localCodesToRestore.includes(vc)) localCodesToRestore.push(vc);
+                    });
+                }
+            }
             allOrders[oIdx].status = 'CANCELLED';
             allOrders[oIdx].statusText = 'ยกเลิกแล้ว';
             allOrders[oIdx].cancelledReason = 'ลูกค้ายกเลิกคำสั่งซื้อก่อนชำระเงิน';
@@ -12514,14 +12554,25 @@
             } catch(e) {}
         }
 
+        if (localCodesToRestore.length > 0) {
+            restoreVouchersToCustomerLocal(localCodesToRestore);
+        }
+
         // Notify backend server
         fetch(window.API_BASE + '/api/selfservice/order/' + encodeURIComponent(orderId) + '/cancel', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ reason: 'ลูกค้ายกเลิกคำสั่งซื้อก่อนชำระเงิน' })
-        }).catch(err => console.warn('Cancel server order error:', err));
+        })
+        .then(r => r.json().catch(() => null))
+        .then(data => {
+            if (data && data.success && Array.isArray(data.restoredCoupons) && data.restoredCoupons.length > 0) {
+                restoreVouchersToCustomerLocal(data.restoredCoupons);
+            }
+        })
+        .catch(err => console.warn('Cancel server order error:', err));
 
-        showToast('ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว');
+        showToast(localCodesToRestore.length > 0 ? 'ยกเลิกคำสั่งซื้อและคืนโค้ดส่วนลดเรียบร้อยแล้ว' : 'ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว');
         renderOrders();
         openOrderTrackingModal(orderId);
     }
@@ -13597,7 +13648,8 @@
                             } catch(e) {}
                         }
                         if (Array.isArray(data.profile.usedCoupons)) {
-                            userUsedVouchers = Array.from(new Set([...userUsedVouchers, ...data.profile.usedCoupons]));
+                            // Server is the authority so cancelled/expired orders release their vouchers cleanly
+                            userUsedVouchers = Array.from(new Set(data.profile.usedCoupons.map(c => String(c || '').trim().toUpperCase()).filter(Boolean)));
                             try { localStorage.setItem('vapor_used_vouchers', JSON.stringify(userUsedVouchers)); } catch(e) {}
                         }
                         if (Array.isArray(window.__LATEST_PROMOTIONS) && typeof syncCampaignsToVouchers === 'function') {
