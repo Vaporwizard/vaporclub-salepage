@@ -13143,7 +13143,7 @@
                 if (s1Action) s1Action.style.display = ord.slipPendingReview ? 'none' : 'block';
                 if (s2Desc) s2Desc.textContent = 'แอดมินคลังกำลังแพ็คและตรวจสอบสินค้า';
                 if (s3Desc) s3Desc.textContent = isPostal ? `รอส่งมอบขนส่ง ${postalLabel}` : 'รอไรเดอร์เข้ารับพัสดุ';
-                if (s4Title) s4Title.textContent = isPostal ? 'ส่งมอบพัสดุแล้ว' : 'ไรเดอร์รับพัสดุแล้ว';
+                if (s4Title) s4Title.textContent = isPostal ? 'ส่งมอบให้ขนส่งแล้ว' : 'ไรเดอร์รับพัสดุแล้ว';
                 if (s4Desc) s4Desc.textContent = isPostal ? `จัดส่งพัสดุ ${postalLabel}` : 'อาจใช้เวลาถึง 1-3 ชั่วโมง อยู่ที่สภาพการจราจรและสภาพอากาศ';
 
             } else if (['PAID', 'PENDING_PACK', 'PACKING'].includes(status)) {
@@ -13156,7 +13156,7 @@
                 if (s2) s2.classList.add('active');
                 if (s2Desc) s2Desc.textContent = 'แอดมินคลังกำลังแพ็คและตรวจสอบสินค้า';
                 if (s3Desc) s3Desc.textContent = isPostal ? `รอส่งมอบขนส่ง ${postalLabel}` : 'รอไรเดอร์เข้ารับพัสดุ';
-                if (s4Title) s4Title.textContent = isPostal ? 'ส่งมอบพัสดุแล้ว' : 'ไรเดอร์รับพัสดุแล้ว';
+                if (s4Title) s4Title.textContent = isPostal ? 'ส่งมอบให้ขนส่งแล้ว' : 'ไรเดอร์รับพัสดุแล้ว';
                 if (s4Desc) s4Desc.textContent = isPostal ? `จัดส่งพัสดุ ${postalLabel}` : 'อาจใช้เวลาถึง 1-3 ชั่วโมง อยู่ที่สภาพการจราจรและสภาพอากาศ';
 
             } else if (['PACKED', 'READY_DISPATCH'].includes(status)) {
@@ -13171,7 +13171,7 @@
                 if (s3) s3.classList.add('active');
                 if (s2Desc) s2Desc.textContent = 'แอดมินคลังแพ็คสินค้าเรียบร้อยแล้ว';
                 if (s3Desc) s3Desc.textContent = isPostal ? `พัสดุแพ็คเรียบร้อย รอส่งมอบขนส่ง ${parcelCarrier || 'Flash/EMS'}` : (riderCalled ? 'เรียกไรเดอร์แล้ว กำลังรอไรเดอร์มารับสินค้า' : 'รอไรเดอร์เข้ารับพัสดุ');
-                if (s4Title) s4Title.textContent = isPostal ? 'ส่งมอบพัสดุแล้ว' : 'ไรเดอร์รับพัสดุแล้ว';
+                if (s4Title) s4Title.textContent = isPostal ? 'ส่งมอบให้ขนส่งแล้ว' : 'ไรเดอร์รับพัสดุแล้ว';
                 if (s4Desc) s4Desc.textContent = isPostal ? `จัดส่งพัสดุ ${postalLabel}` : 'อาจใช้เวลาถึง 1-3 ชั่วโมง อยู่ที่สภาพการจราจรและสภาพอากาศ';
 
             } else if (['CANCELLED', 'FAILED', 'EXPIRED'].includes(status)) {
@@ -13189,23 +13189,23 @@
                 }
                 if (s1Action) s1Action.style.display = 'none';
             } else if (['SHIPPING', 'IN_TRANSIT', 'ARRIVED', 'OUT_FOR_DELIVERY', 'SHIPPED', 'DELIVERED', 'COMPLETED'].includes(status)) {
-                const isDone = ['DELIVERED', 'COMPLETED'].includes(status);
+                const isDone = !isPostal && ['DELIVERED', 'COMPLETED'].includes(status);
                 const riderArrived = status === 'ARRIVED' && !isPostal;
                 if (pill) {
-                    pill.textContent = isDone ? 'ส่งสำเร็จแล้ว' : (isPostal ? 'ส่งมอบพัสดุแล้ว' : (riderArrived ? 'ไรเดอร์ถึงแล้ว' : 'ไรเดอร์รับพัสดุแล้ว'));
+                    pill.textContent = isPostal ? 'ส่งมอบให้ขนส่งแล้ว' : (isDone ? 'ส่งสำเร็จแล้ว' : (riderArrived ? 'ไรเดอร์ถึงแล้ว' : 'ไรเดอร์รับพัสดุแล้ว'));
                     pill.style.background = isDone ? 'rgba(34, 197, 94, 0.15)' : 'rgba(255, 107, 0, 0.15)';
                     pill.style.color = isDone ? '#4ade80' : '#ff6b00';
                 }
                 if (s1) s1.classList.add('done');
                 if (s2) s2.classList.add('done');
                 if (s3) s3.classList.add('done');
-                if (s4) s4.classList.add(isDone ? 'done' : 'active');
+                if (s4) s4.classList.add((isPostal || isDone) ? 'done' : 'active');
                 if (s2Desc) s2Desc.textContent = 'แอดมินคลังแพ็คสินค้าเรียบร้อยแล้ว';
                 if (s3Desc) s3Desc.textContent = isPostal ? 'ส่งมอบพัสดุให้ขนส่งแล้ว' : 'ไรเดอร์เข้ารับพัสดุแล้ว';
 
                 if (isPostal) {
                     const trackNo = String(ord.trackingNumber || ord.trackingNo || '').trim();
-                    if (s4Title) s4Title.textContent = isDone ? 'จัดส่งสำเร็จแล้ว' : 'ส่งมอบพัสดุแล้ว';
+                    if (s4Title) s4Title.textContent = 'ส่งมอบให้ขนส่งแล้ว';
                     if (s4Desc) {
                         s4Desc.innerHTML = `
                             <div style="margin-top:4px;">
@@ -13214,6 +13214,7 @@
                                 <button type="button" ${trackNo ? '' : 'hidden'} data-track="${escText(trackNo)}" onclick="navigator.clipboard.writeText(this.dataset.track || ''); showToast('คัดลอกเลขพัสดุแล้ว');" style="border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#ffffff; font-size:10.5px; font-weight:800; border-radius:6px; padding:2px 8px; cursor:pointer;">คัดลอก</button>
                             </div>
                             <div style="font-size:11px; color:#cbd5e1; margin-top:2px;">จัดส่งโดย ${escText(postalLabel)}</div>
+                            <div style="font-size:11px; color:#94a3b8; margin-top:2px;">ขนส่งเข้ารับพัสดุแล้ว อยู่ระหว่างการจัดส่ง</div>
                         `;
                     }
                 } else {

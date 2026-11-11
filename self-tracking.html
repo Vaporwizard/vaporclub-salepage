@@ -208,6 +208,7 @@
 
     /* Stepper */
     .stepper { padding: 28px 28px 24px; display: grid; grid-template-columns: repeat(5, 1fr); position: relative; }
+    .stepper.stepper-3 { grid-template-columns: repeat(3, 1fr); }
     .step { text-align: center; position: relative; }
     .step::before {
       content: ""; position: absolute; top: 21px; left: calc(-50% + 26px); right: calc(50% + 26px);
@@ -445,6 +446,7 @@
         toast_copied: "คัดลอกเรียบร้อยแล้ว",
         status_arrived_banner: "พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ",
         status_arrived_pill: "ไรเดอร์ถึงจุดหมายแล้ว",
+        status_handed_over_pill: "ส่งมอบให้ขนส่งแล้ว",
         meta_carrier: "บริการจัดส่ง",
         meta_tracking: "ข้อมูลจัดส่ง / พัสดุ",
         meta_status_delivered: "สถานะการส่ง",
@@ -468,9 +470,11 @@
         footer_desc: "จัดส่งด่วนเชียงใหม่ (30-45 นาที) และพัสดุด่วนทั่วประเทศ",
         footer_rights: "สงวนลิขสิทธิ์",
         steps: ["สั่งซื้อแล้ว", "แพ็คสินค้า", "ส่งมอบขนส่ง", "กำลังจัดส่ง", "จัดส่งสำเร็จ"],
+        stepsPostal: ["สั่งซื้อแล้ว", "แพ็คสินค้า", "ส่งมอบให้ขนส่ง"],
         events: {
           delivered: "จัดส่งสำเร็จ — คุณลูกค้าได้รับสินค้าเรียบร้อยแล้ว",
           arrived: "พี่ไรเดอร์เดินทางถึงจุดหมายแล้ว",
+          handed_over: "ส่งมอบให้ขนส่งเรียบร้อยแล้ว",
           in_transit: "พี่ไรเดอร์กำลังเดินทางมุ่งหน้าไปส่งสินค้า",
           packed: "ฝ่ายคลังสินค้าแพ็คสินค้าและเตรียมพร้อมส่งมอบ",
           ordered: "ยืนยันคำสั่งซื้อและการชำระเงินเรียบร้อย",
@@ -510,6 +514,7 @@
         toast_copied: "Copied to clipboard",
         status_arrived_banner: "Driver has arrived at your destination! Please meet driver for pickup.",
         status_arrived_pill: "Driver Arrived",
+        status_handed_over_pill: "Handed Over to Carrier",
         meta_carrier: "Delivery Method",
         meta_tracking: "Parcel / Tracking Info",
         meta_status_delivered: "Delivery Status",
@@ -533,8 +538,10 @@
         footer_desc: "Chiang Mai Express Delivery (30-45 mins) & Nationwide Parcel Shipping",
         footer_rights: "All rights reserved.",
         steps: ["Order Placed", "Packing", "Handed Over", "Out for Delivery", "Delivered"],
+        stepsPostal: ["Order Placed", "Packing", "Handed Over to Carrier"],
         events: {
           delivered: "Delivered — Order received successfully",
+          handed_over: "Handed over to carrier",
           arrived: "Driver arrived at destination",
           in_transit: "Driver is on the way to destination",
           packed: "Warehouse packed and ready for courier pickup",
@@ -648,46 +655,64 @@
       lastSearchStatus = 'found';
 
       const o = rawOrder;
+      const isPostalOrder = o.deliveryType === "POSTAL";
       const rawStep = Number(o.currentStep) || 1;
-      const stepIndex = Math.min(4, Math.max(0, rawStep - 1));
-      const isArrived = !!(o.isArrived || o.status === "ARRIVED" || rawStep === 4);
-      const isDelivered = !!(o.isDelivered || o.status === "DELIVERED" || rawStep === 5);
+      const parcelHandedOver = isPostalOrder && !!(o.isHandedOver || rawStep >= 3 || ["SHIPPED", "SHIPPING", "IN_TRANSIT", "OUT_FOR_DELIVERY", "ARRIVED", "DELIVERED", "COMPLETED", "PAID_DELIVERED"].includes(o.status));
+      const stepIndex = isPostalOrder
+        ? (parcelHandedOver ? 2 : Math.min(1, Math.max(0, rawStep - 1)))
+        : Math.min(4, Math.max(0, rawStep - 1));
+      const isArrived = !isPostalOrder && !!(o.isArrived || o.status === "ARRIVED" || rawStep === 4);
+      const isDelivered = !isPostalOrder && !!(o.isDelivered || o.status === "DELIVERED" || rawStep === 5);
 
       const dict = I18N[currentLang];
-      const stepsList = dict.steps;
+      const stepsList = isPostalOrder ? dict.stepsPostal : dict.steps;
       const evDict = dict.events;
 
       let carrier = "";
       if (currentLang === "en") {
-        carrier = o.deliveryType === "POSTAL"
+        carrier = isPostalOrder
           ? (o.carrier ? `${o.carrier} (Nationwide Parcel)` : "Nationwide Parcel Delivery")
           : "Chiang Mai Express Rider (30-45 mins)";
       } else {
-        carrier = o.deliveryTitle || (o.deliveryType === "POSTAL"
+        carrier = o.deliveryTitle || (isPostalOrder
           ? (o.carrier ? `จัดส่งพัสดุ ${o.carrier}` : "จัดส่งพัสดุด่วนทั่วประเทศ")
           : "ไรเดอร์ส่งด่วนเมืองเชียงใหม่ (30-45 นาที)");
       }
 
       let eta = "";
       if (currentLang === "en") {
-        if (isDelivered) eta = "Delivered successfully";
-        else if (isArrived) eta = "Driver has arrived at destination";
-        else if (o.status === "READY_DISPATCH") eta = "Rider booked, waiting for pickup";
-        else if (o.deliveryType === "EXPRESS") eta = "Approx. 30-45 mins";
-        else eta = "1-2 business days";
+        if (isPostalOrder) {
+          if (parcelHandedOver) eta = "Picked up by carrier (Est. 1-3 business days)";
+          else if (rawStep === 2) eta = o.statusDesc || "Packed, awaiting carrier pickup";
+          else eta = "1-3 business days";
+        } else {
+          if (isDelivered) eta = "Delivered successfully";
+          else if (isArrived) eta = "Driver has arrived at destination";
+          else if (o.status === "READY_DISPATCH") eta = "Rider booked, waiting for pickup";
+          else if (o.deliveryType === "EXPRESS") eta = "Approx. 30-45 mins";
+          else eta = "1-2 business days";
+        }
       } else {
-        if (isDelivered) eta = "จัดส่งสำเร็จเรียบร้อยแล้ว";
-        else if (isArrived) eta = "พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ";
-        else if (o.status === "READY_DISPATCH") eta = "เรียกไรเดอร์แล้ว กำลังรอไรเดอร์มารับสินค้า";
-        else if (o.deliveryType === "EXPRESS") eta = "ประมาณ 30-45 นาที";
-        else eta = o.statusDesc || "กำลังดำเนินการจัดส่ง";
+        if (isPostalOrder) {
+          if (parcelHandedOver) eta = "ขนส่งเข้ารับพัสดุแล้ว (ระยะเวลาจัดส่ง 1-3 วัน)";
+          else if (rawStep === 2) eta = o.statusDesc || "แพ็คสินค้าเรียบร้อย รอส่งมอบขนส่ง";
+          else eta = o.statusDesc || "กำลังดำเนินการจัดส่ง";
+        } else {
+          if (isDelivered) eta = "จัดส่งสำเร็จเรียบร้อยแล้ว";
+          else if (isArrived) eta = "พี่ไรเดอร์ถึงจุดหมายแล้ว ลงมารับสินค้าได้เลยค่ะ";
+          else if (o.status === "READY_DISPATCH") eta = "เรียกไรเดอร์แล้ว กำลังรอไรเดอร์มารับสินค้า";
+          else if (o.deliveryType === "EXPRESS") eta = "ประมาณ 30-45 นาที";
+          else eta = o.statusDesc || "กำลังดำเนินการจัดส่ง";
+        }
       }
 
-      const delivered = isDelivered || stepIndex === stepsList.length - 1;
+      const delivered = !isPostalOrder && (isDelivered || stepIndex === stepsList.length - 1);
       const arrived = isArrived;
 
       const steps = stepsList.map((name, i) => {
-        const cls = i < stepIndex || delivered ? "done" : i === stepIndex ? "current" : "";
+        const cls = isPostalOrder
+          ? ((parcelHandedOver || i < stepIndex) ? "done" : i === stepIndex ? "current" : "")
+          : (i < stepIndex || delivered ? "done" : i === stepIndex ? "current" : "");
         return `<div class="step ${cls}">
           <div class="step-icon">${svg(STEP_ICONS[i])}</div>
           <div class="step-name">${name}</div>
@@ -697,33 +722,47 @@
 
       // Events timeline
       const events = [];
-      if (isDelivered) {
-        events.push({
-          title: evDict.delivered,
-          loc: o.addressHint ? `${evDict.loc_dropoff}: ${o.addressHint}` : (currentLang === 'en' ? "Recipient location" : "ปลายทางผู้รับ"),
-          time: o.updatedAt ? formatDateTime(o.updatedAt, currentLang) : evDict.time_completed
-        });
-      }
-      if (isArrived || isDelivered) {
-        events.push({
-          title: evDict.arrived,
-          loc: o.addressHint ? `${evDict.loc_dropoff}: ${o.addressHint}` : (currentLang === 'en' ? "Destination" : "จุดหมายปลายทาง"),
-          time: evDict.time_arrived
-        });
-      }
-      if (rawStep >= 3) {
-        events.push({
-          title: evDict.in_transit,
-          loc: evDict.loc_transit,
-          time: o.batchTime ? evDict.time_batch.replace("{batch}", o.batchTime) : (currentLang === 'en' ? "In transit" : "กำลังเดินทาง")
-        });
-      }
-      if (o.status === "READY_DISPATCH") {
-        events.push({
-          title: currentLang === 'en' ? "Rider booked, waiting for pickup" : "ร้านเรียกไรเดอร์แล้ว กำลังรอไรเดอร์มารับสินค้า",
-          loc: evDict.loc_wh,
-          time: currentLang === 'en' ? "Waiting for rider" : "รอไรเดอร์"
-        });
+      if (isPostalOrder) {
+        if (parcelHandedOver) {
+          const carrierLabel = o.carrier ? escapeHTML(o.carrier) : (currentLang === 'en' ? "Carrier" : "ขนส่งพัสดุ");
+          const trackNote = o.trackingNo
+            ? (currentLang === 'en' ? ` · Tracking: ${escapeHTML(o.trackingNo)}` : ` · เลขพัสดุ: ${escapeHTML(o.trackingNo)}`)
+            : "";
+          events.push({
+            title: evDict.handed_over,
+            loc: `${carrierLabel}${trackNote}`,
+            time: o.updatedAt ? formatDateTime(o.updatedAt, currentLang) : evDict.time_completed
+          });
+        }
+      } else {
+        if (isDelivered) {
+          events.push({
+            title: evDict.delivered,
+            loc: o.addressHint ? `${evDict.loc_dropoff}: ${o.addressHint}` : (currentLang === 'en' ? "Recipient location" : "ปลายทางผู้รับ"),
+            time: o.updatedAt ? formatDateTime(o.updatedAt, currentLang) : evDict.time_completed
+          });
+        }
+        if (isArrived || isDelivered) {
+          events.push({
+            title: evDict.arrived,
+            loc: o.addressHint ? `${evDict.loc_dropoff}: ${o.addressHint}` : (currentLang === 'en' ? "Destination" : "จุดหมายปลายทาง"),
+            time: evDict.time_arrived
+          });
+        }
+        if (rawStep >= 3) {
+          events.push({
+            title: evDict.in_transit,
+            loc: evDict.loc_transit,
+            time: o.batchTime ? evDict.time_batch.replace("{batch}", o.batchTime) : (currentLang === 'en' ? "In transit" : "กำลังเดินทาง")
+          });
+        }
+        if (o.status === "READY_DISPATCH") {
+          events.push({
+            title: currentLang === 'en' ? "Rider booked, waiting for pickup" : "ร้านเรียกไรเดอร์แล้ว กำลังรอไรเดอร์มารับสินค้า",
+            loc: evDict.loc_wh,
+            time: currentLang === 'en' ? "Waiting for rider" : "รอไรเดอร์"
+          });
+        }
       }
       if (rawStep >= 2) {
         events.push({
@@ -786,7 +825,10 @@
             </div>` : ''}
         </div>` : "";
 
-      const statusBadgeText = delivered ? stepsList[4] : (arrived ? t('status_arrived_pill') : stepsList[stepIndex]);
+      const statusBadgeText = parcelHandedOver
+        ? t('status_handed_over_pill')
+        : (delivered ? stepsList[4] : (arrived ? t('status_arrived_pill') : stepsList[stepIndex]));
+      const pillCls = (delivered || parcelHandedOver) ? "done" : (arrived ? "arrived" : "progress");
 
       result.innerHTML = `
         <div class="card">
@@ -798,17 +840,17 @@
                 <button class="copy-btn" data-copy="${o.orderId || id}" title="${t('copy_order_title')}">${svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', 18)}</button>
               </div>
             </div>
-            <span class="status-pill ${delivered ? "done" : (arrived ? "arrived" : "progress")}">
-              ${delivered ? svg('<path d="M20 6 9 17l-5-5"/>', 16) : '<span class="pulse"></span>'}
+            <span class="status-pill ${pillCls}">
+              ${(delivered || parcelHandedOver) ? svg('<path d="M20 6 9 17l-5-5"/>', 16) : '<span class="pulse"></span>'}
               ${statusBadgeText}
             </span>
           </div>
           ${arrivedBannerHTML}
-          <div class="stepper">${steps}</div>
+          <div class="stepper${isPostalOrder ? ' stepper-3' : ''}">${steps}</div>
           <div class="meta">
             <div><div class="meta-label">${t('meta_carrier')}</div><div class="meta-value">${escapeHTML(carrier)}</div></div>
             <div><div class="meta-label">${t('meta_tracking')}</div><div class="meta-value">${trackingCell}</div></div>
-            <div><div class="meta-label">${delivered ? t('meta_status_delivered') : t('meta_status_eta')}</div><div class="meta-value">${eta}</div></div>
+            <div><div class="meta-label">${delivered ? t('meta_status_delivered') : (parcelHandedOver ? (currentLang === 'en' ? 'Shipping Status' : 'สถานะพัสดุ') : t('meta_status_eta'))}</div><div class="meta-value">${eta}</div></div>
             ${o.addressHint ? `<div><div class="meta-label">${t('meta_address')}</div><div class="meta-value">${escapeHTML(o.addressHint)}</div></div>` : ''}
           </div>
         </div>
@@ -821,7 +863,7 @@
         </div>` : ""}`;
 
       if (pollTimer) clearInterval(pollTimer);
-      if (rawStep < 5) {
+      if (isPostalOrder ? !parcelHandedOver : rawStep < 5) {
         pollTimer = setInterval(() => {
           track(id, true);
         }, 15000);
