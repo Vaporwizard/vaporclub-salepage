@@ -659,9 +659,13 @@
 
       let carrier = "";
       if (currentLang === "en") {
-        carrier = o.deliveryType === "POSTAL" ? "Flash Express Nationwide Parcel" : "Chiang Mai Express Rider (30-45 mins)";
+        carrier = o.deliveryType === "POSTAL"
+          ? (o.carrier ? `${o.carrier} (Nationwide Parcel)` : "Nationwide Parcel Delivery")
+          : "Chiang Mai Express Rider (30-45 mins)";
       } else {
-        carrier = o.deliveryTitle || (o.deliveryType === "POSTAL" ? "พัสดุด่วน Flash Express ทั่วประเทศ" : "ไรเดอร์ส่งด่วนเมืองเชียงใหม่ (30-45 นาที)");
+        carrier = o.deliveryTitle || (o.deliveryType === "POSTAL"
+          ? (o.carrier ? `จัดส่งพัสดุ ${o.carrier}` : "จัดส่งพัสดุด่วนทั่วประเทศ")
+          : "ไรเดอร์ส่งด่วนเมืองเชียงใหม่ (30-45 นาที)");
       }
 
       let eta = "";
@@ -740,9 +744,10 @@
 
       let trackingCell = "";
       if (o.trackingNo) {
-        trackingCell = `${o.trackingNo}<button class="copy-btn" data-copy="${o.trackingNo}" title="${t('copy_tracking_title')}">${svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', 16)}</button>`;
+        const safeTrack = escapeHTML(o.trackingNo);
+        trackingCell = `${safeTrack}<button class="copy-btn" data-copy="${safeTrack}" title="${t('copy_tracking_title')}">${svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', 16)}</button>`;
       } else {
-        trackingCell = `<span style="color:var(--muted);font-weight:500">${t('meta_direct_rider')}</span>`;
+        trackingCell = `<span style="color:var(--muted);font-weight:500">${o.deliveryType === 'POSTAL' ? t('meta_pending_dispatch') : t('meta_direct_rider')}</span>`;
       }
 
       const arrivedBannerHTML = arrived ? `
@@ -801,7 +806,7 @@
           ${arrivedBannerHTML}
           <div class="stepper">${steps}</div>
           <div class="meta">
-            <div><div class="meta-label">${t('meta_carrier')}</div><div class="meta-value">${carrier}</div></div>
+            <div><div class="meta-label">${t('meta_carrier')}</div><div class="meta-value">${escapeHTML(carrier)}</div></div>
             <div><div class="meta-label">${t('meta_tracking')}</div><div class="meta-value">${trackingCell}</div></div>
             <div><div class="meta-label">${delivered ? t('meta_status_delivered') : t('meta_status_eta')}</div><div class="meta-value">${eta}</div></div>
             ${o.addressHint ? `<div><div class="meta-label">${t('meta_address')}</div><div class="meta-value">${escapeHTML(o.addressHint)}</div></div>` : ''}
