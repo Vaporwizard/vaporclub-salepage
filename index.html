@@ -10094,70 +10094,120 @@
     ];
 
     window._currentSearchResults = [];
+    let searchPlacesSeq = 0;
+
+    function isInServedChiangMaiZoneClient(lat, lng, label) {
+        const numLat = Number(lat);
+        const numLng = Number(lng);
+        if (!Number.isFinite(numLat) || !Number.isFinite(numLng)) return false;
+        if (numLat < 18.60 || numLat > 19.05 || numLng < 98.80 || numLng > 99.25) return false;
+        const text = String(label || '');
+        if (/กรุงเทพ|กทม\.?|bangkok|ลำพูน|lamphun|ลำปาง|lampang|เชียงราย|chiang\s*rai|ภูเก็ต|phuket|พัทยา|ชลบุรี|นนทบุรี|สมุทรปราการ|ปทุมธานี/i.test(text) && !/เชียงใหม่|chiang\s*mai/i.test(text)) {
+            return false;
+        }
+        const origin = (typeof STORE_ORIGIN_COORDS === 'object' && STORE_ORIGIN_COORDS) ? STORE_ORIGIN_COORDS : { lat: 18.80019, lng: 99.02412 };
+        const distKm = getGeoDistanceMeters(origin.lat, origin.lng, numLat, numLng) / 1000;
+        return distKm <= 13.0;
+    }
+
     function debounceSearchPlace(query) {
         clearTimeout(searchDebounceTimer);
         const resBox = document.getElementById('map-search-results');
-        if (!query || query.trim().length < 2) {
+        const trimmed = (query || '').trim();
+        if (!trimmed || trimmed.length < 2) {
             if (resBox) resBox.style.display = 'none';
             return;
         }
 
-        const q = query.trim().toLowerCase();
+        const q = trimmed.toLowerCase();
         let matchedPOIs = CHIANGMAI_POI_DATABASE.filter(poi => {
+            if (!isInServedChiangMaiZoneClient(poi.lat, poi.lng, poi.address)) return false;
             const inName = poi.name.toLowerCase().includes(q);
             const inAddress = poi.address.toLowerCase().includes(q);
             const inAlt = poi.alt && poi.alt.some(a => a.toLowerCase().includes(q));
             return inName || inAddress || inAlt;
         });
 
+        window._currentSearchResults = matchedPOIs.map(p => ({
+            lat: p.lat,
+            lon: p.lng,
+            display_name: `${p.name} - ${p.address}`,
+            isPOI: true
+        }));
         if (matchedPOIs.length > 0) {
-            window._currentSearchResults = matchedPOIs.map(p => ({
+            renderSearchResults(window._currentSearchResults);
+        }
+
+        const seq = ++searchPlacesSeq;
+        searchDebounceTimer = setTimeout(async () => {
+            let remoteItems = [];
+            let backendOk = false;
+            try {
+                const apiUrl = `${window.API_BASE}/api/selfservice/search-places?q=${encodeURIComponent(trimmed)}`;
+                const res = await fetch(apiUrl);
+                if (res.ok) {
+                    const payload = await res.json();
+                    if (payload && payload.success && Array.isArray(payload.results)) {
+                        backendOk = true;
+                        remoteItems = payload.results.filter(item => isInServedChiangMaiZoneClient(item.lat, item.lon, item.display_name));
+                    }
+                }
+            } catch (backendErr) {
+                console.warn('Backend place search fallback:', backendErr);
+            }
+
+            if (seq !== searchPlacesSeq) return;
+
+            if (!backendOk) {
+                try {
+                    // Fallback strictly bounded inside Chiang Mai served city box (never jump out of province)
+                    const osmUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmed + ' เชียงใหม่')}&countrycodes=th&viewbox=98.89,18.93,99.15,18.67&bounded=1&limit=8&accept-language=th`;
+                    const res = await fetch(osmUrl);
+                    const data = await res.json();
+                    if (seq !== searchPlacesSeq) return;
+                    if (Array.isArray(data)) {
+                        remoteItems = data
+                            .filter(item => isInServedChiangMaiZoneClient(item.lat, item.lon, item.display_name))
+                            .map(item => ({
+                                lat: parseFloat(item.lat),
+                                lon: parseFloat(item.lon),
+                                display_name: item.display_name,
+                                isPOI: false
+                            }));
+                    }
+                } catch (searchErr) {
+                    console.warn('Place search notice:', searchErr);
+                }
+            }
+
+            if (seq !== searchPlacesSeq) return;
+
+            const merged = [...matchedPOIs.map(p => ({
                 lat: p.lat,
                 lon: p.lng,
                 display_name: `${p.name} - ${p.address}`,
                 isPOI: true
-            }));
-            renderSearchResults(window._currentSearchResults);
-        }
-
-        searchDebounceTimer = setTimeout(async () => {
-            try {
-                // Tier 1: Search via Dedicated endpoint or OpenStreetMap Nominatim with Chiang Mai bounding box
-                const osmUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ' เชียงใหม่')}&viewbox=98.80,19.05,99.20,18.65&bounded=0&limit=7&accept-language=th`;
-                const res = await fetch(osmUrl);
-                const data = await res.json();
-                if (Array.isArray(data) && data.length > 0) {
-                    const onlineResults = data.map(item => ({
-                        lat: item.lat,
-                        lon: item.lon,
-                        display_name: item.display_name,
-                        isPOI: false
-                    }));
-                    // Combine matched POIs first, then online results
-                    const merged = [...(window._currentSearchResults || [])];
-                    onlineResults.forEach(onItem => {
-                        if (!merged.some(m => Math.abs(parseFloat(m.lat) - parseFloat(onItem.lat)) < 0.001 && Math.abs(parseFloat(m.lon) - parseFloat(onItem.lon)) < 0.001)) {
-                            merged.push(onItem);
-                        }
-                    });
-                    window._currentSearchResults = merged;
-                    renderSearchResults(merged);
-                    return;
+            }))];
+            remoteItems.forEach(onItem => {
+                const lat = Number(onItem.lat);
+                const lon = Number(onItem.lon);
+                const key = String(onItem.display_name || '').split(' - ')[0].trim().toLowerCase();
+                if (!merged.some(m =>
+                    (Math.abs(Number(m.lat) - lat) < 0.0007 && Math.abs(Number(m.lon) - lon) < 0.0007) ||
+                    String(m.display_name || '').split(' - ')[0].trim().toLowerCase() === key
+                )) {
+                    merged.push(onItem);
                 }
-            } catch (searchErr) {
-                console.warn('Place search notice:', searchErr);
-            }
+            });
 
-            // Fallback: If network lookup returned nothing, use matched local POIs
-            if (matchedPOIs.length > 0) {
-                renderSearchResults(window._currentSearchResults);
-            } else {
-                if (resBox) {
-                    resBox.innerHTML = '<div class="map-search-item" style="color:#94a3b8; background:#1c202d;">ไม่พบสถานที่ กรุณาลองพิมพ์ชื่อหมู่บ้าน คอนโด หรือถนน</div>';
-                    resBox.style.display = 'block';
-                }
+            window._currentSearchResults = merged;
+            if (merged.length > 0) {
+                renderSearchResults(merged);
+            } else if (resBox) {
+                resBox.innerHTML = '<div class="map-search-item" style="color:#94a3b8; background:#1c202d;">ไม่พบสถานที่ในเขตจัดส่งเชียงใหม่ (ลองพิมพ์ชื่อคอนโด หมู่บ้าน หรือถนนใกล้เคียง)</div>';
+                resBox.style.display = 'block';
             }
-        }, 300);
+        }, 280);
     }
 
     function renderSearchResults(results) {
@@ -10453,22 +10503,42 @@
         const pinAddrEl = document.getElementById('map-pin-address');
         if (pinAddrEl) pinAddrEl.textContent = 'กำลังดึงที่อยู่จากพิกัด...';
 
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=th`)
-            .then(r => r.json())
+        const applyPlaceLabel = (displayName) => {
+            if (geoSeq !== reverseGeocodeSeq || !displayName) return false;
+            currentPlaceName = displayName;
+            currentPlaceNameCoords = { lat, lng };
+            if (pinAddrEl) pinAddrEl.textContent = currentPlaceName;
+            const subAddr = document.getElementById('member-sub-address');
+            if (subAddr) subAddr.textContent = currentPlaceName.slice(0, 32) + '...';
+            return true;
+        };
+
+        fetch(`${window.API_BASE}/api/selfservice/reverse-geocode?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`)
+            .then(r => (r.ok ? r.json() : null))
             .then(data => {
                 if (geoSeq !== reverseGeocodeSeq) return;
-                if (data && data.display_name) {
-                    currentPlaceName = data.display_name;
-                    currentPlaceNameCoords = { lat, lng };
-                    if (pinAddrEl) pinAddrEl.textContent = currentPlaceName;
-                    const subAddr = document.getElementById('member-sub-address');
-                    if (subAddr) subAddr.textContent = currentPlaceName.slice(0, 32) + '...';
-                }
+                if (data && data.display_name && applyPlaceLabel(data.display_name)) return;
+                return fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=th`)
+                    .then(r2 => r2.json())
+                    .then(nomData => {
+                        if (!applyPlaceLabel(nomData && nomData.display_name) && geoSeq === reverseGeocodeSeq && pinAddrEl) {
+                            pinAddrEl.textContent = `พิกัด GPS (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+                        }
+                    });
             })
             .catch(() => {
-                if (geoSeq === reverseGeocodeSeq && pinAddrEl) {
-                    pinAddrEl.textContent = `พิกัด GPS (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
-                }
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=th`)
+                    .then(r2 => r2.json())
+                    .then(nomData => {
+                        if (!applyPlaceLabel(nomData && nomData.display_name) && geoSeq === reverseGeocodeSeq && pinAddrEl) {
+                            pinAddrEl.textContent = `พิกัด GPS (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+                        }
+                    })
+                    .catch(() => {
+                        if (geoSeq === reverseGeocodeSeq && pinAddrEl) {
+                            pinAddrEl.textContent = `พิกัด GPS (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+                        }
+                    });
             });
     }
 
