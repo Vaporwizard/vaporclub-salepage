@@ -4930,7 +4930,7 @@
             <svg class="svg-icon" viewBox="0 0 24 24" style="color:#ffffff;"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div style="flex:1; position:relative;">
-            <input type="text" id="map-search-input" class="map-search-input" style="background:#1c202d; border:1px solid rgba(255,255,255,0.15); color:#ffffff; height:40px; border-radius:12px; padding:0 36px 0 12px; font-size:13px;" placeholder="ค้นหาที่อยู่หรือชื่ออาคาร" oninput="debounceSearchPlace(this.value)">
+            <input type="text" id="map-search-input" class="map-search-input" style="background:#1c202d; border:1px solid rgba(255,255,255,0.15); color:#ffffff; height:40px; border-radius:12px; padding:0 36px 0 12px; font-size:13px;" placeholder="ค้นหาโรงแรม คอนโด หมู่บ้าน คาเฟ่ ในเชียงใหม่" oninput="debounceSearchPlace(this.value)">
             <svg class="svg-icon-sm" viewBox="0 0 24 24" style="position:absolute; right:12px; top:12px; color:#9ca3af; pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <div id="map-search-results" class="map-search-results-list" style="background:#1c202d; border:1px solid rgba(255,255,255,0.15); color:#ffffff; z-index:2300;"></div>
         </div>
@@ -10191,10 +10191,10 @@
             remoteItems.forEach(onItem => {
                 const lat = Number(onItem.lat);
                 const lon = Number(onItem.lon);
-                const key = String(onItem.display_name || '').split(' - ')[0].trim().toLowerCase();
+                const fullKey = String(onItem.display_name || '').trim().toLowerCase();
                 if (!merged.some(m =>
                     (Math.abs(Number(m.lat) - lat) < 0.0007 && Math.abs(Number(m.lon) - lon) < 0.0007) ||
-                    String(m.display_name || '').split(' - ')[0].trim().toLowerCase() === key
+                    String(m.display_name || '').trim().toLowerCase() === fullKey
                 )) {
                     merged.push(onItem);
                 }
@@ -10204,7 +10204,7 @@
             if (merged.length > 0) {
                 renderSearchResults(merged);
             } else if (resBox) {
-                resBox.innerHTML = '<div class="map-search-item" style="color:#94a3b8; background:#1c202d;">ไม่พบสถานที่ในเขตจัดส่งเชียงใหม่ (ลองพิมพ์ชื่อคอนโด หมู่บ้าน หรือถนนใกล้เคียง)</div>';
+                resBox.innerHTML = '<div class="map-search-item" style="color:#94a3b8; background:#1c202d;">ไม่พบสถานที่ในเขตจัดส่งเชียงใหม่ (ลองพิมพ์ชื่อโรงแรม คอนโด หมู่บ้าน คาเฟ่)</div>';
                 resBox.style.display = 'block';
             }
         }, 280);
@@ -10219,12 +10219,22 @@
             return;
         }
 
-        resBox.innerHTML = results.slice(0, 8).map((item, idx) => `
+        const catBadgeStyle = (cat) => {
+            if (cat === 'hotel') return 'background:rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35);';
+            if (cat === 'condo') return 'background:rgba(56,189,248,0.18); color:#38bdf8; border:1px solid rgba(56,189,248,0.35);';
+            if (cat === 'village') return 'background:rgba(34,197,94,0.18); color:#4ade80; border:1px solid rgba(34,197,94,0.35);';
+            if (cat === 'cafe') return 'background:rgba(249,115,22,0.18); color:#fb923c; border:1px solid rgba(249,115,22,0.35);';
+            return '';
+        };
+        const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+        resBox.innerHTML = results.slice(0, 12).map((item, idx) => `
             <div class="map-search-item" onclick="handleSearchResultClick(${idx})" style="display:flex; align-items:center; gap:8px;">
                 <svg class="svg-icon-sm" viewBox="0 0 24 24" style="color:#ff6b00; flex-shrink:0;">
                     ${item.isPOI ? '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>' : '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'}
                 </svg>
-                <span style="font-size:12px; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.display_name}</span>
+                ${item.categoryLabel ? `<span style="flex-shrink:0; font-size:10px; font-weight:800; padding:1px 6px; border-radius:999px; ${catBadgeStyle(item.category)}">${esc(item.categoryLabel)}</span>` : ''}
+                <span style="font-size:12px; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(item.display_name)}</span>
             </div>
         `).join('');
         resBox.style.display = 'block';
