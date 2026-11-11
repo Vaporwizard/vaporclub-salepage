@@ -449,12 +449,14 @@
         status_handed_over_pill: "ส่งมอบให้ขนส่งแล้ว",
         meta_carrier: "บริการจัดส่ง",
         meta_tracking: "ข้อมูลจัดส่ง / พัสดุ",
+        meta_tracking_parcel: "หมายเลขพัสดุ",
         meta_status_delivered: "สถานะการส่ง",
         meta_status_eta: "คาดว่าจะได้รับ",
         meta_address: "จุดส่งสินค้า",
         meta_direct_rider: "ไรเดอร์จัดส่งตรงถึงจุดหมาย",
         meta_live_gps: "เปิดดูเส้นทางสด (Live GPS)",
         meta_pending_dispatch: "รอการส่งมอบ",
+        meta_pending_tracking: "รออัปเดตเลขพัสดุ",
         packed_photo_title: "รูปถ่ายการแพ็คสินค้าจริง",
         items_title: "รายการสินค้าในคำสั่งซื้อ",
         total_label: "ยอดรวมทั้งสิ้น",
@@ -517,12 +519,14 @@
         status_handed_over_pill: "Handed Over to Carrier",
         meta_carrier: "Delivery Method",
         meta_tracking: "Parcel / Tracking Info",
+        meta_tracking_parcel: "Tracking Number",
         meta_status_delivered: "Delivery Status",
         meta_status_eta: "Estimated Delivery",
         meta_address: "Drop-off Location",
         meta_direct_rider: "Direct Express Rider",
         meta_live_gps: "View Live GPS Route",
         meta_pending_dispatch: "Awaiting Courier Pickup",
+        meta_pending_tracking: "Pending Tracking Update",
         packed_photo_title: "Actual Packed Order Photo",
         items_title: "Order Items",
         total_label: "Total Amount",
@@ -784,9 +788,11 @@
       let trackingCell = "";
       if (o.trackingNo) {
         const safeTrack = escapeHTML(o.trackingNo);
-        trackingCell = `${safeTrack}<button class="copy-btn" data-copy="${safeTrack}" title="${t('copy_tracking_title')}">${svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', 16)}</button>`;
+        trackingCell = isPostalOrder
+          ? `<span style="font-family:monospace;font-size:15px;font-weight:800;letter-spacing:.3px;color:var(--brand);">${safeTrack}</span><button class="copy-btn" data-copy="${safeTrack}" title="${t('copy_tracking_title')}">${svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', 16)}</button>`
+          : `${safeTrack}<button class="copy-btn" data-copy="${safeTrack}" title="${t('copy_tracking_title')}">${svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', 16)}</button>`;
       } else {
-        trackingCell = `<span style="color:var(--muted);font-weight:500">${o.deliveryType === 'POSTAL' ? t('meta_pending_dispatch') : t('meta_direct_rider')}</span>`;
+        trackingCell = `<span style="color:var(--muted);font-weight:500">${isPostalOrder ? (parcelHandedOver ? t('meta_pending_tracking') : t('meta_pending_dispatch')) : t('meta_direct_rider')}</span>`;
       }
 
       const arrivedBannerHTML = arrived ? `
@@ -849,7 +855,7 @@
           <div class="stepper${isPostalOrder ? ' stepper-3' : ''}">${steps}</div>
           <div class="meta">
             <div><div class="meta-label">${t('meta_carrier')}</div><div class="meta-value">${escapeHTML(carrier)}</div></div>
-            <div><div class="meta-label">${t('meta_tracking')}</div><div class="meta-value">${trackingCell}</div></div>
+            <div><div class="meta-label">${isPostalOrder ? t('meta_tracking_parcel') : t('meta_tracking')}</div><div class="meta-value">${trackingCell}</div></div>
             <div><div class="meta-label">${delivered ? t('meta_status_delivered') : (parcelHandedOver ? (currentLang === 'en' ? 'Shipping Status' : 'สถานะพัสดุ') : t('meta_status_eta'))}</div><div class="meta-value">${eta}</div></div>
             ${o.addressHint ? `<div><div class="meta-label">${t('meta_address')}</div><div class="meta-value">${escapeHTML(o.addressHint)}</div></div>` : ''}
           </div>
