@@ -7417,7 +7417,7 @@
         if (!v) return { state: 'unknown', label: '' };
         if (v.neverExpires === true) return { state: 'never', label: 'ไม่มีวันหมดอายุ' };
         const end = v.redeemUntil ? new Date(v.redeemUntil).getTime() : NaN;
-        if (isNaN(end)) return { state: 'unknown', label: '' };
+        if (isNaN(end)) return { state: 'never', label: 'ไม่มีวันหมดอายุ' };
         const left = end - Date.now();
         if (left < 0) return { state: 'expired', label: 'หมดอายุแล้ว' };
         return {
