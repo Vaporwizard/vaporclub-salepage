@@ -7455,7 +7455,12 @@
         if (p.isPrivate || p.targetSegment === 'private') {
             const allowedIds = Array.isArray(p.targetCustomerIds) ? p.targetCustomerIds : (Array.isArray(p.target_customer_ids) ? p.target_customer_ids : []);
             const myUserId = (typeof currentUser !== 'undefined' && currentUser && currentUser.userId) ? currentUser.userId : '';
-            if (!myUserId || !allowedIds.includes(myUserId)) {
+            const myCustId = (typeof currentUser !== 'undefined' && currentUser && currentUser.id) ? currentUser.id : '';
+            const myPhone = (typeof currentUser !== 'undefined' && currentUser && currentUser.phone) ? currentUser.phone : '';
+            const isMatch = (myUserId && allowedIds.includes(myUserId)) ||
+                            (myCustId && allowedIds.includes(myCustId)) ||
+                            (myPhone && allowedIds.includes(myPhone));
+            if (!isMatch) {
                 return false;
             }
         }
