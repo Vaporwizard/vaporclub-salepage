@@ -3473,6 +3473,31 @@
             justify-content: space-between;
         }
 
+        /* Voucher redeem-expiry label */
+        .ticket-expiry {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-dim);
+            letter-spacing: 0.1px;
+        }
+        .ticket-expiry svg { width: 11px; height: 11px; flex: none; }
+        .ticket-expiry.is-soon { color: #ff8a3d; }
+        .ticket-expiry.is-never { color: #9ca3af; }
+        .ticket-expiry.is-expired { color: #ef4444; }
+        .voucher-ticket-full.is-expired { opacity: 0.55; }
+        .voucher-ticket-full.is-expired .ticket-left { background: #2a2d36; }
+        .ticket-claim-btn.is-expired {
+            background: transparent !important;
+            border: 1px solid #3a3d47;
+            color: #6b7280;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
         /* Cart Voucher Interactive Picker Row */
         .cart-voucher-picker-btn {
             width: 100%;
@@ -7366,16 +7391,66 @@
         return uid ? ('?userId=' + encodeURIComponent(uid)) : '';
     }
 
+    // ---------- Voucher redeem-expiry helpers ----------
+    const TH_MONTH_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    const VOUCHER_EXPIRY_SOON_MS = 3 * 24 * 60 * 60 * 1000;
+    const VOUCHER_ICON_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+
+    /** '2026-11-30T23:59:59+07:00' -> '30 พ.ย. 69 23:59 น.' (always Bangkok time) */
+    function formatThaiExpiry(iso) {
+        const t = new Date(iso).getTime();
+        if (isNaN(t)) return '';
+        const bkk = new Date(t + 7 * 60 * 60 * 1000);
+        const d = bkk.getUTCDate();
+        const m = TH_MONTH_SHORT[bkk.getUTCMonth()];
+        const yy = String((bkk.getUTCFullYear() + 543) % 100).padStart(2, '0');
+        const hh = String(bkk.getUTCHours()).padStart(2, '0');
+        const mm = String(bkk.getUTCMinutes()).padStart(2, '0');
+        return `${d} ${m} ${yy} ${hh}:${mm} น.`;
+    }
+
+    /**
+     * state: 'never' | 'active' | 'soon' | 'expired' | 'unknown'
+     * 'unknown' = no date info (older codes, HBDVAPOR): no label and never forced to expire.
+     */
+    function getVoucherExpiryInfo(v) {
+        if (!v) return { state: 'unknown', label: '' };
+        if (v.neverExpires === true) return { state: 'never', label: 'ไม่มีวันหมดอายุ' };
+        const end = v.redeemUntil ? new Date(v.redeemUntil).getTime() : NaN;
+        if (isNaN(end)) return { state: 'unknown', label: '' };
+        const left = end - Date.now();
+        if (left < 0) return { state: 'expired', label: 'หมดอายุแล้ว' };
+        return {
+            state: left <= VOUCHER_EXPIRY_SOON_MS ? 'soon' : 'active',
+            label: `ใช้ได้ถึง ${formatThaiExpiry(v.redeemUntil)}`
+        };
+    }
+
+    function isVoucherExpired(code) {
+        return getVoucherExpiryInfo(VOUCHER_MASTER[code]).state === 'expired';
+    }
+
+    function renderVoucherExpiryHtml(info) {
+        if (!info || info.state === 'unknown') return '';
+        const cls = info.state === 'expired' ? 'is-expired' : (info.state === 'soon' ? 'is-soon' : (info.state === 'never' ? 'is-never' : ''));
+        return `<div class="ticket-expiry ${cls}">${VOUCHER_ICON_CLOCK}<span>${info.label}</span></div>`;
+    }
+
+    // Decides whether a promo is shown to be collected (not whether a collected code is usable)
     function isPromoAllowedForCustomer(p) {
         if (!p || p.active === false) return false;
-        const now = Date.now();
-        if (p.startDate) {
-            const s = new Date(p.startDate).getTime();
-            if (!isNaN(s) && now < s) return false;
-        }
-        if (p.endDate) {
-            const e = new Date(p.endDate).getTime();
-            if (!isNaN(e) && now > e) return false;
+        if (p.collectibleNow === false) return false;
+        if (p.collectibleNow === undefined) {
+            // Older server without collectibleNow: original date rule
+            const now = Date.now();
+            if (p.startDate) {
+                const s = new Date(p.startDate).getTime();
+                if (!isNaN(s) && now < s) return false;
+            }
+            if (p.endDate) {
+                const e = new Date(p.endDate).getTime();
+                if (!isNaN(e) && now > e) return false;
+            }
         }
         if (p.isPrivate || p.targetSegment === 'private') {
             const allowedIds = Array.isArray(p.targetCustomerIds) ? p.targetCustomerIds : (Array.isArray(p.target_customer_ids) ? p.target_customer_ids : []);
@@ -8420,11 +8495,18 @@
         if (isUsed && (mode === 'claim' || mode === 'cart_picker' || mode === 'use')) {
             return '';
         }
+        const expiry = getVoucherExpiryInfo(v);
+        const isExpired = expiry.state === 'expired';
+        if (isExpired && (mode === 'claim' || mode === 'cart_picker')) {
+            return '';
+        }
         const isSelected = selectedVoucher === v.code;
-        
+
         let actionBtnHtml = '';
         if (mode === 'claim') {
             actionBtnHtml = `<button class="ticket-claim-btn ${isClaimed ? 'claimed' : ''}" id="btn-deal-${v.code}" onclick="claimVoucherDirect('${v.code}', ${v.discount}, ${v.minSpend}, '${v.title}')" ${isClaimed ? 'disabled' : ''}>${isClaimed ? 'เก็บแล้ว' : 'เก็บโค้ด'}</button>`;
+        } else if (mode === 'use' && isExpired) {
+            actionBtnHtml = `<button type="button" class="ticket-claim-btn is-expired" disabled>หมดอายุแล้ว</button>`;
         } else if (mode === 'use') {
             actionBtnHtml = `<button type="button" class="ticket-claim-btn" style="background:#ff6b00; padding:6px 16px;" onclick="useVoucherFromModal('${v.code}')">ใช้</button>`;
         } else if (mode === 'cart_picker') {
@@ -8432,7 +8514,7 @@
         }
 
         return `
-            <div class="voucher-ticket-full" style="${isSelected ? 'border:1.5px solid #0f172a; box-shadow:0 4px 14px rgba(15,23,42,0.1);' : ''}">
+            <div class="voucher-ticket-full ${isExpired ? 'is-expired' : ''}" style="${isSelected ? 'border:1.5px solid #0f172a; box-shadow:0 4px 14px rgba(15,23,42,0.1);' : ''}">
                 <div class="ticket-left">
                     <div class="ticket-cutout-top"></div>
                     <div class="ticket-cutout-bottom"></div>
@@ -8444,6 +8526,7 @@
                         <span class="ticket-code-tag">${v.code}</span>
                         <div class="ticket-title">${v.title}</div>
                         <div class="ticket-desc">${v.desc || ''}</div>
+                        ${renderVoucherExpiryHtml(expiry)}
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
                         <span style="font-size:9.5px; color:var(--text-dim);">${v.condition || (v.minSpend > 0 ? `ขั้นต่ำ ฿${v.minSpend}` : 'ไม่มีขั้นต่ำ')}</span>
@@ -8455,10 +8538,10 @@
     }
 
     function populateCartVoucherSelect() {
-        if (selectedVoucher && isVoucherUsedByCustomer(selectedVoucher)) {
+        if (selectedVoucher && (isVoucherUsedByCustomer(selectedVoucher) || isVoucherExpired(selectedVoucher))) {
             setSelectedVoucher(null);
         }
-        const availableClaimed = (userClaimedVouchers || []).filter(code => !isVoucherUsedByCustomer(code));
+        const availableClaimed = (userClaimedVouchers || []).filter(code => !isVoucherUsedByCustomer(code) && !isVoucherExpired(code));
         const sel = document.getElementById('cart-voucher-select');
         if (sel) {
             let optionsHtml = '<option value="">-- ไม่ใช้โค้ดส่วนลด --</option>';
@@ -9159,7 +9242,11 @@
                 isZoneSpecific: isZone,
                 zoneKeywords: p.zoneKeywords || existing.zoneKeywords || [],
                 isCollectible: (p.triggerType === 'COLLECTIBLE' || !!p.isCollectible) && p.triggerType !== 'CODE',
-                triggerType: p.triggerType || (p.code ? 'CODE' : 'AUTO')
+                triggerType: p.triggerType || (p.code ? 'CODE' : 'AUTO'),
+                collectibleNow: p.collectibleNow !== false,
+                neverExpires: p.neverExpires === true,
+                // redeemUntil from the server; older servers -> redeemEndDate / endDate (same rule as backend)
+                redeemUntil: p.neverExpires === true ? null : (p.redeemUntil || p.redeemEndDate || p.endDate || null)
             };
         });
         renderHomeVoucherTrack(promos);
@@ -9218,6 +9305,7 @@
                             <span class="ticket-code-tag">${code}</span>
                             <div class="ticket-title">${v.title || code}</div>
                             <div class="ticket-desc">${v.desc || ''}</div>
+                            ${renderVoucherExpiryHtml(getVoucherExpiryInfo(v))}
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
                             <span style="font-size:9.5px; color:var(--text-dim);">${v.condition || 'จำกัด 1 สิทธิ์'}</span>
@@ -9310,6 +9398,7 @@
                             <span class="ticket-code-tag">${code}</span>
                             <div class="ticket-title">${v.title || code}</div>
                             <div class="ticket-desc">${v.desc || ''}</div>
+                            ${renderVoucherExpiryHtml(getVoucherExpiryInfo(v))}
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
                             <span style="font-size:9.5px; color:var(--text-dim);">${v.condition || 'ไม่มีขั้นต่ำ'}</span>
@@ -11389,7 +11478,9 @@
             return;
         }
 
-        container.innerHTML = claimedList.map(code => {
+        // Expired codes stay in the list (never removed from userClaimedVouchers), shown last
+        const ordered = claimedList.slice().sort((a, b) => Number(isVoucherExpired(a)) - Number(isVoucherExpired(b)));
+        container.innerHTML = ordered.map(code => {
             const v = VOUCHER_MASTER[code] || {
                 code: code,
                 discount: 0,
@@ -11407,6 +11498,10 @@
     }
 
     function useVoucherFromModal(code) {
+        if (code && isVoucherExpired(code)) {
+            showToast(`โค้ด "${code}" หมดอายุแล้ว`);
+            return;
+        }
         if (code && VOUCHER_MASTER[code] && VOUCHER_MASTER[code].isZoneSpecific) {
             if (shippingMethod !== 'express') {
                 showToast(`โค้ดส่วนลด "${code}" ใช้ได้เฉพาะบริการส่งด่วนไรเดอร์เท่านั้น`);
@@ -11456,7 +11551,7 @@
             </div>
         `;
 
-        const claimedList = (userClaimedVouchers || []).filter(code => typeof code === 'string' && code.trim() && code !== 'POD4FOR500' && code !== 'FREEPOSTAL' && !isVoucherUsedByCustomer(code));
+        const claimedList = (userClaimedVouchers || []).filter(code => typeof code === 'string' && code.trim() && code !== 'POD4FOR500' && code !== 'FREEPOSTAL' && !isVoucherUsedByCustomer(code) && !isVoucherExpired(code));
         if (claimedList.length === 0) {
             html += `
                 <div style="text-align:center; padding:32px 16px;">
