@@ -13398,10 +13398,31 @@
                         `;
                     }
                 } else {
+                    const deliveryPhoto = ord.deliveryPhotoUrl || ord.delivery_photo_url;
+                    const dropNote = ord.dropoffNote || ord.dropoff_note;
+                    const deliveredTimeStr = ord.deliveredAt ? new Date(ord.deliveredAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.' : '';
                     if (s4Title) s4Title.textContent = isDone ? 'จัดส่งสำเร็จแล้ว' : 'ไรเดอร์รับพัสดุแล้ว';
                     if (s4Desc) {
+                        let deliveryPhotoHtml = '';
+                        if (deliveryPhoto) {
+                            deliveryPhotoHtml = `
+                                <div style="margin-top:10px; padding:10px; background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.25); border-radius:12px; text-align:left;">
+                                    <div style="font-size:12px; font-weight:800; color:#4ade80; display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+                                        <svg style="width:15px; height:15px; stroke:currentColor; stroke-width:2.2; fill:none;" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                        รูปถ่ายจุดวางพัสดุจากไรเดอร์
+                                    </div>
+                                    <a href="${escText(deliveryPhoto)}" target="_blank" rel="noopener noreferrer" style="display:block; text-decoration:none;">
+                                        <img src="${escText(deliveryPhoto)}" alt="รูปหลักฐานจุดวางพัสดุ" style="width:100%; max-height:220px; object-fit:contain; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:#000000; display:block;" />
+                                    </a>
+                                    <div style="font-size:11px; color:#cbd5e1; margin-top:6px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px;">
+                                        ${dropNote ? `<span>จุดวาง: <strong style="color:#ffffff;">${escText(dropNote)}</strong></span>` : '<span>ส่งมอบพัสดุเรียบร้อย</span>'}
+                                        ${deliveredTimeStr ? `<span style="color:#94a3b8;">${deliveredTimeStr}</span>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }
                         s4Desc.innerHTML = isDone
-                            ? `<div style="color:#4ade80; font-weight:800; margin-top:2px;">จัดส่งสำเร็จเรียบร้อยแล้ว ขอบคุณที่ใช้บริการ</div>`
+                            ? `<div style="color:#4ade80; font-weight:800; margin-top:2px;">จัดส่งสำเร็จเรียบร้อยแล้ว ขอบคุณที่ใช้บริการ</div>${deliveryPhotoHtml}`
                             : riderArrived
                             ? `<div style="color:#4ade80; font-weight:800; margin-top:2px;">ไรเดอร์ถึงจุดส่งแล้ว ลงมารับสินค้าได้เลยค่ะ</div>`
                             : `<div style="color:#ff6b00; font-weight:800; margin-top:2px;">อาจใช้เวลาถึง 1-3 ชั่วโมง อยู่ที่สภาพการจราจรและสภาพอากาศ</div>
