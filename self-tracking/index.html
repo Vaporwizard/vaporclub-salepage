@@ -750,6 +750,22 @@
           ${t('status_arrived_banner')}
         </div>` : "";
 
+      const deliveryPhoto = o.deliveryPhotoUrl || o.delivery_photo_url;
+      const dropNote = o.dropoffNote || o.dropoff_note;
+      const deliveryPhotoHTML = deliveryPhoto ? `
+        <div class="card timeline-card" style="margin-top:16px; border-color: rgba(34, 197, 94, 0.35); background: linear-gradient(180deg, rgba(34, 197, 94, 0.06) 0%, rgba(15, 23, 42, 0.8) 100%);">
+          <div class="section-title" style="color:#4ade80;">${svg('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>', 18)}${currentLang === 'en' ? 'Proof of Delivery Photo (Drop-off Point)' : 'รูปถ่ายจุดวางพัสดุจากไรเดอร์'}</div>
+          <div style="border-radius:12px; overflow:hidden; border:1px solid rgba(34, 197, 94, 0.25); background:#000000; margin-top:10px;">
+            <a href="${escapeHTML(deliveryPhoto)}" target="_blank" rel="noopener">
+              <img src="${escapeHTML(deliveryPhoto)}" alt="Delivery Photo" style="width:100%; max-height:460px; object-fit:contain; display:block; margin:0 auto;" />
+            </a>
+          </div>
+          ${dropNote ? `<div style="font-size:13px; color:#e2e8f0; margin-top:10px; padding:8px 12px; background:rgba(255,255,255,0.05); border-radius:8px; display:flex; align-items:center; gap:6px;">
+            <span style="color:#4ade80; font-weight:700;">${currentLang === 'en' ? 'Drop-off Note:' : 'ตำแหน่งที่วาง:'}</span>
+            <span>${escapeHTML(dropNote)}</span>
+          </div>` : ''}
+        </div>` : "";
+
       const packedPhotoHTML = o.packedPhotoUrl ? `
         <div class="card timeline-card" style="margin-top:16px;">
           <div class="section-title">${svg('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>', 18)}${t('packed_photo_title')}</div>
@@ -807,6 +823,7 @@
             ${o.addressHint ? `<div><div class="meta-label">${t('meta_address')}</div><div class="meta-value">${escapeHTML(o.addressHint)}</div></div>` : ''}
           </div>
         </div>
+        ${deliveryPhotoHTML}
         ${packedPhotoHTML}
         ${itemsCardHTML}
         ${eventsHTML ? `
