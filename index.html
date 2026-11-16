@@ -7470,6 +7470,15 @@
      */
     function getVoucherExpiryInfo(v) {
         if (!v) return { state: 'unknown', label: '' };
+        if (v.active === false) return { state: 'expired', label: 'ปิดใช้งานแล้ว' };
+        // If an endDate or redeemUntil is specified and past, it is expired regardless of neverExpires flag
+        const rawEnd = v.redeemUntil || v.redeemEndDate || v.endDate;
+        if (rawEnd) {
+            const end = new Date(rawEnd).getTime();
+            if (!isNaN(end) && Date.now() > end) {
+                return { state: 'expired', label: 'หมดอายุแล้ว' };
+            }
+        }
         if (v.neverExpires === true) return { state: 'never', label: 'ไม่มีวันหมดอายุ' };
         const end = v.redeemUntil ? new Date(v.redeemUntil).getTime() : NaN;
         if (isNaN(end)) return { state: 'never', label: 'ไม่มีวันหมดอายุ' };
@@ -7482,7 +7491,13 @@
     }
 
     function isVoucherExpired(code) {
-        return getVoucherExpiryInfo(VOUCHER_MASTER[code]).state === 'expired';
+        if (!code) return false;
+        const v = VOUCHER_MASTER[code];
+        if (!v) {
+            return window.__promotionsLoaded ? true : false;
+        }
+        if (v.active === false) return true;
+        return getVoucherExpiryInfo(v).state === 'expired';
     }
 
     function renderVoucherExpiryHtml(info) {
@@ -7964,17 +7979,21 @@
         let voucherDesc = '';
         if (selectedCode && VOUCHER_MASTER[selectedCode]) {
             const v = VOUCHER_MASTER[selectedCode];
-            const remainingShipping = Math.max(0, baseShipping - autoDelivDisc);
-            const remainingSubtotal = Math.max(0, rawSubtotal - autoProdDisc);
-            const calc = calculateVoucherDiscount(v, remainingSubtotal, remainingShipping, method);
-            if (isDeliveryVoucher(v)) {
-                voucherDelivDisc = Math.min(remainingShipping, calc.discount);
-            } else {
-                voucherProdDisc = Math.min(remainingSubtotal, calc.discount);
-            }
-            if (calc.discountDesc) {
-                voucherDesc = calc.discountDesc;
-                descriptions.push(calc.discountDesc);
+            const isClaimed = Array.isArray(userClaimedVouchers) && userClaimedVouchers.includes(selectedCode);
+            const isValid = !isVoucherExpired(selectedCode) && !isVoucherUsedByCustomer(selectedCode, v) && v.active !== false && (!v.isCollectible || isClaimed);
+            if (isValid) {
+                const remainingShipping = Math.max(0, baseShipping - autoDelivDisc);
+                const remainingSubtotal = Math.max(0, rawSubtotal - autoProdDisc);
+                const calc = calculateVoucherDiscount(v, remainingSubtotal, remainingShipping, method);
+                if (isDeliveryVoucher(v)) {
+                    voucherDelivDisc = Math.min(remainingShipping, calc.discount);
+                } else {
+                    voucherProdDisc = Math.min(remainingSubtotal, calc.discount);
+                }
+                if (calc.discountDesc) {
+                    voucherDesc = calc.discountDesc;
+                    descriptions.push(calc.discountDesc);
+                }
             }
         }
 
@@ -8146,13 +8165,23 @@
         if (savedVoucher && typeof savedVoucher === 'string') {
             let trimmed = savedVoucher.trim();
             if (trimmed === 'NEW10') trimmed = 'NEW50';
-            if (trimmed && trimmed !== 'null' && trimmed !== 'undefined' && trimmed !== 'POD4FOR500' && trimmed !== 'FREEPOSTAL') {
+            const expiredOrDeadCodes = ['POD4FOR500', 'FREEPOSTAL', 'EXPRESS50', 'EMS11', 'MP7Y20', 'CBP50'];
+            if (trimmed && trimmed !== 'null' && trimmed !== 'undefined' && !expiredOrDeadCodes.includes(trimmed)) {
                 selectedVoucher = trimmed;
+            } else {
+                localStorage.removeItem('vapor_selected_voucher');
             }
         }
         if (Array.isArray(userClaimedVouchers)) {
             if (userClaimedVouchers.includes('NEW10') && !userClaimedVouchers.includes('NEW50')) {
                 userClaimedVouchers.push('NEW50');
+                localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers));
+            }
+            // Filter out any dead/expired promo codes from stored wallet
+            const deadVouchers = ['EXPRESS50', 'EMS11', 'POD4FOR500', 'FREEPOSTAL', 'MP7Y20', 'CBP50'];
+            const cleanedWallet = userClaimedVouchers.filter(c => !deadVouchers.includes(c));
+            if (cleanedWallet.length !== userClaimedVouchers.length) {
+                userClaimedVouchers = cleanedWallet;
                 localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers));
             }
         }
@@ -8836,8 +8865,18 @@
     }
 
     function populateCartVoucherSelect() {
-        if (selectedVoucher && (isVoucherUsedByCustomer(selectedVoucher) || isVoucherExpired(selectedVoucher))) {
-            setSelectedVoucher(null);
+        if (selectedVoucher) {
+            const v = VOUCHER_MASTER[selectedVoucher];
+            const isClaimed = Array.isArray(userClaimedVouchers) && userClaimedVouchers.includes(selectedVoucher);
+            const isExpired = isVoucherExpired(selectedVoucher);
+            const isUsed = isVoucherUsedByCustomer(selectedVoucher, v);
+            const isMissing = window.__promotionsLoaded && !v;
+            const isInvalidCollectible = v && v.isCollectible && !isClaimed;
+            const isInactive = v && v.active === false;
+
+            if (isExpired || isUsed || isMissing || isInvalidCollectible || isInactive) {
+                setSelectedVoucher(null);
+            }
         }
         const availableClaimed = (userClaimedVouchers || []).filter(code => !isVoucherUsedByCustomer(code) && !isVoucherExpired(code));
         const sel = document.getElementById('cart-voucher-select');
