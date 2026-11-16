@@ -618,7 +618,7 @@
             const itemsContainer = document.getElementById('items-list');
             let itemsHtml = (order.items || []).map(it => `
                 <div class="summary-row">
-                    <span>${it.name} (x${it.qty || 1})</span>
+                    <span>${it.isGift ? '[ของแถม] ' : ''}${it.name} (x${it.qty || 1})</span>
                     <span style="font-weight:600;">฿${((it.price || 0) * (it.qty || 1)).toLocaleString()}</span>
                 </div>
             `).join('') + `

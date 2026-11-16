@@ -3473,6 +3473,42 @@
             justify-content: space-between;
         }
 
+        /* Free gift picker in the cart */
+        .vc-gift { background: rgba(22, 25, 35, 0.7); border: 1.5px solid rgba(255, 107, 0, 0.45); border-radius: 16px; padding: 12px; margin-bottom: 12px; }
+        .vc-gift-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .vc-gift-title { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 800; color: #ffffff; }
+        .vc-gift-title svg { width: 18px; height: 18px; color: #ff6b00; flex: none; }
+        .vc-gift-count { font-family: var(--font-num); font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: rgba(255, 107, 0, 0.12); color: #ff6b00; border: 1px solid rgba(255, 107, 0, 0.35); white-space: nowrap; }
+        .vc-gift-count.full { background: rgba(34, 197, 94, 0.12); color: #22c55e; border-color: rgba(34, 197, 94, 0.35); }
+        .vc-gift-sub { font-size: 11px; color: #94a3b8; margin: 4px 0 2px; }
+        .vc-gift-prod { padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, 0.07); }
+        .vc-gift-prod:first-of-type { border-top: 0; }
+        .vc-gift-row { display: flex; align-items: center; gap: 12px; }
+        .vc-gift-img { width: 54px; height: 54px; border-radius: 12px; background: #12141c center/contain no-repeat; border: 1px solid rgba(255, 255, 255, 0.08); flex: none; }
+        .vc-gift-info { flex: 1; min-width: 0; }
+        .vc-gift-name { font-size: 14px; font-weight: 800; color: #ffffff; line-height: 1.2; }
+        .vc-gift-price { margin-top: 2px; font-family: var(--font-num); font-size: 14px; font-weight: 900; color: #ff6b00; }
+        .vc-gift-price s { font-size: 11px; color: #64748b; font-weight: 600; margin-left: 6px; }
+        .vc-gift-note { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+        .vc-gift-add { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 36px; padding: 0 14px; border-radius: 999px; border: 0; background: #ff6b00; color: #ffffff; font-family: var(--font-thai); font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 8px rgba(255, 107, 0, 0.4); }
+        .vc-gift-add:disabled { background: rgba(255, 255, 255, 0.08); color: #6b7280; box-shadow: none; cursor: not-allowed; }
+        .vc-gift-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .vc-gift-chip { font-family: var(--font-thai); font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.04); color: #e2e8f0; cursor: pointer; line-height: 1.2; }
+        .vc-gift-chip.sel { border-color: #ff6b00; color: #ff6b00; background: rgba(255, 107, 0, 0.12); }
+        .vc-gift-chip.out { color: #4b5563; text-decoration: line-through; border-color: rgba(255, 255, 255, 0.06); background: transparent; cursor: not-allowed; }
+        .vc-gift-lines { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.07); }
+        .vc-gift-line { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: #e2e8f0; padding: 6px 0; }
+        .vc-gift-tag { font-size: 9.5px; font-weight: 800; color: #ff6b00; background: rgba(255, 107, 0, 0.12); border: 1px solid rgba(255, 107, 0, 0.35); padding: 1px 6px; border-radius: 4px; margin-right: 6px; }
+        .vc-gift-tag.shop { color: #fbbf24; background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.35); }
+        .vc-gift-rm { border: 0; background: transparent; color: #64748b; font-size: 11.5px; cursor: pointer; font-family: var(--font-thai); }
+        .vc-gift-hint { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 14px; border: 1.5px dashed rgba(255, 107, 0, 0.45); background: rgba(255, 107, 0, 0.06); margin-bottom: 12px; }
+        .vc-gift-hint svg { width: 20px; height: 20px; color: #ff6b00; flex: none; margin-top: 1px; }
+        .vc-gift-hint-text { flex: 1; min-width: 0; font-size: 12.5px; color: #e2e8f0; line-height: 1.45; }
+        .vc-gift-hint-text b { color: #ff6b00; font-family: var(--font-num); }
+        .vc-gift-hint-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+        .vc-gift-bar { height: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-top: 7px; overflow: hidden; }
+        .vc-gift-bar span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #ff6b00, #ff8533); }
+
         /* Voucher redeem-expiry label */
         .ticket-expiry {
             display: inline-flex;
@@ -4735,6 +4771,9 @@
 
     <!-- Cart Item List -->
     <div id="cart-item-list" style="max-height:220px; overflow-y:auto; margin-bottom:12px;"></div>
+
+    <!-- Free gift picker (promotions of type GIFT); empty when the cart earns no gift -->
+    <div id="cart-gift-picker"></div>
 
     <!-- Delivery Method Switch: ส่งพัสดุ vs ส่งด่วน (LINE MAN Style) -->
     <div class="lineman-delivery-tab-switch">
@@ -7355,6 +7394,22 @@
         const pId = String(promo?.id || '').trim();
         if (!c && !pId) return false;
 
+        // Server counts uses per customer (usesLeft: number, or null = unlimited). When present it is
+        // the answer; older servers do not send it and the checks below apply as before.
+        let counted = (promo && promo.usesLeft !== undefined) ? promo : null;
+        if (!counted && c) {
+            try {
+                if (VOUCHER_MASTER[c] && VOUCHER_MASTER[c].usesLeft !== undefined) counted = VOUCHER_MASTER[c];
+            } catch (e) { /* VOUCHER_MASTER not initialised yet */ }
+        }
+        if (counted) {
+            if (['NEW50', 'NEW10'].includes(c) || pId === 'promo_code_newbie10_delivery') {
+                const prior = typeof getStoredOrders === 'function' ? (getStoredOrders() || []).filter(o => o && String(o.status || '').toUpperCase() !== 'CANCELLED') : [];
+                if (prior.length > 0) return true;
+            }
+            return counted.usesLeft !== null && counted.usesLeft <= 0;
+        }
+
         // 1. Check userUsedVouchers array (from localStorage and API profile)
         if (Array.isArray(userUsedVouchers)) {
             if (c && userUsedVouchers.some(u => String(u).trim().toUpperCase() === c)) return true;
@@ -7510,6 +7565,275 @@
         return Number(expressFee) || Number(storeConfig?.shippingFeeRider) || 25;
     }
 
+    /**
+     * Is the cart line one of the listed products? By productId when the line has one; lines without
+     * an id (old saved carts) match only the exact catalog name. Never a substring: ids like '1' / '5'
+     * used to match "M SWITCH 15000 Puff" and pulled other products into pod bundles.
+     * Same rule as matchesListedProducts on the server.
+     */
+    function itemMatchesListedProducts(it, pids) {
+        if (!Array.isArray(pids) || pids.length === 0) return true;
+        const ids = pids.map(p => String(p).trim()).filter(Boolean);
+        if (ids.length === 0) return true;
+        const pidRaw = it && (it.productId ?? it.product_id);
+        const pid = pidRaw == null ? '' : String(pidRaw).trim();
+        if (pid) return ids.includes(pid);
+        const name = String((it && it.name) || '').trim().toLowerCase();
+        if (!name || typeof PRODUCTS === 'undefined' || !Array.isArray(PRODUCTS)) return false;
+        return PRODUCTS.some(p => ids.includes(String(p.id).trim()) && String(p.name || '').trim().toLowerCase() === name);
+    }
+
+    /**
+     * Fixed-price bundle: most expensive units go into sets first, leftovers keep their own price,
+     * maxSets (> 0) caps sets per order. Same algorithm as computeBundle on the server.
+     */
+    function computeBundle(eligibleItems, bundleQty, bundlePrice, maxSets) {
+        const qty = Math.max(1, Number(bundleQty) || 1);
+        const price = Math.max(0, Number(bundlePrice) || 0);
+        const units = [];
+        (eligibleItems || []).forEach(it => {
+            const n = Math.max(0, Math.floor(Number(it.qty || 1) || 0));
+            for (let i = 0; i < n; i++) units.push(Number(it.price) || 0);
+        });
+        units.sort((a, b) => b - a);
+        let sets = Math.floor(units.length / qty);
+        const cap = Math.floor(Number(maxSets) || 0);
+        if (cap > 0) sets = Math.min(sets, cap);
+        const bundledUnits = sets * qty;
+        const standardCost = units.slice(0, bundledUnits).reduce((s, v) => s + v, 0);
+        const promoCost = sets * price;
+        return {
+            sets,
+            bundledUnits,
+            eligibleUnits: units.length,
+            promoCost,
+            remainingUnits: units.length - bundledUnits,
+            discount: sets > 0 ? Math.max(0, Math.round(standardCost - promoCost)) : 0
+        };
+    }
+
+    /* ===================== Free gifts (promotions of type GIFT) =====================
+       The server decides: computeGiftEntitlements / resolveGiftSelections in promotionManager.js use
+       the same rules. The page only offers the choice; picks the server cannot honour become
+       "ร้านเลือกให้" (staff pick the flavor). Gifts never change the price. */
+    let giftSelections = [];   // [{ promoId, productId, flavor }] one entry per unit
+    const giftChipSel = {};    // productId -> flavor highlighted in the picker
+    try {
+        const savedGifts = JSON.parse(localStorage.getItem('vapor_gift_selections') || '[]');
+        if (Array.isArray(savedGifts)) giftSelections = savedGifts.filter(g => g && g.promoId && g.productId && g.flavor).slice(0, 50);
+    } catch (e) {}
+    function saveGiftSelections() {
+        try { localStorage.setItem('vapor_gift_selections', JSON.stringify(giftSelections)); } catch (e) {}
+    }
+
+    function giftPromosAvailable() {
+        const promos = Array.isArray(window.__LATEST_PROMOTIONS) ? window.__LATEST_PROMOTIONS : [];
+        return promos.filter(p => p && p.pricingRule && p.pricingRule.type === 'GIFT' && p.gift && Array.isArray(p.gift.pool) && p.gift.pool.length > 0 &&
+            (p.triggerType === 'AUTO' || !(p.code || '').trim()) && isPromoAllowedForCustomer(p) && !isVoucherUsedByCustomer(p.code, p));
+    }
+
+    /** Gifts the cart earns: [{ promo, qty, pool, chooser }] (same rule as the server). */
+    function giftEntitlements(cartItems = cart) {
+        const lines = (cartItems || []).filter(it => it && !it.isGift);
+        const sub = lines.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.qty) || 1), 0);
+        return giftPromosAvailable().map(p => {
+            if (Number(p.minSubtotal) > 0 && sub < Number(p.minSubtotal)) return null;
+            const per = Math.max(1, Math.floor(Number(p.gift.qty) || 1));
+            const min = Math.max(1, Math.floor(Number(p.gift.triggerMinQty) || 1));
+            const trig = lines.filter(it => itemMatchesListedProducts(it, p.product_ids || p.productIds)).reduce((s, it) => s + (Number(it.qty) || 1), 0);
+            if (trig < min) return null;
+            const qty = Math.min(20, p.gift.perSet ? per * Math.floor(trig / min) : per);
+            return { promo: p, qty, pool: p.gift.pool.map(String), chooser: p.gift.chooser === 'shop' ? 'shop' : 'customer_or_shop' };
+        }).filter(Boolean);
+    }
+
+    function giftProduct(pid) {
+        return (typeof PRODUCTS !== 'undefined' && Array.isArray(PRODUCTS)) ? PRODUCTS.find(p => String(p.id) === String(pid)) : null;
+    }
+    function giftFlavors(product) {
+        return ((product && product.groups) || []).flatMap(g => (g.flavors || []).map(f => (typeof f === 'string' ? { name: f, inStock: true } : f)));
+    }
+    /** Units of this flavor still free to pick (stock when the catalog has it, else in stock = unlimited). */
+    function giftFlavorLeft(pid, flavor) {
+        const f = giftFlavors(giftProduct(pid)).find(x => x && x.name === flavor);
+        if (!f || f.inStock === false) return 0;
+        const picked = giftSelections.filter(g => String(g.productId) === String(pid) && g.flavor === flavor).length;
+        const inCart = (cart || []).filter(it => String(it.productId) === String(pid) && it.flavor === flavor).reduce((s, it) => s + (Number(it.qty) || 1), 0);
+        const stock = (f.stock !== undefined && f.stock !== null) ? (Number(f.stock) || 0) : Infinity;
+        return Math.max(0, stock - picked - inCart);
+    }
+
+    /** Drop picks the cart no longer earns, or whose flavor ran out. Returns true when something was dropped. */
+    function pruneGiftSelections() {
+        const ents = giftEntitlements();
+        const before = giftSelections.length;
+        const kept = [];
+        ents.forEach(ent => {
+            if (ent.chooser === 'shop') return;
+            giftSelections.filter(g => String(g.promoId) === String(ent.promo.id)).forEach(g => {
+                if (kept.filter(k => k.promoId === g.promoId).length >= ent.qty) return;
+                if (!ent.pool.includes(String(g.productId))) return;
+                const f = giftFlavors(giftProduct(g.productId)).find(x => x && x.name === g.flavor);
+                if (!f || f.inStock === false) return;
+                kept.push(g);
+            });
+        });
+        giftSelections = kept;
+        if (giftSelections.length !== before) saveGiftSelections();
+        return giftSelections.length < before;
+    }
+
+    function addGiftPick(promoId, pid) {
+        const ent = giftEntitlements().find(e => String(e.promo.id) === String(promoId));
+        if (!ent) return;
+        const mine = giftSelections.filter(g => String(g.promoId) === String(promoId)).length;
+        const flavor = giftChipSel[pid];
+        if (mine >= ent.qty || !flavor || giftFlavorLeft(pid, flavor) <= 0) return;
+        giftSelections.push({ promoId: String(promoId), productId: String(pid), flavor });
+        saveGiftSelections();
+        renderGiftPicker();
+    }
+    function removeGiftPick(i) {
+        giftSelections.splice(i, 1);
+        saveGiftSelections();
+        renderGiftPicker();
+    }
+    function selectGiftChip(pid, flavor) {
+        if (giftFlavorLeft(pid, flavor) <= 0) return;
+        giftChipSel[pid] = flavor;
+        renderGiftPicker();
+    }
+
+    /** Gift lines for the order view: customer picks, then units left to the shop. */
+    function giftDisplayLines() {
+        const out = [];
+        giftEntitlements().forEach(ent => {
+            const picks = ent.chooser === 'shop' ? [] : giftSelections.filter(g => String(g.promoId) === String(ent.promo.id)).slice(0, ent.qty);
+            picks.forEach(g => {
+                const p = giftProduct(g.productId);
+                out.push({ name: p ? p.name : 'ของแถม', flavor: g.flavor, qty: 1, price: 0, productId: String(g.productId), image: p ? p.image : '', isGift: true });
+            });
+            if (ent.qty - picks.length > 0) out.push({ name: 'ของแถม (ร้านเลือกกลิ่นให้)', flavor: 'ร้านเลือกให้', qty: ent.qty - picks.length, price: 0, isGift: true });
+        });
+        return out;
+    }
+
+    const GIFT_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8c-2-3-6-3-6-1s3 1 6 1zm0 0c2-3 6-3 6-1s-3 1-6 1z"/></svg>';
+
+    /**
+     * Gift promotions the cart does not earn yet, with what is missing:
+     * [{ promo, qty, needQty, needBaht, products: [names], sub, minSubtotal }]
+     */
+    function giftProgress(cartItems = cart) {
+        const lines = (cartItems || []).filter(it => it && !it.isGift);
+        if (!lines.length) return [];
+        const sub = lines.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.qty) || 1), 0);
+        const earned = new Set(giftEntitlements(cartItems).map(e => String(e.promo.id)));
+        return giftPromosAvailable().filter(p => !earned.has(String(p.id))).map(p => {
+            const ids = (p.product_ids || p.productIds || []).map(String);
+            const min = Math.max(1, Math.floor(Number(p.gift.triggerMinQty) || 1));
+            const trig = lines.filter(it => itemMatchesListedProducts(it, ids)).reduce((s, it) => s + (Number(it.qty) || 1), 0);
+            // Promo tied to specific products: say nothing until one of them is in the cart
+            if (ids.length > 0 && trig === 0) return null;
+            const minSubtotal = Number(p.minSubtotal) || 0;
+            return {
+                promo: p,
+                qty: Math.max(1, Math.floor(Number(p.gift.qty) || 1)),
+                needQty: Math.max(0, min - trig),
+                needBaht: Math.max(0, minSubtotal - sub),
+                products: ids.map(id => giftProduct(id)).filter(Boolean).map(x => x.name),
+                hasTrigger: trig > 0,
+                sub,
+                minSubtotal
+            };
+        }).filter(Boolean);
+    }
+
+    function renderGiftHints(esc) {
+        const giftSvg = GIFT_ICON_SVG;
+        return giftProgress().slice(0, 2).map(g => {
+            const names = g.products.join(' / ');
+            let text;
+            if (g.products.length && !g.hasTrigger) {
+                text = `ซื้อ <b>${esc(names)}</b>${g.needQty > 1 ? ` ${g.needQty} ชิ้น` : ''} รับของแถมฟรี ${g.qty} ชิ้น`;
+                if (g.needBaht > 0) text += ` (ยอดครบ ฿${g.minSubtotal.toLocaleString()})`;
+            } else if (g.needQty > 0) {
+                text = `เพิ่มอีก <b>${g.needQty} ชิ้น</b>${names ? ` (${esc(names)})` : ''} รับของแถมฟรี ${g.qty} ชิ้น`;
+            } else {
+                text = `เพิ่มอีก <b>฿${g.needBaht.toLocaleString()}</b> รับของแถมฟรี ${g.qty} ชิ้น`;
+            }
+            const pct = g.minSubtotal > 0 ? Math.min(100, Math.round((g.sub / g.minSubtotal) * 100)) : 0;
+            const bar = g.minSubtotal > 0 && g.needBaht > 0 ? `<div class="vc-gift-bar"><span style="width:${pct}%"></span></div>` : '';
+            return `<div class="vc-gift-hint">${giftSvg}<div class="vc-gift-hint-text">${text}<div class="vc-gift-hint-sub">${esc(g.promo.name || 'โปรของแถม')}</div>${bar}</div></div>`;
+        }).join('');
+    }
+
+    function renderGiftPicker() {
+        const box = document.getElementById('cart-gift-picker');
+        if (!box) return;
+        const dropped = pruneGiftSelections();
+        const ents = giftEntitlements();
+        const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const hints = renderGiftHints(esc);
+        if (!ents.length) { box.innerHTML = hints; return; }
+        box.innerHTML = hints + ents.map(ent => {
+            const pid = String(ent.promo.id);
+            const picks = giftSelections.map((g, i) => ({ g, i })).filter(x => String(x.g.promoId) === pid);
+            const full = picks.length >= ent.qty;
+            const head = `
+                <div class="vc-gift-head">
+                    <div class="vc-gift-title">${GIFT_ICON_SVG}<span>ของแถมฟรี ${ent.qty} ชิ้น</span></div>
+                    ${ent.chooser === 'shop' ? '' : `<span class="vc-gift-count ${full ? 'full' : ''}">เลือกแล้ว ${picks.length} / ${ent.qty}</span>`}
+                </div>
+                <div class="vc-gift-sub">${esc(ent.promo.name || 'โปรของแถม')}${ent.chooser === 'shop' ? ' · ร้านเลือกกลิ่นให้' : (full ? ' · เลือกครบแล้ว' : ' · กดเลือกกลิ่น แล้วกด เพิ่ม (ไม่เลือกก็ได้ ร้านจะเลือกให้)')}</div>`;
+            const rows = ent.chooser === 'shop' ? '' : ent.pool.map(gpid => {
+                const p = giftProduct(gpid);
+                if (!p) return '';
+                const fls = giftFlavors(p);
+                if (!giftChipSel[gpid] || giftFlavorLeft(gpid, giftChipSel[gpid]) <= 0) {
+                    const firstFree = fls.find(f => giftFlavorLeft(gpid, f.name) > 0);
+                    giftChipSel[gpid] = firstFree ? firstFree.name : null;
+                }
+                const anyLeft = fls.some(f => giftFlavorLeft(gpid, f.name) > 0);
+                const cnt = picks.filter(x => String(x.g.productId) === String(gpid)).length;
+                const can = anyLeft && !full && giftChipSel[gpid];
+                return `
+                    <div class="vc-gift-prod">
+                        <div class="vc-gift-row">
+                            <div class="vc-gift-img" style="background-image:url('${esc(p.image || '')}')"></div>
+                            <div class="vc-gift-info">
+                                <div class="vc-gift-name">${esc(p.name)}</div>
+                                <div class="vc-gift-price">ฟรี<s>฿${esc(p.price)}</s></div>
+                                ${cnt ? `<div class="vc-gift-note">เลือกแล้ว ${cnt} ชิ้น</div>` : ''}
+                            </div>
+                            <button type="button" class="vc-gift-add" ${can ? '' : 'disabled'} onclick="addGiftPick('${esc(pid)}', '${esc(gpid)}')">+ ${!anyLeft ? 'หมด' : (full ? 'ครบแล้ว' : 'เพิ่ม')}</button>
+                        </div>
+                        <div class="vc-gift-chips">
+                            ${fls.map(f => {
+                                const left = giftFlavorLeft(gpid, f.name);
+                                const cls = left <= 0 ? 'out' : (giftChipSel[gpid] === f.name ? 'sel' : '');
+                                return `<button type="button" class="vc-gift-chip ${cls}" ${left <= 0 ? 'disabled' : ''} data-gpid="${esc(gpid)}" data-gfl="${esc(f.name)}">${esc(f.name)}</button>`;
+                            }).join('')}
+                        </div>
+                    </div>`;
+            }).join('');
+            const left = Math.max(0, ent.qty - (ent.chooser === 'shop' ? 0 : picks.length));
+            const lines = `
+                <div class="vc-gift-lines">
+                    ${ent.chooser === 'shop' ? '' : picks.map(x => {
+                        const p = giftProduct(x.g.productId);
+                        return `<div class="vc-gift-line"><span><span class="vc-gift-tag">ของแถม</span>${esc(p ? p.name : '')} ${esc(x.g.flavor)}</span><span>฿0 <button type="button" class="vc-gift-rm" onclick="removeGiftPick(${x.i})">ลบ</button></span></div>`;
+                    }).join('')}
+                    ${left > 0 ? `<div class="vc-gift-line"><span><span class="vc-gift-tag shop">ร้านเลือกให้</span>ยังไม่ได้เลือก x${left}</span><span>฿0</span></div>` : ''}
+                </div>`;
+            return `<div class="vc-gift">${head}${rows}${lines}</div>`;
+        }).join('');
+        box.querySelectorAll('.vc-gift-chip[data-gpid]').forEach(b => {
+            b.onclick = () => selectGiftChip(b.getAttribute('data-gpid'), b.getAttribute('data-gfl'));
+        });
+        if (dropped) showToast('ของแถมบางกลิ่นหมดหรือไม่เข้าเงื่อนไขแล้ว ระบบเปลี่ยนเป็นร้านเลือกให้');
+    }
+
     function calculateAutoPromotions(cartItems = cart, rawSubtotal = 0, baseShipping = 0, method = shippingMethod) {
         let autoProductDiscount = 0;
         let autoDeliveryDiscount = 0;
@@ -7547,40 +7871,17 @@
                     if (m && Number(m[1]) > 0) bPrice = Number(m[1]);
                 }
 
-                // Filter items by product_ids if specified, or by category and brand filter
-                const hasProductFilter = Array.isArray(promo.product_ids) && promo.product_ids.length > 0;
-                const eligibleItems = cartItems.filter(it => {
-                    if (hasProductFilter) {
-                        const itProdId = String(it.productId || it.product_id || it.id || '').trim();
-                        const itName = String(it.name || '').trim().toLowerCase();
-                        const listedIds = promo.product_ids.map(pid => String(pid).trim());
-                        if (itProdId && listedIds.includes(itProdId)) return true;
-                        const listedProducts = (typeof PRODUCTS !== 'undefined' && Array.isArray(PRODUCTS))
-                            ? PRODUCTS.filter(p => listedIds.includes(String(p.id).trim()))
-                            : [];
-                        if (itName && listedProducts.some(p => {
-                            const pName = String(p.name || '').trim().toLowerCase();
-                            return pName && (itName.includes(pName) || pName.includes(itName));
-                        })) {
-                            return true;
-                        }
-                        return listedIds.some(pid => { const pStr = pid.toLowerCase(); return pStr && itName.includes(pStr); });
-                    }
-                    return matchItemCategory(it.name, targetCat) && (!Array.isArray(promo.brandFilter) || promo.brandFilter.length === 0 || promo.brandFilter.some(b => String(it.name || '').toLowerCase().includes(String(b).toLowerCase())));
-                });
+                // Eligible lines: category AND brand AND listed products (same rule as the server's isItemMatchingPromo)
+                const eligibleItems = cartItems.filter(it =>
+                    matchItemCategory(it.name, targetCat) &&
+                    (!Array.isArray(promo.brandFilter) || promo.brandFilter.length === 0 || promo.brandFilter.some(b => String(it.name || '').toLowerCase().includes(String(b).toLowerCase()))) &&
+                    itemMatchesListedProducts(it, promo.product_ids || promo.productIds));
 
-                const totalCount = eligibleItems.reduce((sum, it) => sum + (it.qty || 1), 0);
-                if (totalCount >= bQty && bPrice > 0) {
-                    const fullBundles = Math.floor(totalCount / bQty);
-                    const bundledUnits = fullBundles * bQty;
-                    const totalVal = eligibleItems.reduce((val, it) => val + ((it.price || 0) * (it.qty || 1)), 0);
-                    const avgPrice = totalCount > 0 ? (totalVal / totalCount) : (bPrice / bQty);
-                    const stdCost = avgPrice * bundledUnits;
-                    const promoCost = fullBundles * bPrice;
-                    const bDisc = Math.max(0, Math.round(stdCost - promoCost));
-                    if (bDisc > 0) {
-                        autoProductDiscount += bDisc;
-                        autoDescriptions.push(`โปรเซ็ต ${bQty} ชิ้น ฿${bPrice} (-฿${bDisc})`);
+                if (bPrice > 0) {
+                    const b = computeBundle(eligibleItems, bQty, bPrice, promo.maxSetsPerOrder);
+                    if (b.discount > 0) {
+                        autoProductDiscount += b.discount;
+                        autoDescriptions.push(`โปรเซ็ต ${bQty} ชิ้น ฿${bPrice} x${b.sets} (-฿${b.discount})`);
                     }
                 }
             } else if (ruleType === 'PERCENT') {
@@ -7600,8 +7901,9 @@
                 } else {
                     if (!promo.minSubtotal || rawSubtotal >= promo.minSubtotal) {
                         let eligibleSub = rawSubtotal;
-                        if (targetCat !== 'ALL') {
-                            eligibleSub = cartItems.filter(it => matchItemCategory(it.name, targetCat)).reduce((s, it) => s + ((it.price || 0) * (it.qty || 1)), 0);
+                        const listedIds = promo.product_ids || promo.productIds;
+                        if (targetCat !== 'ALL' || (Array.isArray(listedIds) && listedIds.length > 0)) {
+                            eligibleSub = cartItems.filter(it => matchItemCategory(it.name, targetCat) && itemMatchesListedProducts(it, listedIds)).reduce((s, it) => s + ((it.price || 0) * (it.qty || 1)), 0);
                         }
                         if (eligibleSub > 0 && pct > 0) {
                             const pDisc = Math.round(eligibleSub * (pct / 100));
@@ -7733,18 +8035,7 @@
         const hasProductFilter = Array.isArray(v.product_ids) && v.product_ids.length > 0;
 
         if (hasProductFilter) {
-            eligibleItems = eligibleItems.filter(it => {
-                const itProdId = String(it.productId || it.product_id || it.id || '').trim();
-                const itName = String(it.name || '').trim().toLowerCase();
-                if (itProdId && v.product_ids.includes(itProdId)) return true;
-                const matchedProd = (typeof PRODUCTS !== 'undefined' && Array.isArray(PRODUCTS))
-                    ? PRODUCTS.find(p => v.product_ids.includes(String(p.id)))
-                    : null;
-                if (matchedProd && matchedProd.name && (itName.includes(matchedProd.name.toLowerCase()) || matchedProd.name.toLowerCase().includes(itName))) {
-                    return true;
-                }
-                return v.product_ids.some(pid => itName.includes(String(pid).toLowerCase()));
-            });
+            eligibleItems = eligibleItems.filter(it => itemMatchesListedProducts(it, v.product_ids));
             if (eligibleItems.length === 0) {
                 return { discount: 0, discountDesc: `ใช้ได้เฉพาะสินค้าที่ร่วมรายการ (${v.code})` };
             }
@@ -7822,13 +8113,14 @@
                 const m = nameText.match(/(?:หัว|ชิ้น|อัน|กล่อง|pods?|pcs?)\s*(\d+)/i) || nameText.match(/(\d+)\s*(?:บาท|\.-|.-)/i);
                 if (m && Number(m[1]) > 0) bPrice = Number(m[1]);
             }
-            if (eligibleItemsCount >= bQty && bPrice > 0) {
-                const fullBundles = Math.floor(eligibleItemsCount / bQty);
-                const avgItemPrice = eligibleItemsCount > 0 ? (eligibleSubtotal / eligibleItemsCount) : 0;
-                const standardCost = avgItemPrice * (fullBundles * bQty);
-                const promoCost = fullBundles * bPrice;
-                discount = Math.max(0, Math.round(standardCost - promoCost));
-                discountDesc = `โปรเหมา ${bQty} ชิ้น ฿${bPrice} (${v.code})`;
+            if (bPrice > 0) {
+                const b = computeBundle(eligibleItems, bQty, bPrice, v.maxSetsPerOrder);
+                if (b.sets > 0) {
+                    discount = b.discount;
+                    discountDesc = `โปรเหมา ${bQty} ชิ้น ฿${bPrice} x${b.sets} (${v.code})`;
+                } else {
+                    discountDesc = `ต้องสั่งสินค้าที่ร่วมรายการครบ ${bQty} ชิ้น (${v.code})`;
+                }
             }
         } else {
             // Product discount ONLY applies to subtotal!
@@ -7837,6 +8129,7 @@
                 if (v.discountPercent > 0 || v.type === 'discount_percent') {
                     const pct = v.discountPercent || v.discount || 0;
                     discount = Math.round(targetSub * (pct / 100));
+                    if (Number(v.maxDiscount) > 0) discount = Math.min(discount, Number(v.maxDiscount));
                     discountDesc = `ส่วนลด ${pct}% (${v.code})`;
                 } else {
                     discount = Math.min(targetSub, v.discount);
@@ -9251,7 +9544,11 @@
                 collectibleNow: p.collectibleNow !== false,
                 neverExpires: p.neverExpires === true,
                 // redeemUntil from the server; older servers -> redeemEndDate / endDate (same rule as backend)
-                redeemUntil: p.neverExpires === true ? null : (p.redeemUntil || p.redeemEndDate || p.endDate || null)
+                redeemUntil: p.neverExpires === true ? null : (p.redeemUntil || p.redeemEndDate || p.endDate || null),
+                maxSetsPerOrder: Number(p.maxSetsPerOrder) || 0,
+                maxDiscount: Number(p.maxDiscount) || 0,
+                // Uses left for this customer from the server (null = unlimited); undefined on older servers
+                ...(p.usesLeft !== undefined ? { usesLeft: p.usesLeft } : {})
             };
         });
         renderHomeVoucherTrack(promos);
@@ -9324,7 +9621,8 @@
         });
 
         // 2. Auto discounts
-        const autos = activeList.filter(p => p.triggerType === 'AUTO' || (!p.triggerType && !(p.code || '').trim()));
+        // Gift promotions are not coupons: they show as a notice / picker in the cart only
+        const autos = activeList.filter(p => (p.triggerType === 'AUTO' || (!p.triggerType && !(p.code || '').trim())) && p.pricingRule?.type !== 'GIFT');
         autos.forEach(p => {
             const isPercent = p.pricingRule?.type === 'PERCENT';
             const val = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
@@ -9417,7 +9715,8 @@
         });
 
         // 2. Auto discounts
-        const autos = activeList.filter(p => p.triggerType === 'AUTO' || (!p.triggerType && !(p.code || '').trim()));
+        // Gift promotions are not coupons: they show as a notice / picker in the cart only
+        const autos = activeList.filter(p => (p.triggerType === 'AUTO' || (!p.triggerType && !(p.code || '').trim())) && p.pricingRule?.type !== 'GIFT');
         autos.forEach(p => {
             const isPercent = p.pricingRule?.type === 'PERCENT';
             const val = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
@@ -9774,6 +10073,9 @@
             }).join('');
             }
         }
+
+        // Free gift picker (empty unless the cart earns a gift)
+        try { renderGiftPicker(); } catch (giftErr) { console.warn('[GiftPicker]', giftErr); }
 
         // Centralized cart calculation with Auto Promos and Selected Voucher
         const totals = calculateCartTotals();
@@ -12473,7 +12775,9 @@
             riderNote: isPostal ? '' : noteText,
             lat: deliveryCoords ? deliveryCoords.lat : null,
             lng: deliveryCoords ? deliveryCoords.lng : null,
-            items: [...cart],
+            // Gift lines (price 0) are shown in the order; they are never sent as priced items
+            items: [...cart, ...giftDisplayLines()],
+            giftSelections: giftSelections.slice(),
             subtotal: totals.rawSubtotal,
             deliveryFee: totals.shipping,
             // Fee before discounts and the discount split: the server prices the order itself and uses
@@ -12546,7 +12850,15 @@
         // Clear active cart now that the server has the order
         cart = [];
         clearCartFromStorage();
-        if (selectedVoucher) {
+        giftSelections = [];
+        saveGiftSelections();
+        // A code with uses left (limit > 1, or no limit) stays in the wallet; only the last use removes it
+        const usedVoucherInfo = selectedVoucher ? VOUCHER_MASTER[selectedVoucher] : null;
+        const hasUseCount = usedVoucherInfo && usedVoucherInfo.usesLeft !== undefined;
+        if (selectedVoucher && hasUseCount && (usedVoucherInfo.usesLeft === null || usedVoucherInfo.usesLeft > 1)) {
+            if (usedVoucherInfo.usesLeft !== null) usedVoucherInfo.usesLeft -= 1;
+        } else if (selectedVoucher) {
+            if (hasUseCount) usedVoucherInfo.usesLeft = 0;
             const usedCode = selectedVoucher;
             userClaimedVouchers = userClaimedVouchers.filter(c => c !== usedCode);
             try { localStorage.setItem('vapor_claimed_vouchers', JSON.stringify(userClaimedVouchers)); } catch(e) {}
@@ -12609,7 +12921,9 @@
                 voucherCode: selectedVoucher,
                 ageConfirmed: isAgeVerified(),
                 discount: orderObj.discount,
-                items: orderObj.items,
+                items: (orderObj.items || []).filter(it => !it.isGift),
+                // Free gift picks; the server checks them against what the cart earns
+                giftSelections: Array.isArray(orderObj.giftSelections) ? orderObj.giftSelections : [],
                 total: orderObj.total,
                 paymentUrl: `https://liff.line.me/${OFFICIAL_LIFF_ID}?orderId=${orderObj.id}`
             };
@@ -13175,6 +13489,7 @@
         const target = allOrders.find(o => o.id === orderId);
         if (target && target.items && target.items.length > 0) {
             target.items.forEach(it => {
+                if (it.isGift || Number(it.price) === 0) return; // gifts are earned again, never re-bought
                 const existing = cart.find(c => c.name === it.name && c.flavor === it.flavor);
                 if (existing) {
                     existing.qty += (it.qty || 1);
