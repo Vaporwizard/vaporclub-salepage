@@ -7402,11 +7402,20 @@
                 if (VOUCHER_MASTER[c] && VOUCHER_MASTER[c].usesLeft !== undefined) counted = VOUCHER_MASTER[c];
             } catch (e) { /* VOUCHER_MASTER not initialised yet */ }
         }
+        // First-order-only codes: the server already decided for a known customer (firstOrderEligible, which
+        // also covers codes staff gave to a returning customer); otherwise this page's own order history decides
+        let firstOrderInfo = promo && promo.firstOrderOnly !== undefined ? promo : null;
+        if (!firstOrderInfo && c) {
+            try { if (VOUCHER_MASTER[c] && VOUCHER_MASTER[c].firstOrderOnly) firstOrderInfo = VOUCHER_MASTER[c]; } catch (e) {}
+        }
+        const isFirstOrderCode = (firstOrderInfo && firstOrderInfo.firstOrderOnly === true) || ['NEW50', 'NEW10'].includes(c) || pId === 'promo_code_newbie10_delivery';
+        const serverSaysEligible = !!(firstOrderInfo && firstOrderInfo.firstOrderEligible === true);
+        if (isFirstOrderCode && !serverSaysEligible) {
+            const prior = typeof getStoredOrders === 'function' ? (getStoredOrders() || []).filter(o => o && !['CANCELLED', 'WAITING_PAYMENT'].includes(String(o.status || '').toUpperCase())) : [];
+            if (prior.length > 0) return true;
+        }
+
         if (counted) {
-            if (['NEW50', 'NEW10'].includes(c) || pId === 'promo_code_newbie10_delivery') {
-                const prior = typeof getStoredOrders === 'function' ? (getStoredOrders() || []).filter(o => o && String(o.status || '').toUpperCase() !== 'CANCELLED') : [];
-                if (prior.length > 0) return true;
-            }
             return counted.usesLeft !== null && counted.usesLeft <= 0;
         }
 
@@ -7419,12 +7428,6 @@
         // 2. Check customer orders history (exclude CANCELLED orders so returned vouchers can be reused)
         const rawOrders = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
         const myOrders = Array.isArray(rawOrders) ? rawOrders.filter(o => o && String(o.status || '').toUpperCase() !== 'CANCELLED') : [];
-        const hasPriorOrders = myOrders.length > 0;
-
-        // New customer vouchers (NEW50, NEW10, etc.) cannot be used if customer has prior orders
-        if (['NEW50', 'NEW10'].includes(c) || pId === 'promo_code_newbie10_delivery') {
-            if (hasPriorOrders) return true;
-        }
 
         if (Array.isArray(myOrders)) {
             const foundInOrder = myOrders.some(o => {
@@ -9585,6 +9588,8 @@
                 // redeemUntil from the server; older servers -> redeemEndDate / endDate (same rule as backend)
                 redeemUntil: p.neverExpires === true ? null : (p.redeemUntil || p.redeemEndDate || p.endDate || null),
                 maxSetsPerOrder: Number(p.maxSetsPerOrder) || 0,
+                firstOrderOnly: p.firstOrderOnly === true,
+                ...(p.firstOrderEligible !== undefined ? { firstOrderEligible: p.firstOrderEligible === true } : {}),
                 maxDiscount: Number(p.maxDiscount) || 0,
                 // Uses left for this customer from the server (null = unlimited); undefined on older servers
                 ...(p.usesLeft !== undefined ? { usesLeft: p.usesLeft } : {})
