@@ -6358,6 +6358,99 @@
                     ]
                 }
             ]
+        },
+        {
+            id: 17,
+            name: 'RELX ESSENTIAL 2 device',
+            category: 'pod_device',
+            categoryName: 'เครื่องพอต (Pod Device)',
+            price: 590,
+            inStock: true,
+            sales: 0,
+            tag: '',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/product-images/products/product_1794728388156.jpg',
+            tagline: 'สามารถใช้ร่วมกับ หัวพอต closed system ได้ทุกยี่ห้อ',
+            groups: [
+                {
+                    groupName: 'ตัวเลือกสี',
+                    badgeClass: 'badge-color-opt',
+                    flavors: [
+                        { name: 'สีส้ม', inStock: false, stock: 0, sku: 'BN00003', loyverse_variant_id: '1d54731c-4e00-44e9-b451-e3f25fb043ba' },
+                        { name: 'สีดำ', inStock: false, stock: 0, sku: 'BN00004', loyverse_variant_id: '2bd88eae-aa92-474e-ae66-3776c0242a53' },
+                        { name: 'สีเทา', inStock: true, stock: 3, sku: 'BN00005', barcode: '6941974968672', loyverse_variant_id: 'db4fc9a2-6109-4676-a0c7-d81ce2c29c4f' },
+                        { name: 'สีเทาดำ', inStock: true, stock: 4, sku: 'BN00006', barcode: '6941974971092', loyverse_variant_id: '37ea621a-a094-408d-873b-a6e5d6e44d62' },
+                        { name: 'สีรุ้ง', inStock: true, stock: 3, sku: 'BN00007', barcode: '6941974971115', loyverse_variant_id: '3cfca21d-fa40-4879-9232-8a66b2ee0b5e' },
+                        { name: 'สีฟ้าม่วง', inStock: false, stock: 0, sku: 'BN00008', loyverse_variant_id: '89e5a999-75a9-4284-9466-3c825fc5bf72' }
+                    ]
+                }
+            ],
+            loyverse_item_id: '923942cf-e684-46a0-aa50-34c1b8cd7e13'
+        },
+        {
+            id: 18,
+            name: 'RELX CREATOR (Device,แบตเตอรี่)',
+            category: 'pod_device',
+            categoryName: 'เครื่องพอต (Pod Device)',
+            price: 330,
+            inStock: false,
+            sales: 0,
+            tag: '',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/product-images/products/product_1794908691255.jpg',
+            tagline: 'ใช้งานร่วมกับหัว relx creator 18k 20k',
+            groups: [
+                {
+                    groupName: 'ตัวเลือกสี',
+                    badgeClass: 'badge-color-opt',
+                    flavors: [
+                        { name: 'ดำ/black', inStock: false, stock: 0, sku: 'BN00009', loyverse_variant_id: 'eec93870-b1b9-4aea-a952-1ede45066d94' }
+                    ]
+                }
+            ],
+            loyverse_item_id: 'ef247ec7-7ac0-4e2a-96a9-e8a96fbf9539'
+        },
+        {
+            id: 19,
+            name: 'M-Switch (Device,แบตเตอรี่)',
+            category: 'pod_device',
+            categoryName: 'เครื่องพอต (Pod Device)',
+            price: 390,
+            inStock: false,
+            sales: 0,
+            tag: '',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/product-images/products/product_1794908929151.jpg',
+            tagline: 'ใช้งานร่วมกับหัว switch pod',
+            groups: [
+                {
+                    groupName: 'ตัวเลือกสี',
+                    badgeClass: 'badge-color-opt',
+                    flavors: [
+                        { name: 'สีดำ', inStock: false, stock: 0, sku: 'BN00010', loyverse_variant_id: '592325fc-5e5c-4d04-ab06-09c050580e11' }
+                    ]
+                }
+            ],
+            loyverse_item_id: 'ed4bb9bb-27a3-4df0-b796-90afb742823f'
+        },
+        {
+            id: 20,
+            name: 'RELX Creator 20K',
+            category: 'switch_pod',
+            categoryName: 'หัวสลับ (Switch Pod)',
+            price: 370,
+            inStock: false,
+            sales: 0,
+            tag: '',
+            image: 'https://ysxolgzhxcfwmdubroqg.supabase.co/storage/v1/object/public/product-images/products/product_1794909073750.jpg',
+            tagline: '',
+            groups: [
+                {
+                    groupName: 'รายการกลิ่น',
+                    badgeClass: '',
+                    flavors: [
+                        { name: 'Soon', inStock: false, stock: 0, sku: 'BN00011', loyverse_variant_id: 'd2854ec1-1e0e-4bc3-8313-de82c5590bbd' }
+                    ]
+                }
+            ],
+            loyverse_item_id: 'eb08247e-2e9e-4c78-b786-c578218d593e'
         }
     ];
 
@@ -9110,6 +9203,21 @@
         if (pId === 13 || pNameNorm.includes('relxinfinity2plus')) {
             return itName.includes('infinity2');
         }
+        if (pId === 17 || pNameNorm.includes('essential')) {
+            return itName.includes('essential') || itCat.includes('device') || itCat.includes('relx');
+        }
+        if (pId === 18 || (pNameNorm.includes('creator') && pNameNorm.includes('device'))) {
+            return itName.includes('creator') && (itName.includes('device') || itCat.includes('device'));
+        }
+        if (pId === 19 || (pNameNorm.includes('mswitch') && pNameNorm.includes('device'))) {
+            return (itName.includes('mswitch') || itName.includes('m-switch')) && (itName.includes('device') || itCat.includes('device'));
+        }
+        if (pId === 20 || (pNameNorm.includes('creator') && pNameNorm.includes('20k'))) {
+            return itName.includes('creator') && itName.includes('20k');
+        }
+        if (itName && pNameNorm && (itName.includes(pNameNorm) || pNameNorm.includes(itName))) {
+            return true;
+        }
         return false;
     }
 
@@ -9282,12 +9390,30 @@
                             let highestScore = -1;
 
                             loyItems.forEach(it => {
+                                // 1. Direct match by SKU or Loyverse Variant ID (Highest accuracy)
+                                if (f.loyverse_variant_id && (it.id === f.loyverse_variant_id || it.loyverse_variant_id === f.loyverse_variant_id)) {
+                                    bestMatch = it;
+                                    highestScore = 9999;
+                                    return;
+                                }
+                                if (f.sku && it.sku && String(f.sku).trim() === String(it.sku).trim()) {
+                                    bestMatch = it;
+                                    highestScore = 9990;
+                                    return;
+                                }
+                                if (f.barcode && it.barcode && String(f.barcode).trim() === String(it.barcode).trim()) {
+                                    bestMatch = it;
+                                    highestScore = 9980;
+                                    return;
+                                }
+
                                 const itName = (it.name || '').toLowerCase().replace(/[\s\-_]+/g, '');
                                 const itCat = (it.category || '').toLowerCase().replace(/[\s\-_]+/g, '');
 
                                 if (!isBrandMatch(p.id, pNameNorm, itName, itCat)) return;
 
-                                const score = calculateFlavorMatchScore(f.name, it.name, grp.groupName);
+                                const itVariant = (it.variantName || '').toLowerCase().replace(/[\s\-_]+/g, '');
+                                const score = calculateFlavorMatchScore(f.name, itName + ' ' + itVariant, grp.groupName);
                                 if (score > highestScore) {
                                     highestScore = score;
                                     bestMatch = it;
