@@ -9398,12 +9398,12 @@
                                     highestScore = 9999;
                                     return;
                                 }
-                                if (f.sku && it.sku && String(f.sku).trim() === String(it.sku).trim()) {
+                                if (f.sku && it.sku && String(f.sku).trim() === String(it.sku).trim() && isBrandMatch(p.id, pNameNorm, itName, itCat)) {
                                     bestMatch = it;
                                     highestScore = 9990;
                                     return;
                                 }
-                                if (f.barcode && it.barcode && String(f.barcode).trim() === String(it.barcode).trim()) {
+                                if (f.barcode && it.barcode && String(f.barcode).trim() === String(it.barcode).trim() && isBrandMatch(p.id, pNameNorm, itName, itCat)) {
                                     bestMatch = it;
                                     highestScore = 9980;
                                     return;
