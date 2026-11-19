@@ -9383,6 +9383,8 @@
                     // Reset all flavors first
                     p.groups.forEach(grp => {
                         grp.flavors.forEach(f => {
+                            const prevStock = Number(f.stock) || 0;
+                            const prevInStock = f.inStock === true;
                             f.stock = 0;
                             f.inStock = false;
 
@@ -9406,6 +9408,11 @@
                                     highestScore = 9980;
                                     return;
                                 }
+                                if (it.id && (it.id === `local_${p.id}_${(f.name || '').replace(/\s*\([^\)]*\)/g, '').trim()}` || it.id === `local_${p.id}_${f.name}`)) {
+                                    bestMatch = it;
+                                    highestScore = 9970;
+                                    return;
+                                }
 
                                 const itName = (it.name || '').toLowerCase().replace(/[\s\-_]+/g, '');
                                 const itCat = (it.category || '').toLowerCase().replace(/[\s\-_]+/g, '');
@@ -9422,6 +9429,11 @@
 
                             if (bestMatch && Number(bestMatch.stock) > 0) {
                                 matchesToAssign.push({ flavor: f, bestMatch, score: highestScore });
+                            } else if (!bestMatch && prevStock > 0 && prevInStock) {
+                                // Retain Backoffice catalog stock if no external Loyverse item matched
+                                f.stock = prevStock;
+                                f.inStock = true;
+                                productHasStock = true;
                             }
                         });
                     });
