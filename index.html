@@ -4024,6 +4024,50 @@
                 transform: none;
             }
         }
+
+        /* ===== Modern voucher card + terms modal ===== */
+  .modern-voucher-card { display: flex; flex-direction: row; width: 100%; min-height: 104px; background: #18191c; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; overflow: hidden; margin-bottom: 12px; position: relative; font-family: var(--font-thai); }
+  .modern-voucher-card.is-selected { border-color: #ff6b00; box-shadow: 0 0 0 1px #ff6b00 inset; }
+  .modern-voucher-card.is-expired { opacity: 0.55; }
+  .mvc-badge { width: 92px; min-width: 92px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8px 6px; position: relative; color: #ffffff; background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%); }
+  .mvc-badge.is-ship { background: #ccff00; color: #0b0c10; }
+  .mvc-badge.is-auto { background: linear-gradient(135deg, #2a2d36 0%, #3a3e4a 100%); color: #ffffff; }
+  .modern-voucher-card.is-expired .mvc-badge { background: #2a2d36; color: #9ca3af; }
+  .mvc-badge::after { content: ''; position: absolute; right: -1px; top: 10px; bottom: 10px; border-right: 2px dashed rgba(24, 25, 28, 0.9); }
+  .mvc-badge-main { font-family: var(--font-num); font-size: 19px; font-weight: 900; line-height: 1.1; letter-spacing: -0.2px; }
+  .mvc-badge-main.is-thai { font-family: var(--font-thai); font-size: 18px; }
+  .mvc-badge-sub { font-size: 10px; font-weight: 700; margin-top: 4px; opacity: 0.9; }
+  .mvc-body { flex: 1; min-width: 0; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; }
+  .mvc-headline { font-size: 13.5px; font-weight: 800; color: #ffffff; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mvc-cond { font-size: 11px; color: #9ca3af; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .mvc-expiry { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: #9ca3af; }
+  .mvc-expiry svg { width: 12px; height: 12px; flex: none; }
+  .mvc-expiry.is-soon { color: #ff8a3d; }
+  .mvc-expiry.is-expired { color: #ef4444; }
+  .mvc-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 5px; }
+  .mvc-foot-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .mvc-code { font-family: var(--font-num); font-size: 10px; font-weight: 800; letter-spacing: 0.3px; color: #ff6b00; background: rgba(255, 107, 0, 0.15); border: 1px solid rgba(255, 107, 0, 0.3); border-radius: 4px; padding: 2px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; flex-shrink: 0; }
+  .mvc-code.is-auto { font-family: var(--font-thai); }
+  .mvc-terms { font-size: 11px; color: #9ca3af; background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--font-thai); white-space: nowrap; text-decoration: underline; text-underline-offset: 2px; }
+  .mvc-btn { height: 28px; min-width: 56px; padding: 0 14px; border-radius: 14px; border: 0; font-family: var(--font-thai); font-size: 12px; font-weight: 800; cursor: pointer; background: #ff6b00; color: #ffffff; white-space: nowrap; flex: none; }
+  .mvc-btn.is-done { background: #2a2d36; color: #9ca3af; cursor: default; }
+  .mvc-btn.is-ghost { background: transparent; color: #9ca3af; border: 1px solid rgba(255, 255, 255, 0.15); cursor: default; }
+  .mvc-note { font-size: 11px; font-weight: 800; color: #ccff00; white-space: nowrap; }
+  /* Home track: horizontal scroll of fixed-width cards */
+  #home-voucher-track .modern-voucher-card { min-width: 300px; max-width: 320px; margin-bottom: 0; flex: none; }
+
+  /* Terms modal */
+  .mvc-modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.62); z-index: 99998; display: none; align-items: flex-end; justify-content: center; }
+  .mvc-modal-backdrop.open { display: flex; }
+  .mvc-modal { width: 100%; max-width: 480px; max-height: 82vh; overflow-y: auto; background: #131417; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px 20px 0 0; padding: 16px 18px 20px; font-family: var(--font-thai); color: #e5e7eb; }
+  .mvc-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .mvc-modal-title { font-size: 16px; font-weight: 800; color: #ffffff; line-height: 1.35; }
+  .mvc-modal-x { width: 32px; height: 32px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.12); background: #1f2126; color: #ffffff; cursor: pointer; flex: none; font-size: 16px; line-height: 1; }
+  .mvc-modal-sec { margin-top: 14px; }
+  .mvc-modal-sec h4 { margin: 0 0 6px; font-size: 12px; font-weight: 800; color: #9ca3af; }
+  .mvc-modal-sec ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.6; }
+  .mvc-modal-sec p { margin: 0; font-size: 13px; line-height: 1.6; white-space: pre-line; }
+  .mvc-modal-close { width: 100%; height: 44px; margin-top: 18px; border-radius: 12px; border: 0; background: #ff6b00; color: #ffffff; font-family: var(--font-thai); font-size: 14px; font-weight: 800; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -11055,7 +11099,18 @@
                 }
             });
         });
+        // Redraw voucher cards so "เก็บได้ถึง" switches to "ใช้ได้ถึง" after a claim
+        if (!mvcSyncing && Array.isArray(window.__LATEST_PROMOTIONS)) {
+            mvcSyncing = true;
+            try {
+                renderHomeVoucherTrack(window.__LATEST_PROMOTIONS);
+                renderDynamicDealsTab(window.__LATEST_PROMOTIONS);
+            } finally {
+                mvcSyncing = false;
+            }
+        }
     }
+    var mvcSyncing = false;
 
     function getGeoDistanceMeters(lat1, lon1, lat2, lon2) {
         if (!lat1 || !lon1 || !lat2 || !lon2) return 99999999;
@@ -11192,8 +11247,186 @@
     }
 
     /* Reusable Image 3 Ticket HTML Generator */
+    /* ===== Modern voucher card (badge / headline / conditions / expiry / terms modal) =====
+       Display only: fields set in the backoffice (badge_text, badge_sub, headline, conditions_summary,
+       terms_detail) win; everything else falls back to the existing promo data. No price logic here. */
+    var MVC_TH_MONTHS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    var MVC_CAL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>';
+    var mvcEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    var mvcBkk = t => new Date(t + 7 * 3600000);
+    var mvcThaiDate = (t, withTime) => {
+      const d = mvcBkk(t);
+      const s = `${d.getUTCDate()} ${MVC_TH_MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear() + 543}`;
+      return withTime ? `${s} ${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')} น.` : s;
+    };
+    var mvcPick = (p, camel, snake) => (p && (p[camel] != null && p[camel] !== '' ? p[camel] : (p[snake] != null && p[snake] !== '' ? p[snake] : null)));
+
+    function mvcPromoFor(code) {
+      const list = Array.isArray(window.__LATEST_PROMOTIONS) ? window.__LATEST_PROMOTIONS : [];
+      const c = String(code || '').toUpperCase();
+      return list.find(p => p && String(p.code || '').toUpperCase() === c) || null;
+    }
+    function mvcProductNames(ids) {
+      const all = (typeof PRODUCTS !== 'undefined' && Array.isArray(PRODUCTS)) ? PRODUCTS : [];
+      return (ids || []).map(id => (all.find(p => String(p.id) === String(id)) || {}).name).filter(Boolean);
+    }
+
+    /** Display model for one voucher; fields from the backoffice win, everything else falls back to the promo data. */
+    function mvcVoucherModel(p, v) {
+      p = p || {};
+      v = v || {};
+      const rule = p.pricingRule || {};
+      const cat = String(p.targetCategory || p.target_category || v.targetCategory || 'ALL').toUpperCase();
+      const isShip = ['DELIVERY', 'POSTAL', 'ALL_DELIVERY'].includes(cat) || (typeof isDeliveryVoucher === 'function' && v.code && isDeliveryVoucher(v));
+      const isBundle = rule.type === 'BUNDLE_FIXED_PRICE';
+      const isPercent = rule.type === 'PERCENT' || (!!v.discountPercent && !isBundle);
+      const val = Number(rule.discountValue || v.discountPercent || v.discount || 0);
+      const isFree = isShip && isPercent && val >= 100;
+      const isAuto = p.triggerType === 'AUTO' || (!p.triggerType && !(p.code || v.code));
+      const ids = (p.product_ids || p.productIds || v.product_ids || []).map(String);
+
+      let badge = isFree ? 'ส่งฟรี' : isBundle ? `฿${Number(rule.bundlePrice || p.bundlePrice || val).toLocaleString()}` : isPercent ? `${val}%` : `฿${val.toLocaleString()}`;
+      let sub = cat === 'DELIVERY' ? 'ส่งด่วน' : cat === 'POSTAL' ? 'ส่งพัสดุ' : cat === 'ALL_DELIVERY' ? 'ค่าส่ง' : isBundle ? `เหมา ${Number(rule.bundleQty || p.bundleQty || 0) || ''} ชิ้น`.replace('  ', ' ') : ids.length ? 'เฉพาะสินค้า' : 'ทั้งร้าน';
+      badge = mvcPick(p, 'badgeText', 'badge_text') || badge;
+      sub = mvcPick(p, 'badgeSub', 'badge_sub') || sub;
+
+      const parts = [];
+      const minSub = Number(p.minSubtotal || v.minSpend || 0);
+      const minQty = Number(p.minQty || p.min_qty || v.minQty || 0);
+      const maxDisc = Number(p.maxDiscount || v.maxDiscount || 0);
+      if (minSub > 0) parts.push(`ขั้นต่ำ ฿${minSub.toLocaleString()}`);
+      if (minQty > 0) parts.push(`ขั้นต่ำ ${minQty} ชิ้น`);
+      if (maxDisc > 0) parts.push(`ลดสูงสุด ฿${maxDisc.toLocaleString()}`);
+      if (cat === 'DELIVERY') parts.push('ส่งด่วนเท่านั้น');
+      if (cat === 'POSTAL') parts.push('ส่งพัสดุเท่านั้น');
+      const names = mvcProductNames(ids);
+      if (names.length) parts.push(`เฉพาะ ${names.slice(0, 2).join(' / ')}${names.length > 2 ? ` +${names.length - 2}` : ''}`);
+      if (p.firstOrderOnly || v.firstOrderOnly) parts.push('ลูกค้าใหม่');
+      if (p.isZoneSpecific || v.isZoneSpecific) parts.push('เฉพาะพื้นที่');
+      if (Number(p.perCustomerLimit) > 0) parts.push(`${p.perCustomerLimit} สิทธิ์/คน`);
+      else if (p.onePerCustomer) parts.push('1 สิทธิ์/คน');
+      if (!parts.length) parts.push(isAuto ? 'ลดอัตโนมัติในตะกร้า' : 'ไม่มีขั้นต่ำ');
+
+      const never = p.neverExpires === true || v.neverExpires === true;
+      const endIso = never ? null : (p.redeemUntil || v.redeemUntil || p.redeemEndDate || p.endDate || null);
+      return {
+        code: String(p.code || v.code || '').toUpperCase(),
+        isShip, isAuto,
+        badge, sub,
+        headline: mvcPick(p, 'headline', 'headline') || p.name || v.title || 'โปรโมชั่นพิเศษ',
+        conditions: mvcPick(p, 'conditionsSummary', 'conditions_summary') || parts.join(' · '),
+        terms: mvcPick(p, 'termsDetail', 'terms_detail'),
+        endTime: endIso ? new Date(endIso).getTime() : null,
+        // Collect window end (only meaningful while the code can still be collected and within ~5 years)
+        collectEnd: (p.endDate && p.collectibleNow !== false && new Date(p.endDate).getTime() < Date.now() + 5 * 365 * 86400000) ? new Date(p.endDate).getTime() : null,
+        startTime: p.startDate ? new Date(p.startDate).getTime() : null,
+        never,
+        parts, names, minSub, minQty, maxDisc, cat
+      };
+    }
+
+    /** Not collected yet: "เก็บได้ถึง" (collect window). Collected / wallet / cart: "ใช้ได้ถึง" (redeem window). No countdown. */
+    function mvcExpiryHtml(m, mode) {
+      if (mode === 'claim' && m.collectEnd) {
+        if (m.collectEnd <= Date.now()) return `<div class="mvc-expiry is-expired">${MVC_CAL_SVG}<span>ปิดรับเก็บแล้ว</span></div>`;
+        return `<div class="mvc-expiry">${MVC_CAL_SVG}<span>เก็บได้ถึง ${mvcThaiDate(m.collectEnd)}</span></div>`;
+      }
+      if (m.never || !m.endTime) return `<div class="mvc-expiry">${MVC_CAL_SVG}<span>ไม่มีวันหมดอายุ</span></div>`;
+      if (m.endTime <= Date.now()) return `<div class="mvc-expiry is-expired">${MVC_CAL_SVG}<span>หมดอายุแล้ว</span></div>`;
+      return `<div class="mvc-expiry">${MVC_CAL_SVG}<span>ใช้ได้ถึง ${mvcThaiDate(m.endTime)}</span></div>`;
+    }
+
+    function mvcCardHtml(m, actionHtml, extraClass, mode) {
+      const themai = /[ก-๙]/.test(m.badge);
+      return `
+        <div class="modern-voucher-card ${extraClass || ''}" data-code="${mvcEsc(m.code)}">
+          <div class="mvc-badge ${m.isAuto ? 'is-auto' : (m.isShip ? 'is-ship' : '')}">
+            <div class="mvc-badge-main ${themai ? 'is-thai' : ''}">${mvcEsc(m.badge)}</div>
+            <div class="mvc-badge-sub">${mvcEsc(m.sub)}</div>
+          </div>
+          <div class="mvc-body">
+            <div class="mvc-headline" title="${mvcEsc(m.headline)}">${mvcEsc(m.headline)}</div>
+            <div class="mvc-cond">${mvcEsc(m.conditions)}</div>
+            ${mvcExpiryHtml(m, mode)}
+            <div class="mvc-foot">
+              <div class="mvc-foot-left">
+                ${m.isAuto ? '<span class="mvc-code is-auto">อัตโนมัติ</span>' : `<span class="mvc-code">${mvcEsc(m.code)}</span>`}
+                <button type="button" class="mvc-terms" onclick="showVoucherTermsModal('${mvcEsc(m.code)}', ${m.isAuto ? `'${mvcEsc(m.headline).replace(/'/g, '')}'` : 'null'})">ⓘ เงื่อนไข</button>
+              </div>
+              ${actionHtml}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // ---------- Terms modal ----------
+    function showVoucherTermsModal(code, autoName) {
+      const list = Array.isArray(window.__LATEST_PROMOTIONS) ? window.__LATEST_PROMOTIONS : [];
+      const p = code ? mvcPromoFor(code) : list.find(x => x && x.name === autoName);
+      const v = code && typeof VOUCHER_MASTER !== 'undefined' ? VOUCHER_MASTER[code] : null;
+      const m = mvcVoucherModel(p, v || {});
+      const period = m.never || !m.endTime
+        ? `${m.startTime ? `ตั้งแต่ ${mvcThaiDate(m.startTime)} · ` : ''}ไม่มีวันหมดอายุ`
+        : `${m.startTime ? `${mvcThaiDate(m.startTime, true)} – ` : 'ใช้ได้ถึง '}${mvcThaiDate(m.endTime, true)}`;
+      const conds = m.parts.filter(x => x !== 'ไม่มีขั้นต่ำ');
+      const rules = [
+        m.isAuto ? 'ลดให้อัตโนมัติเมื่อตะกร้าครบเงื่อนไข ไม่ต้องใช้โค้ด' : '1 บิลใช้โค้ดส่วนลดได้ 1 โค้ด',
+        (p && (Number(p.perCustomerLimit) > 0 || p.onePerCustomer)) ? `จำกัด ${Number(p.perCustomerLimit) || 1} สิทธิ์ต่อลูกค้า 1 คน` : null,
+        (p && p.firstOrderOnly) ? 'สำหรับลูกค้าที่สั่งซื้อครั้งแรกเท่านั้น' : null,
+        (p && p.isZoneSpecific) ? 'ใช้ได้เฉพาะพื้นที่จัดส่งที่กำหนด (ตรวจจากหมุดจัดส่ง)' : null,
+        m.isShip ? 'ลดเฉพาะค่าจัดส่ง ไม่ลดค่าสินค้า' : null,
+        'ยกเลิกออเดอร์แล้ว ได้สิทธิ์คืนตามเงื่อนไขของโปร'
+      ].filter(Boolean);
+      document.getElementById('mvc-terms-modal').innerHTML = `
+        <div class="mvc-modal-head">
+          <div class="mvc-modal-title" id="mvc-terms-title">${mvcEsc(m.headline)}</div>
+          <button type="button" class="mvc-modal-x" onclick="closeVoucherTermsModal()" aria-label="ปิด">✕</button>
+        </div>
+        ${m.code ? `<div style="margin-top:6px"><span class="mvc-code">${mvcEsc(m.code)}</span></div>` : ''}
+        <div class="mvc-modal-sec"><h4>ระยะเวลาที่ใช้ได้</h4><p>${mvcEsc(period)}</p></div>
+        <div class="mvc-modal-sec"><h4>เงื่อนไขการสั่งซื้อ</h4><ul>${(conds.length ? conds : ['ไม่มียอดขั้นต่ำ']).map(x => `<li>${mvcEsc(x)}</li>`).join('')}</ul></div>
+        ${m.names.length ? `<div class="mvc-modal-sec"><h4>สินค้าที่ร่วมรายการ</h4><ul>${m.names.map(n => `<li>${mvcEsc(n)}</li>`).join('')}</ul></div>` : ''}
+        <div class="mvc-modal-sec"><h4>ข้อกำหนดการใช้งาน</h4><ul>${rules.map(x => `<li>${mvcEsc(x)}</li>`).join('')}</ul></div>
+        ${m.terms ? `<div class="mvc-modal-sec"><h4>รายละเอียดเพิ่มเติม</h4><p>${mvcEsc(m.terms)}</p></div>` : ''}
+        <button type="button" class="mvc-modal-close" onclick="closeVoucherTermsModal()">ปิด</button>`;
+      document.getElementById('mvc-terms-backdrop').classList.add('open');
+    }
+    function closeVoucherTermsModal() { document.getElementById('mvc-terms-backdrop').classList.remove('open'); }
+
+    function mvcListsFrom(promos) {
+        const active = Array.isArray(promos) ? promos.filter(p => isPromoAllowedForCustomer(p) && !isVoucherUsedByCustomer(p.code, p)) : [];
+        // Collectible vouchers (ONLY triggerType === 'COLLECTIBLE' or isCollectible === true, NOT 'CODE' or 'AUTO')
+        const collectibles = active.filter(p => {
+            const code = (p.code || '').trim();
+            return code && p.triggerType !== 'CODE' && p.triggerType !== 'AUTO' && (p.triggerType === 'COLLECTIBLE' || p.isCollectible === true);
+        });
+        // Gift promotions are not coupons: they show as a notice / picker in the cart only
+        const autos = active.filter(p => (p.triggerType === 'AUTO' || (!p.triggerType && !(p.code || '').trim())) && p.pricingRule?.type !== 'GIFT');
+        return { collectibles, autos };
+    }
+
+    function mvcClaimButton(code, v) {
+        const isClaimed = userClaimedVouchers.includes(code);
+        const title = String((v && v.title) || '').replace(/'/g, "\\'");
+        return isClaimed
+            ? `<button type="button" class="mvc-btn is-done" id="btn-voucher-${mvcEsc(code)}" disabled>เก็บแล้ว</button>`
+            : `<button type="button" class="mvc-btn" id="btn-voucher-${mvcEsc(code)}" onclick="claimVoucherDirect('${mvcEsc(code)}', ${Number((v && v.discount) || 0)}, ${Number((v && v.minSpend) || 0)}, '${mvcEsc(title)}')">เก็บ</button>`;
+    }
+
+    function mvcRenderList(promos) {
+        const { collectibles, autos } = mvcListsFrom(promos);
+        let html = '';
+        collectibles.forEach(p => {
+            const code = String(p.code).trim().toUpperCase();
+            const v = VOUCHER_MASTER[code] || {};
+            // Not collected yet: "เก็บได้ถึง" / collected: "ใช้ได้ถึง"
+            html += mvcCardHtml(mvcVoucherModel(p, v), mvcClaimButton(code, v), '', userClaimedVouchers.includes(code) ? 'use' : 'claim');
+        });
+        autos.forEach(p => { html += mvcCardHtml(mvcVoucherModel(p, {}), '<span class="mvc-note">ลดในตะกร้า</span>', '', 'claim'); });
+        return html;
+    }
+
     function renderVoucherTicketHtml(v, mode = 'claim') {
-        const isClaimed = userClaimedVouchers.includes(v.code);
         const isUsed = isVoucherUsedByCustomer(v.code, v);
         if (isUsed && (mode === 'claim' || mode === 'cart_picker' || mode === 'use')) {
             return '';
@@ -11205,39 +11438,20 @@
         }
         const isSelected = selectedVoucher === v.code;
 
-        let actionBtnHtml = '';
+        let action = '';
         if (mode === 'claim') {
-            actionBtnHtml = `<button class="ticket-claim-btn ${isClaimed ? 'claimed' : ''}" id="btn-deal-${v.code}" onclick="claimVoucherDirect('${v.code}', ${v.discount}, ${v.minSpend}, '${v.title}')" ${isClaimed ? 'disabled' : ''}>${isClaimed ? 'เก็บแล้ว' : 'เก็บโค้ด'}</button>`;
+            action = mvcClaimButton(v.code, v);
         } else if (mode === 'use' && isExpired) {
-            actionBtnHtml = `<button type="button" class="ticket-claim-btn is-expired" disabled>หมดอายุแล้ว</button>`;
+            action = '<button type="button" class="mvc-btn is-ghost" disabled>หมดอายุ</button>';
         } else if (mode === 'use') {
-            actionBtnHtml = `<button type="button" class="ticket-claim-btn" style="background:#ff6b00; padding:6px 16px;" onclick="useVoucherFromModal('${v.code}')">ใช้</button>`;
+            action = `<button type="button" class="mvc-btn" onclick="useVoucherFromModal('${mvcEsc(v.code)}')">ใช้</button>`;
         } else if (mode === 'cart_picker') {
-            actionBtnHtml = `<button type="button" class="ticket-claim-btn" style="background:${isSelected ? '#272a34' : '#ff6b00'}; padding:6px 16px;" onclick="selectVoucherFromPicker('${v.code}')">${isSelected ? 'ใช้อยู่' : 'ใช้โค้ด'}</button>`;
+            action = isSelected
+                ? `<button type="button" class="mvc-btn is-done" onclick="selectVoucherFromPicker('${mvcEsc(v.code)}')">ใช้อยู่</button>`
+                : `<button type="button" class="mvc-btn" onclick="selectVoucherFromPicker('${mvcEsc(v.code)}')">ใช้โค้ด</button>`;
         }
-
-        return `
-            <div class="voucher-ticket-full ${isExpired ? 'is-expired' : ''}" style="${isSelected ? 'border:1.5px solid #0f172a; box-shadow:0 4px 14px rgba(15,23,42,0.1);' : ''}">
-                <div class="ticket-left">
-                    <div class="ticket-cutout-top"></div>
-                    <div class="ticket-cutout-bottom"></div>
-                    <span style="font-size:11px; color:var(--text-dim); font-weight:700;">${v.leftLabel || (isDeliveryVoucher(v) ? 'ลดค่าส่ง' : (v.discountPercent ? 'ส่วนลด' : 'ลดทันที'))}</span>
-                    <span style="font-size:19px; font-weight:900; color:#ffffff; font-family:var(--font-num);">${v.leftAmount || (v.discountPercent ? `${v.discountPercent}%` : `฿${v.discount || 0}`)}</span>
-                </div>
-                <div class="ticket-right">
-                    <div>
-                        <span class="ticket-code-tag">${v.code}</span>
-                        <div class="ticket-title">${v.title}</div>
-                        <div class="ticket-desc">${v.desc || ''}</div>
-                        ${renderVoucherExpiryHtml(expiry)}
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                        <span style="font-size:9.5px; color:var(--text-dim);">${v.condition || (v.minSpend > 0 ? `ขั้นต่ำ ฿${v.minSpend}` : 'ไม่มีขั้นต่ำ')}</span>
-                        ${actionBtnHtml}
-                    </div>
-                </div>
-            </div>
-        `;
+        const expMode = (mode === 'claim' && userClaimedVouchers.includes(v.code)) ? 'use' : mode;
+        return mvcCardHtml(mvcVoucherModel(mvcPromoFor(v.code), v), action, `${isExpired ? 'is-expired' : ''} ${isSelected ? 'is-selected' : ''}`, expMode);
     }
 
     function populateCartVoucherSelect() {
@@ -12041,191 +12255,13 @@
     function renderHomeVoucherTrack(promos) {
         const track = document.getElementById('home-voucher-track');
         if (!track) return;
-        const activeList = Array.isArray(promos) ? promos.filter(p => isPromoAllowedForCustomer(p) && !isVoucherUsedByCustomer(p.code, p)) : [];
-        if (activeList.length === 0) {
-            track.innerHTML = '';
-            return;
-        }
-
-        let html = '';
-        // 1. Collectible vouchers (ONLY triggerType === 'COLLECTIBLE' or isCollectible === true, NOT 'CODE' or 'AUTO')
-        const collectibles = activeList.filter(p => {
-            const code = (p.code || '').trim().toUpperCase();
-            if (!code) return false;
-            if (p.triggerType === 'CODE') return false; // STRICT: Trigger type CODE is hidden from claim buttons!
-            if (p.triggerType === 'AUTO') return false;
-            return p.triggerType === 'COLLECTIBLE' || p.isCollectible === true;
-        });
-        collectibles.forEach(p => {
-            const code = (p.code || '').trim().toUpperCase();
-            const isPercent = p.pricingRule?.type === 'PERCENT' || (Number(p.pricingRule?.discountValue) > 0 && Number(p.pricingRule?.discountValue) <= 100 && p.pricingRule?.type !== 'FIXED_DISCOUNT' && p.pricingRule?.type !== 'BUNDLE_FIXED_PRICE');
-            const isBundle = p.pricingRule?.type === 'BUNDLE_FIXED_PRICE';
-            const val = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
-
-            const v = VOUCHER_MASTER[code] || {
-                code,
-                discount: isPercent ? 0 : val,
-                discountPercent: isPercent ? val : 0,
-                minSpend: p.minSubtotal || 0,
-                title: p.name || `โค้ดส่วนลด ${code}`,
-                leftLabel: isBundle ? 'โปรเซ็ต' : (isPercent ? 'ส่วนลด' : 'ลดทันที'),
-                leftAmount: isBundle ? `฿${p.pricingRule?.bundlePrice || val}` : (isPercent ? `${val}%` : `฿${val}`),
-                desc: p.description || '',
-                condition: p.minQty ? `สั่งซื้อครบ ${p.minQty} ชิ้น` : (p.minSubtotal ? `ขั้นต่ำ ฿${p.minSubtotal}` : 'จำกัด 1 สิทธิ์')
-            };
-            const isClaimed = userClaimedVouchers.includes(code);
-            html += `
-                <div class="voucher-ticket">
-                    <div class="ticket-left">
-                        <div class="ticket-cutout-top"></div>
-                        <div class="ticket-cutout-bottom"></div>
-                        <span style="font-size:11px; color:var(--text-dim); font-weight:700;">${v.leftLabel || 'ส่วนลด'}</span>
-                        <span style="font-size:18px; font-weight:900; color:var(--primary-green); font-family:var(--font-num);">${v.leftAmount || '฿0'}</span>
-                    </div>
-                    <div class="ticket-right">
-                        <div>
-                            <span class="ticket-code-tag">${code}</span>
-                            <div class="ticket-title">${v.title || code}</div>
-                            <div class="ticket-desc">${v.desc || ''}</div>
-                            ${renderVoucherExpiryHtml(getVoucherExpiryInfo(v))}
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                            <span style="font-size:9.5px; color:var(--text-dim);">${v.condition || 'จำกัด 1 สิทธิ์'}</span>
-                            <button class="ticket-claim-btn ${isClaimed ? 'claimed' : ''}" id="btn-voucher-${code}" onclick="claimVoucherDirect('${code}', ${v.discount || 0}, ${v.minSpend || 0}, '${(v.title || '').replace(/'/g, "\\'")}')" ${isClaimed ? 'disabled' : ''}>
-                                ${isClaimed ? 'เก็บแล้ว' : 'เก็บโค้ด'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        // 2. Auto discounts
-        // Gift promotions are not coupons: they show as a notice / picker in the cart only
-        const autos = activeList.filter(p => (p.triggerType === 'AUTO' || (!p.triggerType && !(p.code || '').trim())) && p.pricingRule?.type !== 'GIFT');
-        autos.forEach(p => {
-            const isPercent = p.pricingRule?.type === 'PERCENT';
-            const val = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
-            const isBundle = p.pricingRule?.type === 'BUNDLE_FIXED_PRICE';
-            const leftTag = isBundle ? 'โปรเซ็ต' : (isPercent ? 'ส่วนลด' : 'โปรโมชั่น');
-            const leftVal = isBundle ? `฿${p.pricingRule?.bundlePrice || p.pricingRule?.discountValue || 0}` : (isPercent ? `${val}%` : `฿${val}`);
-            html += `
-                <div class="voucher-ticket">
-                    <div class="ticket-left">
-                        <div class="ticket-cutout-top"></div>
-                        <div class="ticket-cutout-bottom"></div>
-                        <span style="font-size:11px; color:var(--text-dim); font-weight:700;">${leftTag}</span>
-                        <span style="font-size:18px; font-weight:900; color:var(--primary-lime); font-family:var(--font-num);">${leftVal}</span>
-                    </div>
-                    <div class="ticket-right">
-                        <div>
-                            <span class="ticket-code-tag" style="background:rgba(255,107,0,0.15); color:#ff6b00; border:1px solid rgba(255,107,0,0.3);">โปรโมชั่นอัตโนมัติ</span>
-                            <div class="ticket-title">${p.name || 'โปรโมชั่นพิเศษ'}</div>
-                            <div class="ticket-desc">${p.description || ''}</div>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                            <span style="font-size:9.5px; color:var(--text-dim);">ลดอัตโนมัติในระบบ</span>
-                            <span style="font-size:10.5px; font-weight:800; color:var(--primary-green-dark);">มีผลในตะกร้า</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        track.innerHTML = html;
+        track.innerHTML = mvcRenderList(promos);
     }
 
     function renderDynamicDealsTab(promos) {
         const container = document.getElementById('deals-tickets-container');
         if (!container) return;
-
-        let html = '';
-        const activeList = Array.isArray(promos) ? promos.filter(p => isPromoAllowedForCustomer(p) && !isVoucherUsedByCustomer(p.code, p)) : [];
-
-        // 1. Collectible vouchers (ONLY triggerType === 'COLLECTIBLE' or isCollectible === true, NOT 'CODE' or 'AUTO')
-        const collectibles = activeList.filter(p => {
-            const code = (p.code || '').trim().toUpperCase();
-            if (!code) return false;
-            if (p.triggerType === 'CODE') return false; // STRICT: Trigger type CODE is hidden from claim buttons!
-            if (p.triggerType === 'AUTO') return false;
-            return p.triggerType === 'COLLECTIBLE' || p.isCollectible === true;
-        });
-        collectibles.forEach(p => {
-            const code = (p.code || '').trim().toUpperCase();
-            const isPercent = p.pricingRule?.type === 'PERCENT' || (Number(p.pricingRule?.discountValue) > 0 && Number(p.pricingRule?.discountValue) <= 100 && p.pricingRule?.type !== 'FIXED_DISCOUNT' && p.pricingRule?.type !== 'BUNDLE_FIXED_PRICE');
-            const isBundle = p.pricingRule?.type === 'BUNDLE_FIXED_PRICE';
-            const val = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
-
-            const v = VOUCHER_MASTER[code] || {
-                code,
-                discount: isPercent ? 0 : val,
-                discountPercent: isPercent ? val : 0,
-                minSpend: p.minSubtotal || 0,
-                title: p.name || `โค้ดส่วนลด ${code}`,
-                leftLabel: isBundle ? 'โปรเซ็ต' : (isPercent ? 'ส่วนลด' : 'ลดทันที'),
-                leftAmount: isBundle ? `฿${p.pricingRule?.bundlePrice || val}` : (isPercent ? `${val}%` : `฿${val}`),
-                desc: p.description || '',
-                condition: p.minQty ? `สั่งซื้อครบ ${p.minQty} ชิ้น` : (p.minSubtotal ? `ขั้นต่ำ ฿${p.minSubtotal}` : 'ไม่มีขั้นต่ำ')
-            };
-            const isClaimed = userClaimedVouchers.includes(code);
-            html += `
-                <div class="voucher-ticket-full">
-                    <div class="ticket-left">
-                        <div class="ticket-cutout-top"></div>
-                        <div class="ticket-cutout-bottom"></div>
-                        <span style="font-size:11px; color:var(--text-dim); font-weight:700;">${v.leftLabel || 'ส่วนลด'}</span>
-                        <span style="font-size:19px; font-weight:900; color:var(--primary-green); font-family:var(--font-num);">${v.leftAmount || '฿0'}</span>
-                    </div>
-                    <div class="ticket-right">
-                        <div>
-                            <span class="ticket-code-tag">${code}</span>
-                            <div class="ticket-title">${v.title || code}</div>
-                            <div class="ticket-desc">${v.desc || ''}</div>
-                            ${renderVoucherExpiryHtml(getVoucherExpiryInfo(v))}
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                            <span style="font-size:9.5px; color:var(--text-dim);">${v.condition || 'ไม่มีขั้นต่ำ'}</span>
-                            <button class="ticket-claim-btn ${isClaimed ? 'claimed' : ''}" id="btn-deal-${code}" onclick="claimVoucherDirect('${code}', ${v.discount || 0}, ${v.minSpend || 0}, '${(v.title || '').replace(/'/g, "\\'")}')" ${isClaimed ? 'disabled' : ''}>
-                                ${isClaimed ? 'เก็บแล้ว' : 'เก็บโค้ด'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        // 2. Auto discounts
-        // Gift promotions are not coupons: they show as a notice / picker in the cart only
-        const autos = activeList.filter(p => (p.triggerType === 'AUTO' || (!p.triggerType && !(p.code || '').trim())) && p.pricingRule?.type !== 'GIFT');
-        autos.forEach(p => {
-            const isPercent = p.pricingRule?.type === 'PERCENT';
-            const val = Number(p.pricingRule?.discountValue || p.pricingRule?.bundlePrice || 0);
-            const isBundle = p.pricingRule?.type === 'BUNDLE_FIXED_PRICE';
-            const leftTag = isBundle ? 'โปรเซ็ต' : (isPercent ? 'ส่วนลด' : 'โปรโมชั่น');
-            const leftVal = isBundle ? `฿${p.pricingRule?.bundlePrice || p.pricingRule?.discountValue || 0}` : (isPercent ? `${val}%` : `฿${val}`);
-            html += `
-                <div class="voucher-ticket-full">
-                    <div class="ticket-left">
-                        <div class="ticket-cutout-top"></div>
-                        <div class="ticket-cutout-bottom"></div>
-                        <span style="font-size:11px; color:var(--text-dim); font-weight:700;">${leftTag}</span>
-                        <span style="font-size:19px; font-weight:900; color:var(--primary-lime); font-family:var(--font-num);">${leftVal}</span>
-                    </div>
-                    <div class="ticket-right">
-                        <div>
-                            <span class="ticket-code-tag" style="background:rgba(255,107,0,0.15); color:#ff6b00; border:1px solid rgba(255,107,0,0.3);">โปรโมชั่นอัตโนมัติ</span>
-                            <div class="ticket-title">${p.name || 'โปรโมชั่นพิเศษ'}</div>
-                            <div class="ticket-desc">${p.description || ''}</div>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                            <span style="font-size:9.5px; color:var(--text-dim);">ลดอัตโนมัติในระบบ</span>
-                            <span style="font-size:11px; font-weight:800; color:var(--primary-green-dark);">มีผลทันทีในตะกร้า</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
+        const html = mvcRenderList(promos);
         if (html) {
             container.innerHTML = html;
         } else {
@@ -17290,5 +17326,8 @@
 })();
 </script>
 <!-- maintenance-overlay:end -->
+<div class="mvc-modal-backdrop" id="mvc-terms-backdrop" role="dialog" aria-modal="true" aria-labelledby="mvc-terms-title" onclick="if (event.target === this) closeVoucherTermsModal()">
+  <div class="mvc-modal" id="mvc-terms-modal"></div>
+</div>
 </body>
 </html>
